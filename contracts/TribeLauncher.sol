@@ -9,14 +9,14 @@ contract TribeLauncher is Owned {
     mapping (uint => address) public launchedTribes;
     uint public launchedCount;
 
-    function launchTribe(_launchUuid, _minimumStakingRequirement, _lockupPeriod) public ownerOnly {
+    function launchTribe(uint _launchUuid, uint _minimumStakingRequirement, uint _lockupPeriod) public ownerOnly {
         Tribe tribe = new Tribe(_minimumStakingRequirement, _lockupPeriod);
         launchedTribes[launchedCount] = tribe;
         launchedCount++;
-        Launched(launchUuid, tribe);
+        emit Launched(_launchUuid, tribe);
     }
 
-    function Launcher() public {
+    constructor() public {
         launchedCount = 0;
     }
 }

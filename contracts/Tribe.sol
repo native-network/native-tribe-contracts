@@ -6,7 +6,7 @@ contract Tribe {
     uint minimumStakingRequirement;
     uint lockupPeriod;
     
-    function Tribe(uint _minimumStakingRequirement, uint _lockupPeriod) public {
+    constructor(uint _minimumStakingRequirement, uint _lockupPeriod) public {
         minimumStakingRequirement = _minimumStakingRequirement;
         lockupPeriod = _lockupPeriod;
     }
