@@ -147,7 +147,7 @@ contract SmartToken is Owned {
     string public symbol;
     string public version = '1.0';
 
-    function SmartToken() public {
+    constructor() public {
         balances[msg.sender] = 12000000000000000;               // Give the creator all initial tokens
         totalSupply = 12000000000000000;                        // Update total supply
         name = 'Smart Token';                                   // Set the name for display purposes
