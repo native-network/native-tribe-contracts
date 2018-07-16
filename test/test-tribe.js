@@ -88,8 +88,27 @@ contract('Tribe', function () {
       assert( maliciousMinimumStakingRequirement.toString() != currentStakingMinimum.toString() )
       assert( curatorSetMinimum.toString() === currentStakingMinimum.toString() )
     }
-    
   })
+
+  it("It should change the minimumStakingRequirement", async function () {
+    const stakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
+    const newStakingMinimum = 1501;
+    await launchedTribeInstance.setMinimumStakingRequirement( newStakingMinimum, {from: curator})
+    const finalStakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
+    assert( stakingMinimum.toString() != finalStakingMinimum.toString() )
+    assert( finalStakingMinimum.toString() === newStakingMinimum.toString())
+  })
+
+  it("It should change the setlockupPeriod", async function () {
+    const lockupPeriod = await launchedTribeInstance.lockupPeriodSeconds()
+    const newLockupPeriod = 1252;
+    await launchedTribeInstance.setlockupPeriod( newLockupPeriod, {from: curator})
+    const finalLockupPeriod = await launchedTribeInstance.lockupPeriodSeconds()
+    assert( lockupPeriod.toString() != finalLockupPeriod.toString() )
+    assert( finalLockupPeriod .toString() === newLockupPeriod.toString())
+  })
+
+
 
   
 })
