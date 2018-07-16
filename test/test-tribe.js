@@ -176,9 +176,6 @@ contract('Tribe', function () {
       assert( maliciousMinimumStakingRequirement.toString() != currentStakingMinimum.toString() )
     }
     
-    // should never get here
-    assert(false)
-
   })
 
   
