@@ -128,6 +128,7 @@ contract('Tribe', function () {
   it("It should only allow a curator to make tribe level changes", async function () {
     const sender = web3.eth.accounts[0]
     const curator = web3.eth.accounts[0]
+    const randomUser = web3.eth.accounts[1]
 
     const tokenInstance = await Token.deployed()
 
@@ -159,11 +160,25 @@ contract('Tribe', function () {
     assert(startingMembershipStatus === false && stakedMembershipStatus === true)
     
     const newMinimumStakingRequirement = 1000;
-    await launchedTribeInstance.setMinimumStakingRequirement( newMinimumStakingRequirement )
+    await launchedTribeInstance.setMinimumStakingRequirement( newMinimumStakingRequirement, {from: curator})
+    
+    const newStakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
 
     const finalMembershipStatus = await launchedTribeInstance.isMember(sender)
 
-    assert(finalMembershipStatus === false)
+    assert(finalMembershipStatus === false && newMinimumStakingRequirement.toString() === newStakingMinimum.toString() )
+
+    const maliciousMinimumStakingRequirement = 0;
+    try {
+      await launchedTribeInstance.setMinimumStakingRequirement( maliciousMinimumStakingRequirement, {from: randomUser})
+    } catch(e) {
+      const currentStakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
+      assert( maliciousMinimumStakingRequirement.toString() != currentStakingMinimum.toString() )
+    }
+    
+    // should never get here
+    assert(false)
+
   })
 
   
