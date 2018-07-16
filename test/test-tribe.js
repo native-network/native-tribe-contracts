@@ -30,27 +30,40 @@ contract('Tribe', function () {
     launchedTribeCount = await tribeLauncherInstance.launchedCount()
     launchedTribeAddress = await tribeLauncherInstance.launchedTribes(launchedTribeCount - 1)
     launchedTribeInstance = await Tribe.at(launchedTribeAddress)
-    startingMembershipStatus = await launchedTribeInstance.isMember(sender)
     amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
     await tokenInstance.approve(launchedTribeInstance.address, amountRequiredForStaking, {from: sender})
-    await launchedTribeInstance.stakeTribeTokens(amountRequiredForStaking, {from: sender})
-    stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
   })
 
   it("It should stake tokens to become a member", async function () {
-    const finalMembershipStatus = await launchedTribeInstance.isMember(sender)
-    assert(startingMembershipStatus === false && finalMembershipStatus === true)
+    startingMembershipStatus = await launchedTribeInstance.isMember(sender)
+    amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
+    await launchedTribeInstance.stakeTribeTokens(amountRequiredForStaking, {from: sender})
+    stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
+    assert(startingMembershipStatus === false && stakedMembershipStatus === true)
   })
 
-  it("It should allow a user to unstake a tribe", async function () {
+  it("It should allow a staked user to unstake a tribe", async function () {
+    // Same as staking
+    startingMembershipStatus = await launchedTribeInstance.isMember(sender)
+    amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
+    await launchedTribeInstance.stakeTribeTokens(amountRequiredForStaking, {from: sender})
+    stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
     assert(startingMembershipStatus === false && stakedMembershipStatus === true)
+    
+    // unstake
     await launchedTribeInstance.unstakeTribeTokens(amountRequiredForStaking, {from: sender})
     const finalMembershipStatus = await launchedTribeInstance.isMember(sender)
     assert(finalMembershipStatus === false)
   })
 
   it("It should block unstakng for a set amount of time", async function () {
+    // Same as staking
+    startingMembershipStatus = await launchedTribeInstance.isMember(sender)
+    amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
+    await launchedTribeInstance.stakeTribeTokens(amountRequiredForStaking, {from: sender})
+    stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
     assert(startingMembershipStatus === false && stakedMembershipStatus === true)
+    
     // we expect the unstake to revert as the _lockupPeriod has not been passed
     try {
       await launchedTribeInstance.unstakeTribeTokens(amountRequiredForStaking, {from: sender}) 
@@ -61,22 +74,19 @@ contract('Tribe', function () {
   })
 
   it("It should only allow a curator to make tribe level changes", async function () {
-    const sender = web3.eth.accounts[0]
-    const curator = web3.eth.accounts[0]
-    const nonCurator = web3.eth.accounts[1]
-    assert(startingMembershipStatus === false && stakedMembershipStatus === true)
-    const newMinimumStakingRequirement = 1000
-    await launchedTribeInstance.setMinimumStakingRequirement( newMinimumStakingRequirement, {from: curator})
-    const newStakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
-    const finalMembershipStatus = await launchedTribeInstance.isMember(sender)
-    assert(finalMembershipStatus === false && newMinimumStakingRequirement.toString() === newStakingMinimum.toString() )
+    // inital set by the curator
+    const curatorSetMinimum = 1000
+    await launchedTribeInstance.setMinimumStakingRequirement( curatorSetMinimum, {from: curator})
+    const stakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
+    
+    // malicious user attempts to change minimum staking requirnments
     const maliciousMinimumStakingRequirement = 0
-
     try {
       await launchedTribeInstance.setMinimumStakingRequirement( maliciousMinimumStakingRequirement, {from: nonCurator})
     } catch(e) {
       const currentStakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
       assert( maliciousMinimumStakingRequirement.toString() != currentStakingMinimum.toString() )
+      assert( curatorSetMinimum.toString() === currentStakingMinimum.toString() )
     }
     
   })
