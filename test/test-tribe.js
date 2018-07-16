@@ -76,4 +76,48 @@ contract('Tribe', function () {
 
   })
 
+  it("It should block unstakng for a set amount of time", async function () {
+    const sender = web3.eth.accounts[0]
+    const curator = web3.eth.accounts[0]
+
+    const tokenInstance = await Token.deployed()
+
+    const tribeLauncherInstance = await TribeLauncher.deployed()
+
+    const _launchUuid = 123;
+    const _minimumStakingRequirement = 456;
+    const _lockupPeriod = 10;
+
+    await tribeLauncherInstance.launchTribe(_launchUuid, _minimumStakingRequirement, _lockupPeriod, curator,
+                                            tokenInstance.address, {from: sender})
+
+    const launchedTribeCount = await tribeLauncherInstance.launchedCount()
+
+    const launchedTribeAddress = await tribeLauncherInstance.launchedTribes(launchedTribeCount - 1)
+
+    const launchedTribeInstance = await Tribe.at(launchedTribeAddress)
+
+    const startingMembershipStatus = await launchedTribeInstance.isMember(sender)
+    
+    const amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
+    
+    await tokenInstance.approve(launchedTribeInstance.address, amountRequiredForStaking, {from: sender})
+
+    await launchedTribeInstance.stakeTribeTokens(amountRequiredForStaking, {from: sender})
+
+    const StakedMembershipStatus = await launchedTribeInstance.isMember(sender)
+    
+    assert(startingMembershipStatus === false && StakedMembershipStatus === true)
+    
+    // we expect the unstake to revert as the _lockupPeriod has not been passed
+    try {
+      await launchedTribeInstance.unstakeTribeTokens(amountRequiredForStaking, {from: sender}) 
+    } catch(e) {
+
+      const finalMembershipStatus = await launchedTribeInstance.isMember(sender)
+
+      assert(finalMembershipStatus === true)
+    }
+  })
+
 })
