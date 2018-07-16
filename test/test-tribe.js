@@ -6,6 +6,7 @@ const Token = artifacts.require("SmartToken")
 contract('Tribe', function () {
   const sender = web3.eth.accounts[0]
   const curator = web3.eth.accounts[0]
+  const nonCurator = web3.eth.accounts[1]
   const _launchUuid = 123
   const _minimumStakingRequirement = 456
   const _lockupPeriod = 0
@@ -36,8 +37,6 @@ contract('Tribe', function () {
     stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
   })
 
-
-  // TODO write all the tests
   it("It should stake tokens to become a member", async function () {
     const finalMembershipStatus = await launchedTribeInstance.isMember(sender)
     assert(startingMembershipStatus === false && finalMembershipStatus === true)
@@ -62,6 +61,9 @@ contract('Tribe', function () {
   })
 
   it("It should only allow a curator to make tribe level changes", async function () {
+    const sender = web3.eth.accounts[0]
+    const curator = web3.eth.accounts[0]
+    const nonCurator = web3.eth.accounts[1]
     assert(startingMembershipStatus === false && stakedMembershipStatus === true)
     const newMinimumStakingRequirement = 1000
     await launchedTribeInstance.setMinimumStakingRequirement( newMinimumStakingRequirement, {from: curator})
@@ -71,7 +73,7 @@ contract('Tribe', function () {
     const maliciousMinimumStakingRequirement = 0
 
     try {
-      await launchedTribeInstance.setMinimumStakingRequirement( maliciousMinimumStakingRequirement, {from: randomUser})
+      await launchedTribeInstance.setMinimumStakingRequirement( maliciousMinimumStakingRequirement, {from: nonCurator})
     } catch(e) {
       const currentStakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
       assert( maliciousMinimumStakingRequirement.toString() != currentStakingMinimum.toString() )
