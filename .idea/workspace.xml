@@ -1,16 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="474b0a08-9458-4b45-afcf-23f4429bbb58" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/test/test-tribe.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/contracts/Migrations.json" beforeDir="false" afterPath="$PROJECT_DIR$/build/contracts/Migrations.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/contracts/SmartToken.json" beforeDir="false" afterPath="$PROJECT_DIR$/build/contracts/SmartToken.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/SmartToken.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/SmartToken.sol" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/Tribe.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/Tribe.sol" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/TribeLauncher.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/TribeLauncher.sol" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test-launcher.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/test-launcher.js" afterDir="false" />
-    </list>
+    <list default="true" id="474b0a08-9458-4b45-afcf-23f4429bbb58" name="Default" comment="" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
     <ignored path="$PROJECT_DIR$/tmp/" />
@@ -125,8 +116,8 @@
     <packageJsonPaths />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-22" />
-    <option name="y" value="-1035" />
+    <option name="x" value="1785" />
+    <option name="y" value="44" />
     <option name="width" value="1680" />
     <option name="height" value="943" />
   </component>
@@ -219,7 +210,7 @@
     <option name="totallyTimeSpent" value="15277000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-22" y="-1035" width="1680" height="943" extended-state="0" />
+    <frame x="1785" y="44" width="1680" height="943" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25" />
