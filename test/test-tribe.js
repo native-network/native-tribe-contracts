@@ -98,6 +98,30 @@ contract('Tribe', function () {
     assert( stakingMinimum.toString() != finalStakingMinimum.toString() )
     assert( finalStakingMinimum.toString() === newStakingMinimum.toString())
   })
+  
+  // Technically not sure about this one, solidity converts ints into uints and doesn't revert as I would expect.
+  xit("It should not allow setting the minimumStakingRequirement to negative", async function () {
+    const stakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
+    const newStakingMinimum = -1050;
+    try {
+      await launchedTribeInstance.setMinimumStakingRequirement( newStakingMinimum, {from: curator})
+    } catch (error) {
+      const finalStakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
+      assert(stakingMinimum.toString() === finalStakingMinimum.toString() && 1 == 2)
+    }
+    const finalStakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
+  })
+
+  it("It should not allow setting the minimumStakingRequirement to a string", async function () {
+    const stakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
+    const newStakingMinimum = 'foo';
+    try {
+      await launchedTribeInstance.setMinimumStakingRequirement( newStakingMinimum, {from: curator})
+    } catch (error) {
+      const finalStakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
+      assert(stakingMinimum.toString() === finalStakingMinimum.toString())
+    }
+  })
 
   it("It should change the setlockupPeriod", async function () {
     const lockupPeriod = await launchedTribeInstance.lockupPeriodSeconds()
