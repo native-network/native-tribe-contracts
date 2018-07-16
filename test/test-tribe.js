@@ -129,10 +129,19 @@ contract('Tribe', function () {
     await launchedTribeInstance.setlockupPeriod( newLockupPeriod, {from: curator})
     const finalLockupPeriod = await launchedTribeInstance.lockupPeriodSeconds()
     assert( lockupPeriod.toString() != finalLockupPeriod.toString() )
-    assert( finalLockupPeriod .toString() === newLockupPeriod.toString())
+    assert( finalLockupPeriod.toString() === newLockupPeriod.toString())
   })
 
-
-
+  it("It should not allow setting the setlockupPeriod to a string", async function () {
+    const lockupPeriod = await launchedTribeInstance.lockupPeriodSeconds()
+    const newLockupPeriod = 'foo';
+    try {
+      await launchedTribeInstance.setlockupPeriod( newLockupPeriod, {from: curator})  
+    } catch(e) {
+      const finalLockupPeriod = await launchedTribeInstance.lockupPeriodSeconds()
+      assert( lockupPeriod.toString() != newLockupPeriod.toString() )
+      assert( finalLockupPeriod .toString() === lockupPeriod.toString())
+    }
+  })
   
 })
