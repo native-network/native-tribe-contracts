@@ -118,7 +118,11 @@ contract Tribe {
     function stakeTribeTokens(uint amount) public {
 
         SmartToken tribeTokenInstance = SmartToken(tribeTokenContractAddress);
-        
+
+        if(!tribeTokenInstance.transferFrom(msg.sender, address(this), 1)) {
+            revert();
+        }
+        /*
         if(!tribeTokenInstance.transferFrom(msg.sender, address(this), amount)) {
             revert();
         }
@@ -126,6 +130,7 @@ contract Tribe {
         stakedBalances[msg.sender] += amount;
         totalStaked += amount;
         timeStaked[msg.sender] = now;
+        */
     }
 
     function unstakeTribeTokens(uint amount) public {

@@ -22,10 +22,21 @@ contract('TribeLauncher', function () {
   })
   
   beforeEach(async () => {
-    tokenInstance = await Token.deployed()
+    
+    const initialDevFund = 1000
+    
+    const nativeTokenInstance = await Token.deployed()
     tribeLauncherInstance = await TribeLauncher.deployed()
+
+    await nativeTokenInstance.transfer(tribeLauncherInstance.address, initialDevFund, {from: sender})
+    
   })
-  it("It should launch a new tribe contract", async function () {      
+  
+  // TODO test this to check for emitted event.  and all variable values
+  it("It should launch a new tribe contract", async function () {
+
+    const nativeTokenInstance = await Token.deployed()
+    
     const _minimumStakingRequirement = 10;
     const _lockupPeriod = 0;
     await tribeLauncherInstance.launchTribe(
@@ -33,13 +44,14 @@ contract('TribeLauncher', function () {
       _minimumStakingRequirement, 
       _lockupPeriod, 
       curator,
-      tokenInstance.address,
+      nativeTokenInstance.address,
+      curator,
       'Test Tribe 1',
       1000000,
       18,
       'TT1',
       1.0, {from: sender})
-    const launchedTribeCount = await tribeLauncherInstance.launchedCount()
+    const launchedTribeCount = await tribeLauncherInstance.launchedTribeCount()
     const launchedTribeAddress = await tribeLauncherInstance.launchedTribes(launchedTribeCount - 1)
     const launchedTribeInstance = await Tribe.at(launchedTribeAddress)
     const minimumStakingRequirement = await launchedTribeInstance.minimumStakingRequirement()
@@ -61,5 +73,5 @@ contract('TribeLauncher', function () {
     assert(false);
     
   })
-
+  
 })

@@ -27,7 +27,7 @@ contract TribeLauncher is Owned {
         string tokenVersion
     ) public ownerOnly {
         
-        SmartToken tribeToken = new SmartToken(tokenName, tokenTotalSupply, tokenDecimals, tokenSymbol, tokenVersion);
+        SmartToken tribeToken = new SmartToken(tokenName, tokenTotalSupply, tokenDecimals, tokenSymbol, tokenVersion, msg.sender);
         launchedTokens[launchedTokenCount] = tribeToken;
         launchedTokenCount++;
         

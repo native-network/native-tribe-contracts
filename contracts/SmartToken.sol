@@ -147,8 +147,8 @@ contract SmartToken is Owned {
     string public symbol;
     string public version;
 
-    constructor(string _name, uint _totalSupply, uint8 _decimals, string _symbol, string _version) public {
-        balances[msg.sender] = _totalSupply;               // Give the creator all initial tokens
+    constructor(string _name, uint _totalSupply, uint8 _decimals, string _symbol, string _version, address sender) public {
+        balances[sender] = _totalSupply;               // Give the creator all initial tokens
         totalSupply = _totalSupply;                        // Update total supply
         name = _name;                                   // Set the name for display purposes
         decimals = _decimals;                            // Amount of decimals for display purposes
