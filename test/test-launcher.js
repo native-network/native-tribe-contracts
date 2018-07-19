@@ -28,8 +28,17 @@ contract('TribeLauncher', function () {
   it("It should launch a new tribe contract", async function () {      
     const _minimumStakingRequirement = 10;
     const _lockupPeriod = 0;
-    await tribeLauncherInstance.launchTribe(_launchUuid, _minimumStakingRequirement, _lockupPeriod, curator,
-                                            tokenInstance.address, {from: sender})
+    await tribeLauncherInstance.launchTribe(
+      _launchUuid, 
+      _minimumStakingRequirement, 
+      _lockupPeriod, 
+      curator,
+      tokenInstance.address,
+      'Test Tribe 1',
+      1000000,
+      18,
+      'TT1',
+      1.0, {from: sender})
     const launchedTribeCount = await tribeLauncherInstance.launchedCount()
     const launchedTribeAddress = await tribeLauncherInstance.launchedTribes(launchedTribeCount - 1)
     const launchedTribeInstance = await Tribe.at(launchedTribeAddress)
