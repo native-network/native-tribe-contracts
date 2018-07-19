@@ -154,5 +154,7 @@ contract SmartToken is Owned {
         decimals = _decimals;                            // Amount of decimals for display purposes
         symbol = _symbol;                               // Set the symbol for display purposes
         version = _version;
+
+        emit NewSmartToken(address(this));
     }
 }

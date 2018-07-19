@@ -5,6 +5,8 @@ import './SmartToken.sol';
 // TODO -- use safemath for everything
 // TODO escrow stuff
 contract Tribe {
+
+    event TaskCreated(uint _uuid, uint _amount);
     
     address curator;
     address voteController;
@@ -67,6 +69,8 @@ contract Tribe {
     function createNewTask(uint uuid, uint amount) public onlyCurator sufficientDevFundBalance (amount) {
         escrowedTaskBalances[uuid] = amount;
         totalTaskEscrow += amount;
+
+        emit TaskCreated(uuid, amount);
     }
 
     function cancelTask(uint uuid) public onlyCurator {
@@ -119,10 +123,7 @@ contract Tribe {
 
         SmartToken tribeTokenInstance = SmartToken(tribeTokenContractAddress);
 
-        if(!tribeTokenInstance.transferFrom(msg.sender, address(this), amount)) {
-            revert();
-        }
-        /*
+        
         if(!tribeTokenInstance.transferFrom(msg.sender, address(this), amount)) {
             revert();
         }
@@ -130,7 +131,6 @@ contract Tribe {
         stakedBalances[msg.sender] += amount;
         totalStaked += amount;
         timeStaked[msg.sender] = now;
-        */
     }
 
     function unstakeTribeTokens(uint amount) public {

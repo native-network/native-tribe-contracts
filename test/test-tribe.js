@@ -1,15 +1,13 @@
 const TribeLauncher = artifacts.require("TribeLauncher")
 const Tribe = artifacts.require("Tribe")
 const Token = artifacts.require("SmartToken")
-
+const Bluebird = require('Bluebird')
 
 contract('Tribe', function () {
   const sender = web3.eth.accounts[0]
   const curator = web3.eth.accounts[0]
   const nonCurator = web3.eth.accounts[1]
-  const _launchUuid = 123
-  const _minimumStakingRequirement = 456
-  const _lockupPeriod = 0
+  
   let tribeLauncherInstance = null
 
   let launchedTribeAddress = null
@@ -26,6 +24,11 @@ contract('Tribe', function () {
   })
 
   beforeEach(async () => {
+    
+    const _launchUuid = 123
+    const _minimumStakingRequirement = 456
+    const _lockupPeriod = 0
+    
     nativeTokenInstance = await Token.deployed()
     tribeLauncherInstance = await TribeLauncher.deployed()
     await tribeLauncherInstance.launchTribe(
@@ -43,33 +46,62 @@ contract('Tribe', function () {
     const launchedTribeCount = await tribeLauncherInstance.launchedTribeCount()
     launchedTribeAddress = await tribeLauncherInstance.launchedTribes(launchedTribeCount - 1)
     launchedTribeInstance = await Tribe.at(launchedTribeAddress)
-    
     tribeTokenAddress = await launchedTribeInstance.tribeTokenContractAddress()
-    
-    console.log('tribeTokenAddress', tribeTokenAddress)
     tribeTokenInstance = await Token.at(tribeTokenAddress)
-
-    console.log('tribeTokenInstance.balanceOf(sender)', await tribeTokenInstance.balanceOf(sender))
+    // Fund the dev fund
+    await nativeTokenInstance.transfer(launchedTribeAddress, 1000000, {from: sender})
   })
 
-  it.only("It should stake tokens to become a member", async function () {
+  it("It should not allow a non-curator to create a task", async function () {
+    
+    const uuid = 1234
+    const taskReward = 1000
+    try 
+    {
+      await launchedTribeInstance.createNewTask(uuid, taskReward, {from: nonCurator})
+    } 
+    // TODO make sure this is the expected error message
+    catch(err) {
+      return assert(true, 'threw an expected error')
+    }
+    return assert(false, 'Expected to fail but succeeded')
+  })
+
+  it.only("It should allow a curator to create a task", async function () {
+
+    const uuid = 1234
+    const taskReward = 1000
+    
+    const logTaskCreatedPromise = Bluebird.promisify(launchedTribeInstance.TaskCreated)()
+
+    await launchedTribeInstance.createNewTask(uuid, taskReward, {from: curator})
+    
+    return logTaskCreatedPromise.then( (result) => {
+      
+      console.log('TASK CREATION LOGGED', result)
+      return assert(true)
+    })
+    
+  })
+  
+  
+  
+  it("It should stake tokens to become a member", async function () {
     const startingMembershipStatus = await launchedTribeInstance.isMember(sender)
     amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
     
     console.log('amountRequiredForStaking',  amountRequiredForStaking)
     await tribeTokenInstance.approve(launchedTribeInstance.address, amountRequiredForStaking, {from: sender})
     await launchedTribeInstance.stakeTribeTokens(amountRequiredForStaking, {from: sender})
-    
-    /*
     stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
     assert(startingMembershipStatus === false && stakedMembershipStatus === true)
-    */
   })
 
   it("It should allow a staked user to unstake a tribe", async function () {
     // Same as staking
     const startingMembershipStatus = await launchedTribeInstance.isMember(sender)
     amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
+    await tribeTokenInstance.approve(launchedTribeInstance.address, amountRequiredForStaking, {from: sender})
     await launchedTribeInstance.stakeTribeTokens(amountRequiredForStaking, {from: sender})
     stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
     assert(startingMembershipStatus === false && stakedMembershipStatus === true)
@@ -84,6 +116,7 @@ contract('Tribe', function () {
     // Same as staking
     const startingMembershipStatus = await launchedTribeInstance.isMember(sender)
     amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
+    await tribeTokenInstance.approve(launchedTribeInstance.address, amountRequiredForStaking, {from: sender})
     await launchedTribeInstance.stakeTribeTokens(amountRequiredForStaking, {from: sender})
     stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
     assert(startingMembershipStatus === false && stakedMembershipStatus === true)
