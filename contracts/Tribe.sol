@@ -119,7 +119,7 @@ contract Tribe {
 
         SmartToken tribeTokenInstance = SmartToken(tribeTokenContractAddress);
 
-        if(!tribeTokenInstance.transferFrom(msg.sender, address(this), 1)) {
+        if(!tribeTokenInstance.transferFrom(msg.sender, address(this), amount)) {
             revert();
         }
         /*
