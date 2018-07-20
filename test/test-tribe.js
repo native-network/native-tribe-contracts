@@ -5,6 +5,7 @@ const Bluebird = require('Bluebird')
 
 contract('Tribe', function () {
   const sender = web3.eth.accounts[0]
+  const voteController = web3.eth.accounts[0]
   const curator = web3.eth.accounts[0]
   const nonCurator = web3.eth.accounts[1]
   
@@ -18,6 +19,8 @@ contract('Tribe', function () {
   
   let amountRequiredForStaking = null
   let stakedMembershipStatus = null
+  
+  let nativeTokenInstance = null
 
   before(async () => {
 
@@ -66,8 +69,9 @@ contract('Tribe', function () {
     }
     return assert(false, 'Expected to fail but succeeded')
   })
-
-  it.only("It should allow a curator to create a task", async function () {
+  
+  // TODO test the negative case of this
+  it("It should allow a curator to create a task", async function () {
 
     const uuid = 1234
     const taskReward = 1000
@@ -77,15 +81,164 @@ contract('Tribe', function () {
     await launchedTribeInstance.createNewTask(uuid, taskReward, {from: curator})
     
     return logTaskCreatedPromise.then( (result) => {
-      
-      console.log('TASK CREATION LOGGED', result)
       return assert(true)
     })
-    
   })
+
+  it("It should fail when creating a task with higher reward than remaining dev fund balance", async function () {
+
+    const devFundRemainingBalance = await launchedTribeInstance.getAvailableDevFund()
+
+    const taskRewardTooHigh = devFundRemainingBalance + 1
+
+    const uuid = 1234
+    try
+    {
+      await launchedTribeInstance.createNewTask(uuid, taskRewardTooHigh, {from: curator})
+    }
+      // TODO make sure this is the expected error message
+    catch(err) {
+      return assert(true, 'threw an expected error')
+    }
+    return assert(false, 'Expected to fail but succeeded')
+  })
+
+  // TODO do the negative case of this
+  it("It should allow a curator to cancel a task", async function () {
+    const taskReward = 1000
+    const uuid = 1234
+    await launchedTribeInstance.createNewTask(uuid, taskReward, {from: curator})
+    const devFundRemainingBalanceBefore = await launchedTribeInstance.getAvailableDevFund()
+    await launchedTribeInstance.cancelTask(uuid, {from: curator})
+    const devFundRemainingBalanceAfter = await launchedTribeInstance.getAvailableDevFund()
+    return assert(devFundRemainingBalanceAfter.equals(devFundRemainingBalanceBefore.plus(taskReward)))
+  })
+
+  // TODO do the negative case of this
+  it("It should allow a voteController to reward task completion", async function () {
+
+    const rewardee = web3.eth.accounts[1]
+
+    const taskReward = 1000
+    const uuid = 1234
+    await launchedTribeInstance.createNewTask(uuid, taskReward, {from: voteController})
+
+    const devFundBalanceBefore = await nativeTokenInstance.balanceOf(launchedTribeInstance.address)
+    const rewardeeBalanceBefore = await nativeTokenInstance.balanceOf(rewardee)
+    
+    await launchedTribeInstance.rewardTaskCompletion(uuid, rewardee, {from: curator})
+
+    const devFundBalanceAfter = await nativeTokenInstance.balanceOf(launchedTribeInstance.address)
+    const taskEscrowBalanceAfter = await launchedTribeInstance.escrowedTaskBalances(uuid)
+    const rewardeeBalanceAfter = await nativeTokenInstance.balanceOf(rewardee)
+    
+    assert(devFundBalanceAfter.equals(devFundBalanceBefore.minus(taskReward)))
+    assert(taskEscrowBalanceAfter.equals(0))
+    assert(rewardeeBalanceAfter.equals(rewardeeBalanceBefore.plus(taskReward)))
+  })
+
+
+
+
+
+
+  it("It should not allow a non-curator to create a project", async function () {
+
+    const uuid = 1234
+    const projectReward = 1000
+    const rewardee = web3.eth.accounts[1]
   
-  
-  
+    try
+    {
+      await launchedTribeInstance.createNewProject(uuid, projectReward, rewardee, {from: nonCurator})
+    }
+      // TODO make sure this is the expected error message
+    catch(err) {
+      return assert(true, 'threw an expected error')
+    }
+    return assert(false, 'Expected to fail but succeeded')
+  })
+
+  // TODO test the negative case of this
+  it("It should allow a curator to create a project", async function () {
+
+    const uuid = 1234
+    const projectReward = 1000
+    const rewardee = web3.eth.accounts[1]
+
+    const logProjectCreatedPromise = Bluebird.promisify(launchedTribeInstance.ProjectCreated)()
+
+    await launchedTribeInstance.createNewProject(uuid, projectReward, rewardee, {from: curator})
+
+    return logProjectCreatedPromise.then( (result) => {
+      return assert(true)
+    })
+  })
+
+  it("It should fail when creating a project with higher reward than remaining dev fund balance", async function () {
+
+    const rewardee = web3.eth.accounts[1]
+    const devFundRemainingBalance = await launchedTribeInstance.getAvailableDevFund()
+    const projectRewardTooHigh = devFundRemainingBalance + 1
+    const uuid = 1234
+    
+    try
+    {
+      await launchedTribeInstance.createNewProject(uuid, projectRewardTooHigh, rewardee,  {from: curator})
+    }
+      // TODO make sure this is the expected error message
+    catch(err) {
+      return assert(true, 'threw an expected error')
+    }
+    return assert(false, 'Expected to fail but succeeded')
+  })
+
+  // TODO do the negative case of this
+  it("It should allow a curator to cancel a project", async function () {
+    const projectReward = 1000
+    const uuid = 1234
+    const rewardee = web3.eth.accounts[1]
+    
+    await launchedTribeInstance.createNewProject(uuid, projectReward, rewardee, {from: curator})
+    const devFundRemainingBalanceBefore = await launchedTribeInstance.getAvailableDevFund()
+    await launchedTribeInstance.cancelProject(uuid, {from: curator})
+    const devFundRemainingBalanceAfter = await launchedTribeInstance.getAvailableDevFund()
+    return assert(devFundRemainingBalanceAfter.equals(devFundRemainingBalanceBefore.plus(taskReward)))
+  })
+
+  // TODO do the negative case of this
+  it.only("It should allow a voteController to reward project completion", async function () {
+
+    const rewardee = web3.eth.accounts[1]
+
+    const projectReward = 1000
+    const uuid = 1234
+    await launchedTribeInstance.createNewProject(uuid, projectReward, rewardee, {from: voteController})
+
+    const devFundBalanceBefore = await nativeTokenInstance.balanceOf(launchedTribeInstance.address)
+    const rewardeeBalanceBefore = await nativeTokenInstance.balanceOf(rewardee)
+
+    await launchedTribeInstance.rewardProjectCompletion(uuid, {from: curator})
+
+    const devFundBalanceAfter = await nativeTokenInstance.balanceOf(launchedTribeInstance.address)
+    const taskEscrowBalanceAfter = await launchedTribeInstance.escrowedTaskBalances(uuid)
+    const rewardeeBalanceAfter = await nativeTokenInstance.balanceOf(rewardee)
+
+    assert(devFundBalanceAfter.equals(devFundBalanceBefore.minus(projectReward)))
+    assert(taskEscrowBalanceAfter.equals(0))
+    assert(rewardeeBalanceAfter.equals(rewardeeBalanceBefore.plus(projectReward)))
+  })
+
+
+
+
+
+
+
+
+
+
+
   it("It should stake tokens to become a member", async function () {
     const startingMembershipStatus = await launchedTribeInstance.isMember(sender)
     amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()

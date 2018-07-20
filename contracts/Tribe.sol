@@ -3,10 +3,10 @@ pragma solidity ^0.4.8;
 import './SmartToken.sol';
 
 // TODO -- use safemath for everything
-// TODO escrow stuff
 contract Tribe {
 
     event TaskCreated(uint _uuid, uint _amount);
+    event ProjectCreated(uint _uuid, uint _amount, address _address);
     
     address curator;
     address voteController;
@@ -92,6 +92,8 @@ contract Tribe {
         escrowedProjectBalances[uuid] = amount;
         escrowedProjectPayees[uuid] = projectPayee;
         totalProjectEscrow += amount;
+
+        emit ProjectCreated(uuid, amount, projectPayee);
     }
     
     function cancelProject(uint uuid) public onlyCurator {
@@ -122,7 +124,6 @@ contract Tribe {
     function stakeTribeTokens(uint amount) public {
 
         SmartToken tribeTokenInstance = SmartToken(tribeTokenContractAddress);
-
         
         if(!tribeTokenInstance.transferFrom(msg.sender, address(this), amount)) {
             revert();
