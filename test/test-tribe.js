@@ -55,7 +55,7 @@ contract('Tribe', function () {
     await nativeTokenInstance.transfer(launchedTribeAddress, 1000000, {from: sender})
   })
 
-  it.only("It should not allow a non-curator to create a task", async function () {
+  it("It should not allow a non-curator to create a task", async function () {  
 
     const uuid = 1234
     const taskReward = 1000
@@ -73,8 +73,7 @@ contract('Tribe', function () {
     }
     return assert(false, 'Expected to fail but succeeded')
   })
-  
-  // TODO test the negative case of this
+
   it("It should allow a curator to create a task", async function () {
 
     const uuid = 1234
@@ -86,6 +85,28 @@ contract('Tribe', function () {
     
     return logTaskCreatedPromise.then( (result) => {
       return assert(true)
+    })
+  })
+
+  it("It should not allow a non-curator to create a task", async function () {
+
+    const uuid = 1234
+    const taskReward = 1000
+
+    const logTaskCreatedPromise = Bluebird.promisify(launchedTribeInstance.TaskCreated)()
+    try {
+      await launchedTribeInstance.createNewTask(uuid, taskReward, {from: nonCurator})  
+    }
+    catch (err) {
+      if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
+        return assert(true, "did not allowed a nonCurator to create a task")
+      } else {
+        return assert(false, "did not allowed a nonCurator to create a task but with an unexpected error")
+      }
+    }
+
+    return logTaskCreatedPromise.then( (result) => {
+      return assert(false, "Allowed a nonCurator to create a task")
     })
   })
 
@@ -211,7 +232,7 @@ contract('Tribe', function () {
   })
 
   // TODO do the negative case of this
-  it.only("It should allow a voteController to reward project completion", async function () {
+  it("It should allow a voteController to reward project completion", async function () {
 
     const rewardee = web3.eth.accounts[1]
 
