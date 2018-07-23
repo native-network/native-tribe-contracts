@@ -55,25 +55,6 @@ contract('Tribe', function () {
     await nativeTokenInstance.transfer(launchedTribeAddress, 1000000, {from: sender})
   })
 
-  it("It should not allow a non-curator to create a task", async function () {  
-
-    const uuid = 1234
-    const taskReward = 1000
-    try 
-    {
-      await launchedTribeInstance.createNewTask(uuid, taskReward, {from: nonCurator})
-    } 
-    catch(err) {
-      if (err.toString().indexOf("VM Exception while processing transaction: invalid opcode") >= 0) {
-        return assert(true, 'threw an expected error')
-      } else {
-        return assert(false, 'threw an unexpected error')
-      }
-      
-    }
-    return assert(false, 'Expected to fail but succeeded')
-  })
-
   it("It should allow a curator to create a task", async function () {
 
     const uuid = 1234
@@ -85,6 +66,29 @@ contract('Tribe', function () {
     
     return logTaskCreatedPromise.then( (result) => {
       return assert(true)
+    })
+  })
+
+
+  it("It should fail to create a task if the reward is set to less than 0", async function () {
+
+    const uuid = 1234
+    const taskReward = -1
+    
+    const logTaskCreatedPromise = Bluebird.promisify(launchedTribeInstance.TaskCreated)()
+
+    try {
+      await launchedTribeInstance.createNewTask(uuid, taskReward, {from: nonCurator})  
+    }
+    catch (err) {
+      if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
+        return assert(true, "did not allow a user to set a negative task reward")
+      } else {
+        return assert(false, "did not allow a user to set a negative task reward but threw with an unexpected error")
+      }
+    }
+    return logTaskCreatedPromise.then( (result) => {
+      return assert(false)
     })
   })
 
@@ -276,6 +280,26 @@ contract('Tribe', function () {
     }
     return assert(false, 'Expected to fail but succeeded')
   })
+  
+  it("It should fail when creating a project with a reward less than 0", async function () {
+
+    const rewardee = web3.eth.accounts[1]
+    const projectRewardTooLow = -1
+    const uuid = 1234
+    
+    try
+    {
+      await launchedTribeInstance.createNewProject(uuid, projectRewardTooLow, rewardee,  {from: curator})
+    }
+    catch(err) {
+      if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
+        return assert(true, "did not allow a project to be created that with a negative reward")
+      } else {
+        return assert(false, "encountered an unexpected error")
+      }
+    }
+    return assert(false, 'Expected to fail but succeeded')
+  })
 
   it("It should allow a curator to cancel a project", async function () {
     const projectReward = 1000
@@ -383,6 +407,27 @@ contract('Tribe', function () {
     await launchedTribeInstance.unstakeTribeTokens(amountRequiredForStaking, {from: sender})
     const finalMembershipStatus = await launchedTribeInstance.isMember(sender)
     assert(finalMembershipStatus === false)
+  })
+
+  it.only("It should allow a staked user to unstake a tribe", async function () {
+    // Same as staking
+    const startingMembershipStatus = await launchedTribeInstance.isMember(sender)
+    amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
+    await tribeTokenInstance.approve(launchedTribeInstance.address, amountRequiredForStaking, {from: sender})
+    await launchedTribeInstance.stakeTribeTokens(amountRequiredForStaking, {from: sender})
+    stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
+    assert(startingMembershipStatus === false && stakedMembershipStatus === true)
+    
+    // unstake
+    try {
+      await launchedTribeInstance.unstakeTribeTokens(amountRequiredForStaking + 1, {from: sender})
+    } catch (error) {
+      const finalMembershipStatus = await launchedTribeInstance.isMember(sender)
+      return assert(finalMembershipStatus === true)
+    }
+    
+    assert(false, "User was able to unstake too many tokens")
+
   })
 
   it("It should block unstakng for a set amount of time", async function () {
