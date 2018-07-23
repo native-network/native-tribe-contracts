@@ -273,7 +273,7 @@ contract('Tribe', function () {
   })
 
   
-  it.only("It should fail when creating a project with higher reward than remaining dev fund balance", async function () {
+  it("It should fail when creating a project with higher reward than remaining dev fund balance", async function () {
 
     const rewardee = web3.eth.accounts[1]
     const devFundRemainingBalance = await launchedTribeInstance.getAvailableDevFund()
@@ -294,7 +294,6 @@ contract('Tribe', function () {
     return assert(false, 'Expected to fail but succeeded')
   })
 
-  // TODO do the negative case of this
   it("It should allow a curator to cancel a project", async function () {
     const projectReward = 1000
     const uuid = 1234
@@ -305,6 +304,30 @@ contract('Tribe', function () {
     await launchedTribeInstance.cancelProject(uuid, {from: curator})
     const devFundRemainingBalanceAfter = await launchedTribeInstance.getAvailableDevFund()
     return assert(devFundRemainingBalanceAfter.equals(devFundRemainingBalanceBefore.plus(taskReward)))
+  })
+
+  it("It should not allow a noncurator to cancel a project", async function () {
+    const projectReward = 1000
+    const uuid = 1234
+    const rewardee = web3.eth.accounts[1]
+    
+    await launchedTribeInstance.createNewProject(uuid, projectReward, rewardee, {from: curator})
+    const devFundRemainingBalanceBefore = await launchedTribeInstance.getAvailableDevFund()
+
+    try {
+      await launchedTribeInstance.cancelProject(uuid, {from: nonCurator})
+    }
+    catch (err) {
+
+      if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
+        const devFundRemainingBalanceAfter = await launchedTribeInstance.getAvailableDevFund()
+        return assert(devFundRemainingBalanceAfter.equals(devFundRemainingBalanceBefore))
+        return assert(true, "did not allowed a nonCurator to cancel a project")
+      } else {
+        return assert(false, "did not allowed a nonCurator to cancel a project but with an unexpected error")
+      }
+    }
+    assert(false, "allowed a nonCurator to cancel a project")
   })
 
   // TODO do the negative case of this
