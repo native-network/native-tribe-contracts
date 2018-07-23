@@ -159,8 +159,7 @@ contract('Tribe', function () {
     }
   })
 
-  // TODO do the negative case of this
-  it.only("It should allow a voteController to reward task completion", async function () {
+  it("It should allow a voteController to reward task completion", async function () {
 
     const rewardee = web3.eth.accounts[1]
 
@@ -233,7 +232,6 @@ contract('Tribe', function () {
     return assert(false, 'Expected to fail but succeeded')
   })
 
-  // TODO test the negative case of this
   it("It should allow a curator to create a project", async function () {
 
     const uuid = 1234
@@ -249,6 +247,32 @@ contract('Tribe', function () {
     })
   })
 
+  it("It should not allow a non-curator to create a project", async function () {
+
+    const uuid = 1234
+    const projectReward = 1000
+    const rewardee = web3.eth.accounts[1]
+
+    const logProjectCreatedPromise = Bluebird.promisify(launchedTribeInstance.ProjectCreated)()
+
+    
+    try {
+      await launchedTribeInstance.createNewProject(uuid, projectReward, rewardee, {from: nonCurator})
+    }
+    catch (err) {
+      if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
+          return assert(true, "did not allowed a nonCurator to create a project")
+      } else {
+        return assert(false, "did not allowed a nonCurator to create a project but with an unexpected error")
+      }
+    }
+
+    return logProjectCreatedPromise.then( (result) => {
+      return assert(false, "Allowed a nonCurator to create a project")
+    })
+  })
+
+  
   it("It should fail when creating a project with higher reward than remaining dev fund balance", async function () {
 
     const rewardee = web3.eth.accounts[1]
