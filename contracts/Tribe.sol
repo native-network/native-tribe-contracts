@@ -1,40 +1,136 @@
 pragma solidity ^0.4.8;
 
 import './SmartToken.sol';
+import './utility/SafeMath.sol';
 
 // TODO -- use safemath for everything
-// TODO escrow stuff
 contract Tribe {
-    
-    address curator;
 
-    address public tribeTokenContractAddress;
+    event TaskCreated(uint _uuid, uint _amount);
+    event ProjectCreated(uint _uuid, uint _amount, address _address);
+
+    address curator;
+    address voteController;
     
+    address public tribeTokenContractAddress;
+    address public nativeTokenContractAddress;
+
+    // Staking Variables.  In tribe token
     uint public minimumStakingRequirement;
     uint public lockupPeriodSeconds;
+    mapping (address => uint256) public stakedBalances;
+    mapping (address => uint256) public timeStaked;
+    uint totalStaked;
+    
+    // Escrow variables.  In native token
+    uint totalTaskEscrow;
+    uint totalProjectEscrow;
+    mapping (uint256 => uint256) public escrowedTaskBalances;
+    mapping (uint256 => uint256) public escrowedProjectBalances;
+    mapping (uint256 => address) public escrowedProjectPayees;
 
     modifier onlyCurator {
         assert(msg.sender == curator);
         _;
     }
 
-    constructor(uint _minimumStakingRequirement, uint _lockupPeriodSeconds, address _curator, address _tribeTokenContractAddress) public {
+    modifier onlyVoteController {
+        assert(msg.sender == voteController);
+        _;
+    }
+
+    modifier sufficientDevFundBalance (uint amount) {
+        assert(amount <= getAvailableDevFund());
+        _;
+    }
+
+    constructor(uint _minimumStakingRequirement, uint _lockupPeriodSeconds, address _curator, address _tribeTokenContractAddress, address _nativeTokenContractAddress, address _voteController) public {
         curator = _curator;
         minimumStakingRequirement = _minimumStakingRequirement;
         lockupPeriodSeconds = _lockupPeriodSeconds;
         tribeTokenContractAddress = _tribeTokenContractAddress;
+        nativeTokenContractAddress = _nativeTokenContractAddress;
+
+        voteController = _voteController;
+    }
+    /**
+    @dev returns the sum of _x and _y, asserts if the calculation overflows
+    @param _x   value 1
+    @param _y   value 2
+    @return sum
+    */
+    function safeAdd(uint256 _x, uint256 _y) internal pure returns (uint256) {
+        uint256 z = _x + _y;
+        assert(z >= _x);
+        return z;
     }
 
+    /**
+    @dev returns the difference of _x minus _y, asserts if the subtraction results in a negative number
+    @param _x   minuend
+    @param _y   subtrahend
+    @return difference
+    */
+    function safeSub(uint256 _x, uint256 _y) internal pure returns (uint256) {
+        assert(_x >= _y);
+        return _x - _y;
+    }
+    function getAvailableDevFund() public view returns (uint) {
+        SmartToken nativeTokenInstance = SmartToken(nativeTokenContractAddress);
+        uint devFundBalance = nativeTokenInstance.balanceOf(address(this));
+        return safeSub(devFundBalance, getLockedDevFundAmount());
+    }
     
+    function getLockedDevFundAmount() public view returns (uint) {
+        return safeAdd(totalTaskEscrow, totalProjectEscrow);
+    }
+
+    // Task escrow code below (in native tokens)
+    
+    
+    function createNewTask(uint uuid, uint amount) public onlyCurator sufficientDevFundBalance (amount) {
+        escrowedTaskBalances[uuid] = amount;
+        totalTaskEscrow = safeAdd(totalTaskEscrow, amount);
+
+        emit TaskCreated(uuid, amount);
+    }
+
+    function cancelTask(uint uuid) public onlyCurator {
+        totalTaskEscrow = safeSub(totalTaskEscrow,escrowedTaskBalances[uuid]);
+        escrowedTaskBalances[uuid] = 0;
+    }
+
+    function rewardTaskCompletion(uint uuid, address user) public onlyVoteController {
+        SmartToken nativeTokenInstance = SmartToken(nativeTokenContractAddress);
+        nativeTokenInstance.transfer(user, escrowedTaskBalances[uuid]);
+        totalTaskEscrow = safeSub(totalTaskEscrow, escrowedTaskBalances[uuid]);
+        escrowedTaskBalances[uuid] = 0;
+    }
+
+    // Project escrow code below (in native tokens)
+        
+    function createNewProject(uint uuid, uint amount, address projectPayee) public onlyCurator sufficientDevFundBalance (amount) {
+        escrowedProjectBalances[uuid] = amount;
+        escrowedProjectPayees[uuid] = projectPayee;
+        totalProjectEscrow = safeAdd(totalProjectEscrow, amount);
+
+        emit ProjectCreated(uuid, amount, projectPayee);
+    }
+    
+    function cancelProject(uint uuid) public onlyCurator {
+        totalProjectEscrow = safeSub(totalProjectEscrow, escrowedProjectBalances[uuid]);
+        escrowedProjectBalances[uuid] = 0;
+    }
+    
+    function rewardProjectCompletion(uint uuid) public onlyVoteController {
+        SmartToken nativeTokenInstance = SmartToken(nativeTokenContractAddress);
+        nativeTokenInstance.transfer(escrowedProjectPayees[uuid], escrowedProjectBalances[uuid]);
+        totalProjectEscrow = safeSub(totalProjectEscrow, escrowedProjectBalances[uuid]);
+        escrowedProjectBalances[uuid] = 0;
+    }
 
 
-
-
-
-    // Staking code below
-
-    mapping (address => uint256) public stakedBalances;
-    mapping (address => uint256) public timeStaked;
+    // Staking code below (in tribe tokens)
     
 
     function setMinimumStakingRequirement(uint _minimumStakingRequirement) public onlyCurator {
@@ -54,7 +150,8 @@ contract Tribe {
             revert();
         }
 
-        stakedBalances[msg.sender] += amount;
+        stakedBalances[msg.sender] = safeAdd(stakedBalances[msg.sender], amount);
+        totalStaked = safeAdd(totalStaked, amount);
         timeStaked[msg.sender] = now;
     }
 
@@ -69,7 +166,8 @@ contract Tribe {
             revert();
         }
 
-        stakedBalances[msg.sender] -= amount;
+        stakedBalances[msg.sender] = safeSub(stakedBalances[msg.sender], amount);
+        totalStaked = safeSub(totalStaked, amount);
         tribeTokenInstance.transfer(msg.sender, amount);
     }
 

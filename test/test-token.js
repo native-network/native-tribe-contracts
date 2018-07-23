@@ -5,19 +5,33 @@ contract('SmartToken', function () {
   const nonOwner = web3.eth.accounts[1]
 
   it("It should create the smart token.", async function () {
-    let token = await SmartToken.new();
+    
+    const initialTokenName = 'test'
+    const initialTokenSymbol = 'test'
+    const initialTokenVersion = 'version'
+    const initialTokenDecimals = 18
+    
+    let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
 
     let name = await token.name.call();
     let symbol = await token.symbol.call();
     let decimals = await token.decimals.call();
+    let version = await token.version.call();
 
-    assert.equal(name, 'Smart Token');
-    assert.equal(symbol, 'SMT');   
-    assert.equal(decimals, 18);
+    assert.equal(name, initialTokenName);
+    assert.equal(symbol, initialTokenSymbol);   
+    assert.equal(decimals, initialTokenDecimals);
+    assert.equal(version, initialTokenVersion);
   })
 
   it("It should allow the owner to enable/disable the transfer method", async function () {
-    let token = await SmartToken.new();
+    const initialTokenName = 'test'
+    const initialTokenSymbol = 'test'
+    const initialTokenVersion = 'version'
+    const initialTokenDecimals = 18
+
+    let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+
     
     await token.disableTransfers(true);
 
@@ -31,8 +45,14 @@ contract('SmartToken', function () {
   })
 
   it("It should not allow a non-owner to enable/disable the transfer method", async function () {
-    let token = await SmartToken.new();
+    
+    const initialTokenName = 'test'
+    const initialTokenSymbol = 'test'
+    const initialTokenVersion = 'version'
+    const initialTokenDecimals = 18
 
+    let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+    
     let transfersEnabled = await token.transfersEnabled.call();        
     assert.equal(transfersEnabled, true);
     

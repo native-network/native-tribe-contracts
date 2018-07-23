@@ -104,18 +104,18 @@ contract SmartToken is Owned {
 
     function transfer(address _to, uint256 _value) public returns (bool success) {
         if (balances[msg.sender] >= _value && _value > 0) {
-            balances[msg.sender] -= _value;
-            balances[_to] += _value;
+            balances[msg.sender] = safeSub(balances[msg.sender], _value);
+            balances[_to] = safeAdd(balances[_to], _value);
             emit Transfer(msg.sender, _to, _value);
             return true;
-        } else { return false; }
+        } else {return false; }
     }
 
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
         if (balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
-            balances[_to] += _value;
-            balances[_from] -= _value;
-            allowed[_from][msg.sender] -= _value;
+            balances[_to] = safeAdd(balances[_to], _value);
+            balances[_from] = safeSub(balances[_from], _value);
+            allowed[_from][msg.sender] = safeSub(allowed[_from][msg.sender], _value);
             emit Transfer(_from, _to, _value);
             return true;
         } else { return false; }
@@ -145,13 +145,16 @@ contract SmartToken is Owned {
     string public name;
     uint8 public decimals;
     string public symbol;
-    string public version = '1.0';
+    string public version;
 
-    constructor() public {
-        balances[msg.sender] = 12000000000000000;               // Give the creator all initial tokens
-        totalSupply = 12000000000000000;                        // Update total supply
-        name = 'Smart Token';                                   // Set the name for display purposes
-        decimals = 18;                            // Amount of decimals for display purposes
-        symbol = 'SMT';                               // Set the symbol for display purposes
+    constructor(string _name, uint _totalSupply, uint8 _decimals, string _symbol, string _version, address sender) public {
+        balances[sender] = _totalSupply;               // Give the creator all initial tokens
+        totalSupply = _totalSupply;                        // Update total supply
+        name = _name;                                   // Set the name for display purposes
+        decimals = _decimals;                            // Amount of decimals for display purposes
+        symbol = _symbol;                               // Set the symbol for display purposes
+        version = _version;
+
+        emit NewSmartToken(address(this));
     }
 }
