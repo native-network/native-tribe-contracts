@@ -330,7 +330,6 @@ contract('Tribe', function () {
     assert(false, "allowed a nonCurator to cancel a project")
   })
 
-  // TODO do the negative case of this
   it("It should allow a voteController to reward project completion", async function () {
 
     const rewardee = web3.eth.accounts[1]
@@ -353,14 +352,29 @@ contract('Tribe', function () {
     assert(rewardeeBalanceAfter.equals(rewardeeBalanceBefore.plus(projectReward)))
   })
 
+  it("It should not allow a non-voteController to reward project completion", async function () {
 
+    const rewardee = web3.eth.accounts[1]
 
+    const projectReward = 1000
+    const uuid = 1234
+    await launchedTribeInstance.createNewProject(uuid, projectReward, rewardee, {from: voteController})
 
+    const devFundBalanceBefore = await nativeTokenInstance.balanceOf(launchedTribeInstance.address)
+    const rewardeeBalanceBefore = await nativeTokenInstance.balanceOf(rewardee)
 
-
-
-
-
+    try {
+      await launchedTribeInstance.rewardProjectCompletion(uuid, {from: nonCurator})
+    }
+    catch (err) {
+      if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
+        return assert(true, "did not allowed a nonCurator to cancel a task")
+      } else {
+        return assert(false, "did not allowed a nonCurator to create a task but with an unexpected error")
+      }
+    }
+    assert(false, "Allowed a non-votecontroller to reward a task")
+  })
 
 
   it("It should stake tokens to become a member", async function () {
