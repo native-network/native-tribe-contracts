@@ -128,7 +128,6 @@ contract('Tribe', function () {
     return assert(false, 'Expected to fail but succeeded')
   })
 
-  // TODO do the negative case of this
   it("It should allow a curator to cancel a task", async function () {
     const taskReward = 1000
     const uuid = 1234
@@ -137,6 +136,27 @@ contract('Tribe', function () {
     await launchedTribeInstance.cancelTask(uuid, {from: curator})
     const devFundRemainingBalanceAfter = await launchedTribeInstance.getAvailableDevFund()
     return assert(devFundRemainingBalanceAfter.equals(devFundRemainingBalanceBefore.plus(taskReward)))
+  })
+
+  it.only("It should not allow a non-curator to cancel a task", async function () {
+    const taskReward = 1000
+    const uuid = 1234
+    await launchedTribeInstance.createNewTask(uuid, taskReward, {from: curator})
+    const devFundRemainingBalanceBefore = await launchedTribeInstance.getAvailableDevFund()
+    
+    try {
+      await launchedTribeInstance.cancelTask(uuid, {from: nonCurator})  
+    }
+    catch (err) {
+      if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
+
+        const devFundRemainingBalanceAfter = await launchedTribeInstance.getAvailableDevFund()
+        return assert(devFundRemainingBalanceAfter.equals(devFundRemainingBalanceBefore))
+        return assert(true, "did not allowed a nonCurator to cancel a task")
+      } else {
+        return assert(false, "did not allowed a nonCurator to create a task but with an unexpected error")
+      }
+    }
   })
 
   // TODO do the negative case of this
