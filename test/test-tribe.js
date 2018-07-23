@@ -138,7 +138,7 @@ contract('Tribe', function () {
     return assert(devFundRemainingBalanceAfter.equals(devFundRemainingBalanceBefore.plus(taskReward)))
   })
 
-  it.only("It should not allow a non-curator to cancel a task", async function () {
+  it("It should not allow a non-curator to cancel a task", async function () {
     const taskReward = 1000
     const uuid = 1234
     await launchedTribeInstance.createNewTask(uuid, taskReward, {from: curator})
@@ -160,7 +160,7 @@ contract('Tribe', function () {
   })
 
   // TODO do the negative case of this
-  it("It should allow a voteController to reward task completion", async function () {
+  it.only("It should allow a voteController to reward task completion", async function () {
 
     const rewardee = web3.eth.accounts[1]
 
@@ -171,7 +171,7 @@ contract('Tribe', function () {
     const devFundBalanceBefore = await nativeTokenInstance.balanceOf(launchedTribeInstance.address)
     const rewardeeBalanceBefore = await nativeTokenInstance.balanceOf(rewardee)
     
-    await launchedTribeInstance.rewardTaskCompletion(uuid, rewardee, {from: curator})
+    await launchedTribeInstance.rewardTaskCompletion(uuid, rewardee, {from: voteController})
 
     const devFundBalanceAfter = await nativeTokenInstance.balanceOf(launchedTribeInstance.address)
     const taskEscrowBalanceAfter = await launchedTribeInstance.escrowedTaskBalances(uuid)
@@ -182,6 +182,35 @@ contract('Tribe', function () {
     assert(rewardeeBalanceAfter.equals(rewardeeBalanceBefore.plus(taskReward)))
   })
 
+
+  it("It should not allow a non-voteController to reward task completion", async function () {
+
+    const rewardee = web3.eth.accounts[1]
+
+    const taskReward = 1000
+    const uuid = 1234
+    await launchedTribeInstance.createNewTask(uuid, taskReward, {from: voteController})
+
+    const devFundBalanceBefore = await nativeTokenInstance.balanceOf(launchedTribeInstance.address)
+    const rewardeeBalanceBefore = await nativeTokenInstance.balanceOf(rewardee)
+    
+    try {
+      await launchedTribeInstance.rewardTaskCompletion(uuid, rewardee, {from: nonCurator})  
+    }
+    catch (err) {
+      if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
+        const taskEscrowBalance = await launchedTribeInstance.escrowedTaskBalances(uuid)
+        const rewardeeBalanceAfter = await nativeTokenInstance.balanceOf(rewardee)
+
+        assert(taskEscrowBalance.equals(taskReward))
+        assert(rewardeeBalanceAfter.equals(rewardeeBalanceBefore))
+        return assert(true, "did not allowed a nonCurator to reward a task")
+      } else {
+        return assert(false, "did not allowed a nonCurator to reward a task but with an unexpected error")
+      }
+    }
+    return assert(false)   
+  })
 
 
 
@@ -263,7 +292,7 @@ contract('Tribe', function () {
     const devFundBalanceBefore = await nativeTokenInstance.balanceOf(launchedTribeInstance.address)
     const rewardeeBalanceBefore = await nativeTokenInstance.balanceOf(rewardee)
 
-    await launchedTribeInstance.rewardProjectCompletion(uuid, {from: curator})
+    await launchedTribeInstance.rewardProjectCompletion(uuid, {from: voteController})
 
     const devFundBalanceAfter = await nativeTokenInstance.balanceOf(launchedTribeInstance.address)
     const taskEscrowBalanceAfter = await launchedTribeInstance.escrowedTaskBalances(uuid)
