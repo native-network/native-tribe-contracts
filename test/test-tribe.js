@@ -303,7 +303,7 @@ contract('Tribe', function () {
     const devFundRemainingBalanceBefore = await launchedTribeInstance.getAvailableDevFund()
     await launchedTribeInstance.cancelProject(uuid, {from: curator})
     const devFundRemainingBalanceAfter = await launchedTribeInstance.getAvailableDevFund()
-    return assert(devFundRemainingBalanceAfter.equals(devFundRemainingBalanceBefore.plus(taskReward)))
+    return assert(devFundRemainingBalanceAfter.equals(devFundRemainingBalanceBefore.plus(projectReward)))
   })
 
   it("It should not allow a noncurator to cancel a project", async function () {
