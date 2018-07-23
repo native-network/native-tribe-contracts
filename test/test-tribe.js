@@ -273,7 +273,7 @@ contract('Tribe', function () {
   })
 
   
-  it("It should fail when creating a project with higher reward than remaining dev fund balance", async function () {
+  it.only("It should fail when creating a project with higher reward than remaining dev fund balance", async function () {
 
     const rewardee = web3.eth.accounts[1]
     const devFundRemainingBalance = await launchedTribeInstance.getAvailableDevFund()
@@ -284,9 +284,12 @@ contract('Tribe', function () {
     {
       await launchedTribeInstance.createNewProject(uuid, projectRewardTooHigh, rewardee,  {from: curator})
     }
-      // TODO make sure this is the expected error message
     catch(err) {
-      return assert(true, 'threw an expected error')
+      if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
+        return assert(true, "did not allow a project to be created that with a reward higher than the remaining dev fund")
+      } else {
+        return assert(false, "encountered an unexpected error")
+      }
     }
     return assert(false, 'Expected to fail but succeeded')
   })
