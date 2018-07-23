@@ -121,9 +121,12 @@ contract('Tribe', function () {
     {
       await launchedTribeInstance.createNewTask(uuid, taskRewardTooHigh, {from: curator})
     }
-      // TODO make sure this is the expected error message
     catch(err) {
-      return assert(true, 'threw an expected error')
+      if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
+        return assert(true, "failed when creating a task with a higher reward than remaining dev fund balance")
+      } else {
+        return assert(false, "failed when creating the task but with an unexpected error message")
+      }
     }
     return assert(false, 'Expected to fail but succeeded')
   })
@@ -154,7 +157,7 @@ contract('Tribe', function () {
         return assert(devFundRemainingBalanceAfter.equals(devFundRemainingBalanceBefore))
         return assert(true, "did not allowed a nonCurator to cancel a task")
       } else {
-        return assert(false, "did not allowed a nonCurator to create a task but with an unexpected error")
+        return assert(false, "did not allowed a nonCurator to cancel a task but with an unexpected error")
       }
     }
   })
@@ -211,26 +214,6 @@ contract('Tribe', function () {
     return assert(false)   
   })
 
-
-
-
-
-  it("It should not allow a non-curator to create a project", async function () {
-
-    const uuid = 1234
-    const projectReward = 1000
-    const rewardee = web3.eth.accounts[1]
-  
-    try
-    {
-      await launchedTribeInstance.createNewProject(uuid, projectReward, rewardee, {from: nonCurator})
-    }
-      // TODO make sure this is the expected error message
-    catch(err) {
-      return assert(true, 'threw an expected error')
-    }
-    return assert(false, 'Expected to fail but succeeded')
-  })
 
   it("It should allow a curator to create a project", async function () {
 
@@ -368,9 +351,9 @@ contract('Tribe', function () {
     }
     catch (err) {
       if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
-        return assert(true, "did not allowed a nonCurator to cancel a task")
+        return assert(true, "did not allowed a nonCurator to reward a project")
       } else {
-        return assert(false, "did not allowed a nonCurator to create a task but with an unexpected error")
+        return assert(false, "did not allowed a nonCurator to reward a a project but with an unexpected error")
       }
     }
     assert(false, "Allowed a non-votecontroller to reward a task")
@@ -381,7 +364,6 @@ contract('Tribe', function () {
     const startingMembershipStatus = await launchedTribeInstance.isMember(sender)
     amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
     
-    console.log('amountRequiredForStaking',  amountRequiredForStaking)
     await tribeTokenInstance.approve(launchedTribeInstance.address, amountRequiredForStaking, {from: sender})
     await launchedTribeInstance.stakeTribeTokens(amountRequiredForStaking, {from: sender})
     stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
