@@ -55,17 +55,21 @@ contract('Tribe', function () {
     await nativeTokenInstance.transfer(launchedTribeAddress, 1000000, {from: sender})
   })
 
-  it("It should not allow a non-curator to create a task", async function () {
-    
+  it.only("It should not allow a non-curator to create a task", async function () {
+
     const uuid = 1234
     const taskReward = 1000
     try 
     {
       await launchedTribeInstance.createNewTask(uuid, taskReward, {from: nonCurator})
     } 
-    // TODO make sure this is the expected error message
     catch(err) {
-      return assert(true, 'threw an expected error')
+      if (err.toString().indexOf("VM Exception while processing transaction: invalid opcode") >= 0) {
+        return assert(true, 'threw an expected error')
+      } else {
+        return assert(false, 'threw an unexpected error')
+      }
+      
     }
     return assert(false, 'Expected to fail but succeeded')
   })
