@@ -10,8 +10,6 @@ contract SmartToken is Owned {
 
     // Smart token specific stuff
     bool public transfersEnabled = true;    // true if transfer/transferFrom are enabled, false if not
-    // triggered when a smart token is deployed - the _token address is defined for forward compatibility, in case we want to trigger the event from a factory
-    event NewSmartToken(address _token);
 
     // verifies that the address is different than this contract address
     modifier notThis(address _address) {
@@ -98,14 +96,14 @@ contract SmartToken is Owned {
     
     
     // ERC20 specific stuff
-    uint256 public totalSupply;    
+    uint256 public totalSupply;
     
 
     function transfer(address _to, uint256 _value) public returns (bool success) {
         if (balances[msg.sender] >= _value && _value > 0) {
             balances[msg.sender] = safeSub(balances[msg.sender], _value);
             balances[_to] = safeAdd(balances[_to], _value);
-
+            
             events = new Events();
             events.emitTransfer(msg.sender, _to, _value);
             return true;
@@ -117,7 +115,7 @@ contract SmartToken is Owned {
             balances[_to] = safeAdd(balances[_to], _value);
             balances[_from] = safeSub(balances[_from], _value);
             allowed[_from][msg.sender] = safeSub(allowed[_from][msg.sender], _value);
-
+            
             events = new Events();
             events.emitTransfer(_from, _to, _value);
             return true;
@@ -130,6 +128,7 @@ contract SmartToken is Owned {
 
     function approve(address _spender, uint256 _value) public returns (bool success) {
         allowed[msg.sender][_spender] = _value;
+
         events = new Events();
         events.emitApproval(msg.sender, _spender, _value);
         return true;
@@ -159,6 +158,7 @@ contract SmartToken is Owned {
         symbol = _symbol;                               // Set the symbol for display purposes
         version = _version;
 
-        emit NewSmartToken(address(this));
+        events = new Events();
+        events.emitNewSmartToken(address(this));
     }
 }

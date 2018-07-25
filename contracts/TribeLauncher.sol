@@ -49,7 +49,7 @@ contract TribeLauncher is Owned {
         launchedTribeCount = safeAdd(launchedTribeCount,1);
 
         events = new Events();
-        events.Launched(_launchUuid, tribe, tribeToken);
+        events.emitLaunched(_launchUuid, tribe, tribeToken);
     }
 
     constructor() public {

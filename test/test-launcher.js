@@ -32,7 +32,6 @@ contract('TribeLauncher', function () {
     beforeEach(async () => {
 
       const initialDevFund = 1000
-      // events = await Events.deployed()
       nativeTokenInstance = await SmartToken.deployed()
       tribeLauncherInstance = await TribeLauncher.deployed()
     })
