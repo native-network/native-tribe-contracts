@@ -409,7 +409,7 @@ contract('Tribe', function () {
     assert(finalMembershipStatus === false)
   })
 
-  it.only("It should allow a staked user to unstake a tribe", async function () {
+  it("It should allow a staked user to unstake a tribe", async function () {
     // Same as staking
     const startingMembershipStatus = await launchedTribeInstance.isMember(sender)
     amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()

@@ -3,14 +3,13 @@ pragma solidity ^0.4.8;
 import './SmartToken.sol';
 import './utility/SafeMath.sol';
 
-// TODO -- use safemath for everything
 contract Tribe {
 
     event TaskCreated(uint _uuid, uint _amount);
     event ProjectCreated(uint _uuid, uint _amount, address _address);
 
-    address curator;
-    address voteController;
+    address public curator;
+    address public voteController;
     
     address public tribeTokenContractAddress;
     address public nativeTokenContractAddress;

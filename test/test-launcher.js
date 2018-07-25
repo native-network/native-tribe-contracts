@@ -1,7 +1,10 @@
 const TribeLauncher = artifacts.require("TribeLauncher");
 const Tribe = artifacts.require("Tribe");
+const Events = artifacts.require("Events");
 const SmartToken = artifacts.require("SmartToken");
+const Bluebird = require('Bluebird')
  
+
 contract('TribeLauncher', function () {
 
   
@@ -20,6 +23,7 @@ contract('TribeLauncher', function () {
     let amountRequiredForStaking = null
     let stakedMembershipStatus = null
     let nativeTokenInstance = null
+    let events = null
 
     before(async () => {
 
@@ -28,12 +32,11 @@ contract('TribeLauncher', function () {
     beforeEach(async () => {
 
       const initialDevFund = 1000
-
+      // events = await Events.deployed()
       nativeTokenInstance = await SmartToken.deployed()
       tribeLauncherInstance = await TribeLauncher.deployed()
     })
 
-    // TODO test this to check all variable values
     it("It should launch a new tribe contract", async function () {
       const _minimumStakingRequirement = 10;
       const _lockupPeriod = 0;
@@ -53,17 +56,25 @@ contract('TribeLauncher', function () {
       const launchedTribeCount = await tribeLauncherInstance.launchedTribeCount()
       const launchedTribeAddress = await tribeLauncherInstance.launchedTribes(launchedTribeCount - 1)
       const launchedTribeInstance = await Tribe.at(launchedTribeAddress)
-      const minimumStakingRequirement = await launchedTribeInstance.minimumStakingRequirement()
-      // just a check to ensure we actually are getting data back and the contract is deployed
       
-      // wait for the event
-      tribeLauncherInstance.Launched((err, result) => {
-        if(err){
-          assert(false, err)
-        }
+      // all the variables that are set on the contract
+      const tribe_minimumStakingRequirement = await launchedTribeInstance.minimumStakingRequirement()
+      const tribe_nativeTokenContractAddress = await launchedTribeInstance.nativeTokenContractAddress()
+      const tribe_voteController = await launchedTribeInstance.voteController()
 
+      let eventsAddress = await tribeLauncherInstance.events();
+      let eventsInstance = await Events.at(eventsAddress);
+
+      const launchedEvent = Bluebird.promisify(eventsInstance.LaunchedEvent)()    
+
+      return launchedEvent.then( (result) => {
+        // just a check to ensure we actually are getting data back and the contract is deployed      
         assert(result.args.launchUuid.toString() === _launchUuid.toString())
-        assert(minimumStakingRequirement.toString() === _minimumStakingRequirement.toString())  
+        assert(tribe_minimumStakingRequirement.toString() === _minimumStakingRequirement.toString())
+        assert(tribe_nativeTokenContractAddress === nativeTokenInstance.address)
+        assert(tribe_voteController === curator)
+      }).catch((rejected) => {
+        assert(false, rejected);
       })
     })
 
