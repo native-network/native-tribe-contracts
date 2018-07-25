@@ -83,7 +83,11 @@ contract('Tribe', function () {
     const uuid = 1234
     const taskReward = -1
     
-    const logTaskCreatedPromise = Bluebird.promisify(launchedTribeInstance.TaskCreated)()
+
+    let eventsAddress = await launchedTribeInstance.events();
+    let eventsInstance = await Events.at(eventsAddress);
+
+    const logTaskCreatedPromise = Bluebird.promisify(eventsInstance.TaskCreated)()
 
     try {
       await launchedTribeInstance.createNewTask(uuid, taskReward, {from: nonCurator})  
@@ -105,7 +109,10 @@ contract('Tribe', function () {
     const uuid = 1234
     const taskReward = 1000
 
-    const logTaskCreatedPromise = Bluebird.promisify(launchedTribeInstance.TaskCreated)()
+    let eventsAddress = await launchedTribeInstance.events();
+    let eventsInstance = await Events.at(eventsAddress);
+
+    const logTaskCreatedPromise = Bluebird.promisify(eventsInstance.TaskCreated)()
     try {
       await launchedTribeInstance.createNewTask(uuid, taskReward, {from: nonCurator})  
     }
@@ -233,7 +240,10 @@ contract('Tribe', function () {
     const projectReward = 1000
     const rewardee = web3.eth.accounts[1]
 
-    const logProjectCreatedPromise = Bluebird.promisify(launchedTribeInstance.ProjectCreated)()
+    let eventsAddress = await launchedTribeInstance.events();
+    let eventsInstance = await Events.at(eventsAddress);
+
+    const logProjectCreatedPromise = Bluebird.promisify(eventsInstance.ProjectCreated)()
 
     await launchedTribeInstance.createNewProject(uuid, projectReward, rewardee, {from: curator})
 
@@ -248,7 +258,9 @@ contract('Tribe', function () {
     const projectReward = 1000
     const rewardee = web3.eth.accounts[1]
 
-    const logProjectCreatedPromise = Bluebird.promisify(launchedTribeInstance.ProjectCreated)()
+    let eventsAddress = await launchedTribeInstance.events();
+    let eventsInstance = await Events.at(eventsAddress);
+    const logProjectCreatedPromise = Bluebird.promisify(eventsInstance.ProjectCreated)()
 
     
     try {
