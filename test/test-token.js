@@ -10,8 +10,9 @@ contract('SmartToken', function () {
     const initialTokenSymbol = 'test'
     const initialTokenVersion = 'version'
     const initialTokenDecimals = 18
-    
-    let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+    const LoggerContractAddress =  '123'
+
+    let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner, LoggerContractAddress);
 
     let name = await token.name.call();
     let symbol = await token.symbol.call();
@@ -29,8 +30,9 @@ contract('SmartToken', function () {
     const initialTokenSymbol = 'test'
     const initialTokenVersion = 'version'
     const initialTokenDecimals = 18
+    const LoggerContractAddress =  '123'
 
-    let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+    let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner, LoggerContractAddress);
 
     
     await token.disableTransfers(true);
@@ -51,7 +53,9 @@ contract('SmartToken', function () {
     const initialTokenVersion = 'version'
     const initialTokenDecimals = 18
 
-    let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+    const LoggerContractAddress =  '123'
+
+    let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner, LoggerContractAddress);
     
     let transfersEnabled = await token.transfersEnabled.call();        
     assert.equal(transfersEnabled, true);

@@ -1,6 +1,6 @@
 pragma solidity ^0.4.8;
 
-contract Events {
+contract Logger {
 
     // Tribe
     event TaskCreated(uint _uuid, uint _amount);
