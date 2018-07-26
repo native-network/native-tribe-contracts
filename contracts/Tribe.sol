@@ -1,17 +1,16 @@
 pragma solidity ^0.4.8;
 
+import './Events.sol';
 import './SmartToken.sol';
 import './utility/SafeMath.sol';
 
-// TODO -- use safemath for everything
 contract Tribe {
 
-    event TaskCreated(uint _uuid, uint _amount);
-    event ProjectCreated(uint _uuid, uint _amount, address _address);
-
-    address curator;
-    address voteController;
+    address public curator;
+    address public voteController;
     
+    Events public events;
+
     address public tribeTokenContractAddress;
     address public nativeTokenContractAddress;
 
@@ -92,7 +91,8 @@ contract Tribe {
         escrowedTaskBalances[uuid] = amount;
         totalTaskEscrow = safeAdd(totalTaskEscrow, amount);
 
-        emit TaskCreated(uuid, amount);
+        events = new Events();
+        events.emitTaskCreated(uuid, amount);
     }
 
     function cancelTask(uint uuid) public onlyCurator {
@@ -114,7 +114,8 @@ contract Tribe {
         escrowedProjectPayees[uuid] = projectPayee;
         totalProjectEscrow = safeAdd(totalProjectEscrow, amount);
 
-        emit ProjectCreated(uuid, amount, projectPayee);
+        events = new Events();
+        events.emitProjectCreated(uuid, amount, projectPayee);
     }
     
     function cancelProject(uint uuid) public onlyCurator {

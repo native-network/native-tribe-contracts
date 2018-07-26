@@ -1,14 +1,15 @@
 pragma solidity ^0.4.8;
 
+import './Events.sol';
 import './Tribe.sol';
 import './SmartToken.sol';
 import './utility/Owned.sol';
 
 contract TribeLauncher is Owned {
-
-    event Launched(uint launchUuid, address launchedTribeAddress, address launchedTokenAddress);
     mapping (uint => address) public launchedTribes;
     uint public launchedTribeCount;
+
+    Events public events;
 
     mapping (uint => address) public launchedTokens;
     uint public launchedTokenCount;
@@ -46,9 +47,9 @@ contract TribeLauncher is Owned {
         Tribe tribe = new Tribe(_minimumStakingRequirement, _lockupPeriod, _curatorAddress, address(tribeToken), _nativeTokenContractAddress, _voteController);
         launchedTribes[launchedTribeCount] = tribe;
         launchedTribeCount = safeAdd(launchedTribeCount,1);
-        
 
-        emit Launched(_launchUuid, tribe, tribeToken);
+        events = new Events();
+        events.emitLaunched(_launchUuid, tribe, tribeToken);
     }
 
     constructor() public {

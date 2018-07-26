@@ -1,29 +1,52 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 
-/*
-    Safe Addition and Subtraction
-*/
-contract SafeMath {
+
+/**
+ * @title SafeMath
+ * @dev Math operations with safety checks that throw on error
+ */
+library SafeMath {
+
     /**
-    @dev returns the sum of _x and _y, asserts if the calculation overflows
-    @param _x   value 1
-    @param _y   value 2
-    @return sum
+    * @dev Multiplies two numbers, throws on overflow.
     */
-    function safeAdd(uint256 _x, uint256 _y) internal pure returns (uint256) {
-        uint256 z = _x + _y;
-        assert(z >= _x);
-        return z;
+    function safeMul(uint256 a, uint256 b) internal pure returns (uint256 c) {
+        // Gas optimization: this is cheaper than asserting 'a' not being zero, but the
+        // benefit is lost if 'b' is also tested.
+        // See: https://github.com/OpenZeppelin/openzeppelin-solidity/pull/522
+        if (a == 0) {
+            return 0;
+        }
+
+        c = a * b;
+        assert(c / a == b);
+        return c;
     }
 
     /**
-    @dev returns the difference of _x minus _y, asserts if the subtraction results in a negative number
-    @param _x   minuend
-    @param _y   subtrahend
-    @return difference
+    * @dev Integer division of two numbers, truncating the quotient.
     */
-    function safeSub(uint256 _x, uint256 _y) internal pure returns (uint256) {
-        assert(_x >= _y);
-        return _x - _y;
+    function safeDiv(uint256 a, uint256 b) internal pure returns (uint256) {
+        // assert(b > 0); // Solidity automatically throws when dividing by 0
+        // uint256 c = a / b;
+        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+        return a / b;
+    }
+
+    /**
+    * @dev Subtracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
+    */
+    function safeSub(uint256 a, uint256 b) internal pure returns (uint256) {
+        assert(b <= a);
+        return a - b;
+    }
+
+    /**
+    * @dev Adds two numbers, throws on overflow.
+    */
+    function safeAdd(uint256 a, uint256 b) internal pure returns (uint256 c) {
+        c = a + b;
+        assert(c >= a);
+        return c;
     }
 }

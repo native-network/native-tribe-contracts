@@ -1,5 +1,6 @@
 const TribeLauncher = artifacts.require("TribeLauncher")
 const Tribe = artifacts.require("Tribe")
+const Events = artifacts.require("Events")
 const Token = artifacts.require("SmartToken")
 const Bluebird = require('Bluebird')
 
@@ -21,6 +22,7 @@ contract('Tribe', function () {
   let stakedMembershipStatus = null
   
   let nativeTokenInstance = null
+  let events = null
 
   before(async () => {
 
@@ -48,6 +50,7 @@ contract('Tribe', function () {
       1.0, {from: sender})    
     const launchedTribeCount = await tribeLauncherInstance.launchedTribeCount()
     launchedTribeAddress = await tribeLauncherInstance.launchedTribes(launchedTribeCount - 1)
+    console.log('launchedTribeAddress',launchedTribeAddress)
     launchedTribeInstance = await Tribe.at(launchedTribeAddress)
     tribeTokenAddress = await launchedTribeInstance.tribeTokenContractAddress()
     tribeTokenInstance = await Token.at(tribeTokenAddress)
@@ -60,11 +63,16 @@ contract('Tribe', function () {
     const uuid = 1234
     const taskReward = 1000
     
-    const logTaskCreatedPromise = Bluebird.promisify(launchedTribeInstance.TaskCreated)()
+    let eventsAddress = await launchedTribeInstance.events();
+    let eventsInstance = await Events.at(eventsAddress);
+
+    const launchedEvent = Bluebird.promisify(eventsInstance.TaskCreated)()    
 
     await launchedTribeInstance.createNewTask(uuid, taskReward, {from: curator})
+
     
-    return logTaskCreatedPromise.then( (result) => {
+    
+    return launchedEvent.then( (result) => {
       return assert(true)
     })
   })
@@ -75,7 +83,11 @@ contract('Tribe', function () {
     const uuid = 1234
     const taskReward = -1
     
-    const logTaskCreatedPromise = Bluebird.promisify(launchedTribeInstance.TaskCreated)()
+
+    let eventsAddress = await launchedTribeInstance.events();
+    let eventsInstance = await Events.at(eventsAddress);
+
+    const logTaskCreatedPromise = Bluebird.promisify(eventsInstance.TaskCreated)()
 
     try {
       await launchedTribeInstance.createNewTask(uuid, taskReward, {from: nonCurator})  
@@ -97,7 +109,10 @@ contract('Tribe', function () {
     const uuid = 1234
     const taskReward = 1000
 
-    const logTaskCreatedPromise = Bluebird.promisify(launchedTribeInstance.TaskCreated)()
+    let eventsAddress = await launchedTribeInstance.events();
+    let eventsInstance = await Events.at(eventsAddress);
+
+    const logTaskCreatedPromise = Bluebird.promisify(eventsInstance.TaskCreated)()
     try {
       await launchedTribeInstance.createNewTask(uuid, taskReward, {from: nonCurator})  
     }
@@ -225,7 +240,10 @@ contract('Tribe', function () {
     const projectReward = 1000
     const rewardee = web3.eth.accounts[1]
 
-    const logProjectCreatedPromise = Bluebird.promisify(launchedTribeInstance.ProjectCreated)()
+    let eventsAddress = await launchedTribeInstance.events();
+    let eventsInstance = await Events.at(eventsAddress);
+
+    const logProjectCreatedPromise = Bluebird.promisify(eventsInstance.ProjectCreated)()
 
     await launchedTribeInstance.createNewProject(uuid, projectReward, rewardee, {from: curator})
 
@@ -240,7 +258,9 @@ contract('Tribe', function () {
     const projectReward = 1000
     const rewardee = web3.eth.accounts[1]
 
-    const logProjectCreatedPromise = Bluebird.promisify(launchedTribeInstance.ProjectCreated)()
+    let eventsAddress = await launchedTribeInstance.events();
+    let eventsInstance = await Events.at(eventsAddress);
+    const logProjectCreatedPromise = Bluebird.promisify(eventsInstance.ProjectCreated)()
 
     
     try {
@@ -409,7 +429,7 @@ contract('Tribe', function () {
     assert(finalMembershipStatus === false)
   })
 
-  it.only("It should allow a staked user to unstake a tribe", async function () {
+  it("It should allow a staked user to unstake a tribe", async function () {
     // Same as staking
     const startingMembershipStatus = await launchedTribeInstance.isMember(sender)
     amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
