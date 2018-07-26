@@ -1,12 +1,12 @@
 pragma solidity ^0.4.8;
 
-import './Events.sol';
+import './Logger.sol';
 import './utility/Owned.sol';
 
 // TODO -- use safemath for everything
 contract SmartToken is Owned {
 
-    Events public events;
+    Logger public logger;
 
     // Smart token specific stuff
     bool public transfersEnabled = true;    // true if transfer/transferFrom are enabled, false if not
@@ -73,9 +73,9 @@ contract SmartToken is Owned {
         totalSupply = safeAdd(totalSupply, _amount);
         balances[_to] = safeAdd(balances[_to], _amount);
 
-        events = new Events();
-        events.emitIssuance(_amount);
-        events.emitTransfer(this, _to, _amount);
+        logger = new Logger();
+        logger.emitIssuance(_amount);
+        logger.emitTransfer(this, _to, _amount);
     }
 
     /**
@@ -90,9 +90,9 @@ contract SmartToken is Owned {
         balances[_from] = safeSub(balances[_from], _amount);
         totalSupply = safeSub(totalSupply, _amount);
 
-        events = new Events();
-        events.emitTransfer(_from, this, _amount);
-        events.emitDestruction(_amount);
+        logger = new Logger();
+        logger.emitTransfer(_from, this, _amount);
+        logger.emitDestruction(_amount);
     }
     
     
@@ -106,8 +106,8 @@ contract SmartToken is Owned {
             balances[msg.sender] = safeSub(balances[msg.sender], _value);
             balances[_to] = safeAdd(balances[_to], _value);
 
-            events = new Events();
-            events.emitTransfer(msg.sender, _to, _value);
+            logger = new Logger();
+            logger.emitTransfer(msg.sender, _to, _value);
             return true;
         } else {return false; }
     }
@@ -118,8 +118,8 @@ contract SmartToken is Owned {
             balances[_from] = safeSub(balances[_from], _value);
             allowed[_from][msg.sender] = safeSub(allowed[_from][msg.sender], _value);
 
-            events = new Events();
-            events.emitTransfer(_from, _to, _value);
+            logger = new Logger();
+            logger.emitTransfer(_from, _to, _value);
             return true;
         } else { return false; }
     }
@@ -130,8 +130,8 @@ contract SmartToken is Owned {
 
     function approve(address _spender, uint256 _value) public returns (bool success) {
         allowed[msg.sender][_spender] = _value;
-        events = new Events();
-        events.emitApproval(msg.sender, _spender, _value);
+        logger = new Logger();
+        logger.emitApproval(msg.sender, _spender, _value);
         return true;
     }
 

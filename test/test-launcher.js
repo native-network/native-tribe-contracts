@@ -1,6 +1,6 @@
 const TribeLauncher = artifacts.require("TribeLauncher");
 const Tribe = artifacts.require("Tribe");
-const Events = artifacts.require("Events");
+const Logger = artifacts.require("Logger");
 const SmartToken = artifacts.require("SmartToken");
 const Bluebird = require('Bluebird')
  
@@ -23,7 +23,7 @@ contract('TribeLauncher', function () {
     let amountRequiredForStaking = null
     let stakedMembershipStatus = null
     let nativeTokenInstance = null
-    let events = null
+    let logger = null
 
     before(async () => {
 
@@ -61,10 +61,10 @@ contract('TribeLauncher', function () {
       const tribe_nativeTokenContractAddress = await launchedTribeInstance.nativeTokenContractAddress()
       const tribe_voteController = await launchedTribeInstance.voteController()
 
-      let eventsAddress = await tribeLauncherInstance.events();
-      let eventsInstance = await Events.at(eventsAddress);
+      let loggerAddress = await tribeLauncherInstance.logger();
+      let loggerInstance = await Logger.at(loggerAddress);
 
-      const launchedEvent = Bluebird.promisify(eventsInstance.LaunchedEvent)()    
+      const launchedEvent = Bluebird.promisify(loggerInstance.LaunchedEvent)()    
 
       return launchedEvent.then( (result) => {
         // just a check to ensure we actually are getting data back and the contract is deployed      

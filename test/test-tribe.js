@@ -1,6 +1,6 @@
 const TribeLauncher = artifacts.require("TribeLauncher")
 const Tribe = artifacts.require("Tribe")
-const Events = artifacts.require("Events")
+const Logger = artifacts.require("Logger")
 const Token = artifacts.require("SmartToken")
 const Bluebird = require('Bluebird')
 
@@ -22,7 +22,7 @@ contract('Tribe', function () {
   let stakedMembershipStatus = null
   
   let nativeTokenInstance = null
-  let events = null
+  let logger = null
 
   before(async () => {
 
@@ -63,10 +63,10 @@ contract('Tribe', function () {
     const uuid = 1234
     const taskReward = 1000
     
-    let eventsAddress = await launchedTribeInstance.events();
-    let eventsInstance = await Events.at(eventsAddress);
+    let loggerAddress = await launchedTribeInstance.logger();
+    let loggerInstance = await Logger.at(loggerAddress);
 
-    const launchedEvent = Bluebird.promisify(eventsInstance.TaskCreated)()    
+    const launchedEvent = Bluebird.promisify(loggerInstance.TaskCreated)()    
 
     await launchedTribeInstance.createNewTask(uuid, taskReward, {from: curator})
 
@@ -84,10 +84,10 @@ contract('Tribe', function () {
     const taskReward = -1
     
 
-    let eventsAddress = await launchedTribeInstance.events();
-    let eventsInstance = await Events.at(eventsAddress);
+    let loggerAddress = await launchedTribeInstance.logger();
+    let loggerInstance = await Logger.at(loggerAddress);
 
-    const logTaskCreatedPromise = Bluebird.promisify(eventsInstance.TaskCreated)()
+    const logTaskCreatedPromise = Bluebird.promisify(loggerInstance.TaskCreated)()
 
     try {
       await launchedTribeInstance.createNewTask(uuid, taskReward, {from: nonCurator})  
@@ -109,10 +109,10 @@ contract('Tribe', function () {
     const uuid = 1234
     const taskReward = 1000
 
-    let eventsAddress = await launchedTribeInstance.events();
-    let eventsInstance = await Events.at(eventsAddress);
+    let loggerAddress = await launchedTribeInstance.logger();
+    let loggerInstance = await Logger.at(loggerAddress);
 
-    const logTaskCreatedPromise = Bluebird.promisify(eventsInstance.TaskCreated)()
+    const logTaskCreatedPromise = Bluebird.promisify(loggerInstance.TaskCreated)()
     try {
       await launchedTribeInstance.createNewTask(uuid, taskReward, {from: nonCurator})  
     }
@@ -240,10 +240,10 @@ contract('Tribe', function () {
     const projectReward = 1000
     const rewardee = web3.eth.accounts[1]
 
-    let eventsAddress = await launchedTribeInstance.events();
-    let eventsInstance = await Events.at(eventsAddress);
+    let loggerAddress = await launchedTribeInstance.logger();
+    let loggerInstance = await Logger.at(loggerAddress);
 
-    const logProjectCreatedPromise = Bluebird.promisify(eventsInstance.ProjectCreated)()
+    const logProjectCreatedPromise = Bluebird.promisify(loggerInstance.ProjectCreated)()
 
     await launchedTribeInstance.createNewProject(uuid, projectReward, rewardee, {from: curator})
 
@@ -258,9 +258,9 @@ contract('Tribe', function () {
     const projectReward = 1000
     const rewardee = web3.eth.accounts[1]
 
-    let eventsAddress = await launchedTribeInstance.events();
-    let eventsInstance = await Events.at(eventsAddress);
-    const logProjectCreatedPromise = Bluebird.promisify(eventsInstance.ProjectCreated)()
+    let loggerAddress = await launchedTribeInstance.logger();
+    let loggerInstance = await Logger.at(loggerAddress);
+    const logProjectCreatedPromise = Bluebird.promisify(loggerInstance.ProjectCreated)()
 
     
     try {
