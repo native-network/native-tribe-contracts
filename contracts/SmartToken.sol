@@ -2,6 +2,7 @@ pragma solidity ^0.4.8;
 
 import './Events.sol';
 import './utility/Owned.sol';
+import './utility/SafeMath.sol';
 
 // TODO -- use safemath for everything
 contract SmartToken is Owned {
@@ -13,7 +14,7 @@ contract SmartToken is Owned {
     // triggered when a smart token is deployed - the _token address is defined for forward compatibility, in case we want to trigger the event from a factory
     event NewSmartToken(address _token);
 
-    event TokenSaleInitialized(uint _saleStartTIme, uint _saleEndTime, uint _priceInWei, uint _amountForSale);
+    event TokenSaleInitialized(uint _saleStartTIme, uint _saleEndTime, uint _priceInWei, uint _amountForSale, uint nowTime);
     event TokensPurchased(address buyer, uint amount);
 
     // verifies that the address is different than this contract address
@@ -27,30 +28,6 @@ contract SmartToken is Owned {
         require(_address != address(0));
         _;
     }
-
-    /**
-    @dev returns the sum of _x and _y, asserts if the calculation overflows
-    @param _x   value 1
-    @param _y   value 2
-    @return sum
-    */
-    function safeAdd(uint256 _x, uint256 _y) internal pure returns (uint256) {
-        uint256 z = _x + _y;
-        assert(z >= _x);
-        return z;
-    }
-
-    /**
-    @dev returns the difference of _x minus _y, asserts if the subtraction results in a negative number
-    @param _x   minuend
-    @param _y   subtrahend
-    @return difference
-    */
-    function safeSub(uint256 _x, uint256 _y) internal pure returns (uint256) {
-        assert(_x >= _y);
-        return _x - _y;
-    }
-    
 
     /**
         @dev disables/enables transfers
@@ -73,8 +50,8 @@ contract SmartToken is Owned {
     validAddress(_to)
     notThis(_to)
     {
-        totalSupply = safeAdd(totalSupply, _amount);
-        balances[_to] = safeAdd(balances[_to], _amount);
+        totalSupply = SafeMath.safeAdd(totalSupply, _amount);
+        balances[_to] = SafeMath.safeAdd(balances[_to], _amount);
 
         events = new Events();
         events.emitIssuance(_amount);
@@ -90,8 +67,8 @@ contract SmartToken is Owned {
     function destroy(address _from, uint256 _amount) public {
         require(msg.sender == _from || msg.sender == owner); // validate input
 
-        balances[_from] = safeSub(balances[_from], _amount);
-        totalSupply = safeSub(totalSupply, _amount);
+        balances[_from] = SafeMath.safeSub(balances[_from], _amount);
+        totalSupply = SafeMath.safeSub(totalSupply, _amount);
 
         events = new Events();
         events.emitTransfer(_from, this, _amount);
@@ -103,8 +80,8 @@ contract SmartToken is Owned {
     
     function transfer(address _to, uint256 _value) public returns (bool success) {
         if (balances[msg.sender] >= _value && _value > 0) {
-            balances[msg.sender] = safeSub(balances[msg.sender], _value);
-            balances[_to] = safeAdd(balances[_to], _value);
+            balances[msg.sender] = SafeMath.safeSub(balances[msg.sender], _value);
+            balances[_to] = SafeMath.safeAdd(balances[_to], _value);
 
             events = new Events();
             events.emitTransfer(msg.sender, _to, _value);
@@ -114,9 +91,9 @@ contract SmartToken is Owned {
 
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
         if (balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
-            balances[_to] = safeAdd(balances[_to], _value);
-            balances[_from] = safeSub(balances[_from], _value);
-            allowed[_from][msg.sender] = safeSub(allowed[_from][msg.sender], _value);
+            balances[_to] = SafeMath.safeAdd(balances[_to], _value);
+            balances[_from] = SafeMath.safeSub(balances[_from], _value);
+            allowed[_from][msg.sender] = SafeMath.safeSub(allowed[_from][msg.sender], _value);
 
             events = new Events();
             events.emitTransfer(_from, _to, _value);
@@ -170,19 +147,24 @@ contract SmartToken is Owned {
     uint amountRemainingForSale;
 
     function initializeTokenSale(uint _saleStartTime, uint _saleEndTime, uint _priceInWei, uint _amountForSale) public ownerOnly {
+
+        // Check that the token sale has not yet been initialized
+        assert(saleStartTime > 0);
+
         saleStartTime = _saleStartTime;
         saleEndTime = _saleEndTime;
         priceInWei = _priceInWei;
         amountRemainingForSale = _amountForSale;
-        emit TokenSaleInitialized(saleStartTime, saleEndTime, priceInWei, amountRemainingForSale);
+        emit TokenSaleInitialized(saleStartTime, saleEndTime, priceInWei, amountRemainingForSale, now);
     }
 
     function buySmartTokens() public payable {
-        uint amountTBuy = safeDiv(msg.value, priceInWei);
+        uint amountToBuy = SafeMath.safeDiv(msg.value, priceInWei);
         assert(amountToBuy < amountRemainingForSale);
-        assert(now < saleEndTime && now > saleStartTime);
-        amountRemainingForSale = safeSub(amountRemainingForSale, amountToBuy);
+        assert(now <= saleEndTime && now >= saleStartTime);
+        amountRemainingForSale = SafeMath.safeSub(amountRemainingForSale, amountToBuy);
         issue(msg.sender, amountToBuy);
+
         emit TokensPurchased(msg.sender, amountToBuy);
     }
 
