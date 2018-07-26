@@ -23,7 +23,7 @@ contract('TribeLauncher', function () {
     let amountRequiredForStaking = null
     let stakedMembershipStatus = null
     let nativeTokenInstance = null
-    let logger = null
+    let loggerInstance = null
 
     before(async () => {
 
@@ -32,6 +32,7 @@ contract('TribeLauncher', function () {
     beforeEach(async () => {
 
       const initialDevFund = 1000
+      loggerInstance = await Logger.deployed()
       nativeTokenInstance = await SmartToken.deployed()
       tribeLauncherInstance = await TribeLauncher.deployed()
     })
@@ -60,11 +61,7 @@ contract('TribeLauncher', function () {
       const tribe_minimumStakingRequirement = await launchedTribeInstance.minimumStakingRequirement()
       const tribe_nativeTokenContractAddress = await launchedTribeInstance.nativeTokenContractAddress()
       const tribe_voteController = await launchedTribeInstance.voteController()
-
-      let loggerAddress = await tribeLauncherInstance.logger();
-      let loggerInstance = await Logger.at(loggerAddress);
-
-      const launchedEvent = Bluebird.promisify(loggerInstance.LaunchedEvent)()    
+      const launchedEvent = Bluebird.promisify(loggerInstance.Launched)()    
 
       return launchedEvent.then( (result) => {
         // just a check to ensure we actually are getting data back and the contract is deployed      

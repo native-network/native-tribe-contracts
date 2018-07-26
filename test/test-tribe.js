@@ -34,6 +34,7 @@ contract('Tribe', function () {
     const _minimumStakingRequirement = 456
     const _lockupPeriod = 0
     
+    loggerInstance = await Logger.deployed()
     nativeTokenInstance = await Token.deployed()
     tribeLauncherInstance = await TribeLauncher.deployed()
     await tribeLauncherInstance.launchTribe(
@@ -50,7 +51,6 @@ contract('Tribe', function () {
       1.0, {from: sender})    
     const launchedTribeCount = await tribeLauncherInstance.launchedTribeCount()
     launchedTribeAddress = await tribeLauncherInstance.launchedTribes(launchedTribeCount - 1)
-    console.log('launchedTribeAddress',launchedTribeAddress)
     launchedTribeInstance = await Tribe.at(launchedTribeAddress)
     tribeTokenAddress = await launchedTribeInstance.tribeTokenContractAddress()
     tribeTokenInstance = await Token.at(tribeTokenAddress)
@@ -62,10 +62,7 @@ contract('Tribe', function () {
 
     const uuid = 1234
     const taskReward = 1000
-    
-    let loggerAddress = await launchedTribeInstance.logger();
-    let loggerInstance = await Logger.at(loggerAddress);
-
+  
     const launchedEvent = Bluebird.promisify(loggerInstance.TaskCreated)()    
 
     await launchedTribeInstance.createNewTask(uuid, taskReward, {from: curator})
@@ -82,10 +79,6 @@ contract('Tribe', function () {
 
     const uuid = 1234
     const taskReward = -1
-    
-
-    let loggerAddress = await launchedTribeInstance.logger();
-    let loggerInstance = await Logger.at(loggerAddress);
 
     const logTaskCreatedPromise = Bluebird.promisify(loggerInstance.TaskCreated)()
 
@@ -108,9 +101,6 @@ contract('Tribe', function () {
 
     const uuid = 1234
     const taskReward = 1000
-
-    let loggerAddress = await launchedTribeInstance.logger();
-    let loggerInstance = await Logger.at(loggerAddress);
 
     const logTaskCreatedPromise = Bluebird.promisify(loggerInstance.TaskCreated)()
     try {
@@ -240,9 +230,6 @@ contract('Tribe', function () {
     const projectReward = 1000
     const rewardee = web3.eth.accounts[1]
 
-    let loggerAddress = await launchedTribeInstance.logger();
-    let loggerInstance = await Logger.at(loggerAddress);
-
     const logProjectCreatedPromise = Bluebird.promisify(loggerInstance.ProjectCreated)()
 
     await launchedTribeInstance.createNewProject(uuid, projectReward, rewardee, {from: curator})
@@ -258,8 +245,6 @@ contract('Tribe', function () {
     const projectReward = 1000
     const rewardee = web3.eth.accounts[1]
 
-    let loggerAddress = await launchedTribeInstance.logger();
-    let loggerInstance = await Logger.at(loggerAddress);
     const logProjectCreatedPromise = Bluebird.promisify(loggerInstance.ProjectCreated)()
 
     
