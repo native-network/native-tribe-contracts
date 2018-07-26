@@ -5,9 +5,7 @@ import './utility/Owned.sol';
 
 // TODO -- use safemath for everything
 contract SmartToken is Owned {
-
-    Logger public logger;
-
+    address public LoggerContractAddress;
     // Smart token specific stuff
     bool public transfersEnabled = true;    // true if transfer/transferFrom are enabled, false if not
     // triggered when a smart token is deployed - the _token address is defined for forward compatibility, in case we want to trigger the event from a factory
@@ -73,9 +71,9 @@ contract SmartToken is Owned {
         totalSupply = safeAdd(totalSupply, _amount);
         balances[_to] = safeAdd(balances[_to], _amount);
 
-        logger = new Logger();
-        logger.emitIssuance(_amount);
-        logger.emitTransfer(this, _to, _amount);
+        Logger log = Logger(LoggerContractAddress);
+        log.emitIssuance(_amount);
+        log.emitTransfer(this, _to, _amount);
     }
 
     /**
@@ -90,9 +88,9 @@ contract SmartToken is Owned {
         balances[_from] = safeSub(balances[_from], _amount);
         totalSupply = safeSub(totalSupply, _amount);
 
-        logger = new Logger();
-        logger.emitTransfer(_from, this, _amount);
-        logger.emitDestruction(_amount);
+        Logger log = Logger(LoggerContractAddress);
+        log.emitTransfer(_from, this, _amount);
+        log.emitDestruction(_amount);
     }
     
     
@@ -106,8 +104,8 @@ contract SmartToken is Owned {
             balances[msg.sender] = safeSub(balances[msg.sender], _value);
             balances[_to] = safeAdd(balances[_to], _value);
 
-            logger = new Logger();
-            logger.emitTransfer(msg.sender, _to, _value);
+            Logger log = Logger(LoggerContractAddress);
+            log.emitTransfer(msg.sender, _to, _value);
             return true;
         } else {return false; }
     }
@@ -118,8 +116,8 @@ contract SmartToken is Owned {
             balances[_from] = safeSub(balances[_from], _value);
             allowed[_from][msg.sender] = safeSub(allowed[_from][msg.sender], _value);
 
-            logger = new Logger();
-            logger.emitTransfer(_from, _to, _value);
+            Logger log = Logger(LoggerContractAddress);
+            log.emitTransfer(_from, _to, _value);
             return true;
         } else { return false; }
     }
@@ -130,8 +128,8 @@ contract SmartToken is Owned {
 
     function approve(address _spender, uint256 _value) public returns (bool success) {
         allowed[msg.sender][_spender] = _value;
-        logger = new Logger();
-        logger.emitApproval(msg.sender, _spender, _value);
+        Logger log = Logger(LoggerContractAddress);
+        log.emitApproval(msg.sender, _spender, _value);
         return true;
     }
 
@@ -151,13 +149,14 @@ contract SmartToken is Owned {
     string public symbol;
     string public version;
 
-    constructor(string _name, uint _totalSupply, uint8 _decimals, string _symbol, string _version, address sender) public {
+    constructor(string _name, uint _totalSupply, uint8 _decimals, string _symbol, string _version, address sender, address _LoggerContractAddress) public {
         balances[sender] = _totalSupply;               // Give the creator all initial tokens
         totalSupply = _totalSupply;                        // Update total supply
         name = _name;                                   // Set the name for display purposes
         decimals = _decimals;                            // Amount of decimals for display purposes
         symbol = _symbol;                               // Set the symbol for display purposes
         version = _version;
+        LoggerContractAddress = _LoggerContractAddress;
 
         emit NewSmartToken(address(this));
     }

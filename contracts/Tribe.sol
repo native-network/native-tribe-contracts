@@ -9,11 +9,10 @@ contract Tribe {
     address public curator;
     address public voteController;
     
-    Logger public logger;
-
     address public tribeTokenContractAddress;
     address public nativeTokenContractAddress;
 
+    address public LoggerContractAddress;
     // Staking Variables.  In tribe token
     uint public minimumStakingRequirement;
     uint public lockupPeriodSeconds;
@@ -43,12 +42,13 @@ contract Tribe {
         _;
     }
 
-    constructor(uint _minimumStakingRequirement, uint _lockupPeriodSeconds, address _curator, address _tribeTokenContractAddress, address _nativeTokenContractAddress, address _voteController) public {
+    constructor(uint _minimumStakingRequirement, uint _lockupPeriodSeconds, address _curator, address _tribeTokenContractAddress, address _nativeTokenContractAddress, address _voteController, address _LoggerContractAddress) public {
         curator = _curator;
         minimumStakingRequirement = _minimumStakingRequirement;
         lockupPeriodSeconds = _lockupPeriodSeconds;
         tribeTokenContractAddress = _tribeTokenContractAddress;
         nativeTokenContractAddress = _nativeTokenContractAddress;
+        LoggerContractAddress = _LoggerContractAddress;
 
         voteController = _voteController;
     }
@@ -91,8 +91,8 @@ contract Tribe {
         escrowedTaskBalances[uuid] = amount;
         totalTaskEscrow = safeAdd(totalTaskEscrow, amount);
 
-        logger = new Logger();
-        logger.emitTaskCreated(uuid, amount);
+        Logger log = Logger(LoggerContractAddress);
+        log.emitTaskCreated(uuid, amount);
     }
 
     function cancelTask(uint uuid) public onlyCurator {
@@ -114,8 +114,8 @@ contract Tribe {
         escrowedProjectPayees[uuid] = projectPayee;
         totalProjectEscrow = safeAdd(totalProjectEscrow, amount);
 
-        logger = new Logger();
-        logger.emitProjectCreated(uuid, amount, projectPayee);
+        Logger log = Logger(LoggerContractAddress);
+        log.emitProjectCreated(uuid, amount, projectPayee);
     }
     
     function cancelProject(uint uuid) public onlyCurator {

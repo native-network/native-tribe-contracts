@@ -9,8 +9,8 @@ contract TribeLauncher is Owned {
     mapping (uint => address) public launchedTribes;
     uint public launchedTribeCount;
 
-    Logger public logger;
-
+    address public LoggerContractAddress;
+    
     mapping (uint => address) public launchedTokens;
     uint public launchedTokenCount;
     /**
@@ -38,21 +38,20 @@ contract TribeLauncher is Owned {
         string tokenSymbol,
         string tokenVersion
     ) public ownerOnly {
-        
-        SmartToken tribeToken = new SmartToken(tokenName, tokenTotalSupply, tokenDecimals, tokenSymbol, tokenVersion, msg.sender);
+
+        SmartToken tribeToken = new SmartToken(tokenName, tokenTotalSupply, tokenDecimals, tokenSymbol, tokenVersion, msg.sender, LoggerContractAddress);
         launchedTokens[launchedTokenCount] = tribeToken;
         launchedTokenCount = safeAdd(launchedTokenCount,1);
         
-        
-        Tribe tribe = new Tribe(_minimumStakingRequirement, _lockupPeriod, _curatorAddress, address(tribeToken), _nativeTokenContractAddress, _voteController);
+        Tribe tribe = new Tribe(_minimumStakingRequirement, _lockupPeriod, _curatorAddress, address(tribeToken), _nativeTokenContractAddress, _voteController, LoggerContractAddress);
         launchedTribes[launchedTribeCount] = tribe;
         launchedTribeCount = safeAdd(launchedTribeCount,1);
 
-        logger = new Logger();
-        logger.emitLaunched(_launchUuid, tribe, tribeToken);
+        Logger log = Logger(LoggerContractAddress);
+        log.emitLaunched(_launchUuid, tribe, tribeToken);
     }
 
-    constructor() public {
-
+    constructor(address _LoggerContractAddress) public {
+        LoggerContractAddress = _LoggerContractAddress;
     }
 }
