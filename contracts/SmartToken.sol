@@ -13,6 +13,9 @@ contract SmartToken is Owned {
     // triggered when a smart token is deployed - the _token address is defined for forward compatibility, in case we want to trigger the event from a factory
     event NewSmartToken(address _token);
 
+    event TokenSaleInitialized(uint _saleStartTIme, uint _saleEndTime, uint _priceInWei, uint _amountForSale);
+    event TokensPurchased(address buyer, uint amount);
+
     // verifies that the address is different than this contract address
     modifier notThis(address _address) {
         require(_address != address(this));
@@ -95,12 +98,9 @@ contract SmartToken is Owned {
         events.emitDestruction(_amount);
     }
     
-    
-    
     // ERC20 specific stuff
     uint256 public totalSupply;    
     
-
     function transfer(address _to, uint256 _value) public returns (bool success) {
         if (balances[msg.sender] >= _value && _value > 0) {
             balances[msg.sender] = safeSub(balances[msg.sender], _value);
@@ -161,4 +161,29 @@ contract SmartToken is Owned {
 
         emit NewSmartToken(address(this));
     }
+
+    // Token sale below
+
+    uint saleStartTime;
+    uint saleEndTime;
+    uint priceInWei;
+    uint amountRemainingForSale;
+
+    function initializeTokenSale(uint _saleStartTime, uint _saleEndTime, uint _priceInWei, uint _amountForSale) public ownerOnly {
+        saleStartTime = _saleStartTime;
+        saleEndTime = _saleEndTime;
+        priceInWei = _priceInWei;
+        amountRemainingForSale = _amountForSale;
+        emit TokenSaleInitialized(saleStartTime, saleEndTime, priceInWei, amountRemainingForSale);
+    }
+
+    function buySmartTokens() public payable {
+        uint amountTBuy = safeDiv(msg.value, priceInWei);
+        assert(amountToBuy < amountRemainingForSale);
+        assert(now < saleEndTime && now > saleStartTime);
+        amountRemainingForSale = safeSub(amountRemainingForSale, amountToBuy);
+        issue(msg.sender, amountToBuy);
+        emit TokensPurchased(msg.sender, amountToBuy);
+    }
+
 }
