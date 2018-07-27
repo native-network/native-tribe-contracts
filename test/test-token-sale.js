@@ -1,35 +1,36 @@
 const SmartToken = artifacts.require("SmartToken");
+const Logger = artifacts.require("Logger")
 const util = require('util')
 
 contract('SmartToken', function (accounts) {
   const owner = web3.eth.accounts[0]
   const nonOwner = web3.eth.accounts[1]
   let smartTokenInstance
-  
+
   beforeEach(async () => {
     const initialTokenName = 'test'
     const initialTokenSymbol = 'test'
     const initialTokenVersion = 'version'
     const initialTokenDecimals = 18
     const initialSupply = 12345
-    
-    smartTokenInstance = await SmartToken.new(initialTokenName, initialSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+    const loggerInstance = await Logger.deployed()
+    smartTokenInstance = await SmartToken.new(initialTokenName, initialSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner, loggerInstance.address);
   })
-  
-  it("It should allow the owner to initialize a token sale", async () => {
+
+  it.only("It should allow the owner to initialize a token sale", async () => {
     const startTime = Date.now() / 1000
     const endTime = startTime + (60 * 60 * 24)
     const priceInWei = web3.toWei(1, 'ether')
     const amountForSale = 1000000
 
     const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-    
+
     await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
-    
+
     return tokenSaleInitializedEvent.then( () => {
       return assert(true)
     })
-    
+
   })
 
   // TODO add checks that token balances are correct after the purchase
