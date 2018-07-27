@@ -148,7 +148,7 @@ contract SmartToken is Owned {
     function initializeTokenSale(uint _saleStartTime, uint _saleEndTime, uint _priceInWei, uint _amountForSale) public ownerOnly {
 
         // Check that the token sale has not yet been initialized
-        assert(saleStartTime > 0);
+        assert(saleStartTime == 0);
 
         saleStartTime = _saleStartTime;
         saleEndTime = _saleEndTime;

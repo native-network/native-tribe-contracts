@@ -24,7 +24,7 @@ contract('SmartToken', function (accounts) {
     const amountForSale = 1000000
 
     const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-
+    
     await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
 
     return tokenSaleInitializedEvent.then( () => {
