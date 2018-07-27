@@ -17,7 +17,7 @@ contract('SmartToken', function (accounts) {
     smartTokenInstance = await SmartToken.new(initialTokenName, initialSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner, loggerInstance.address);
   })
 
-  it.only("It should allow the owner to initialize a token sale", async () => {
+  it("It should allow the owner to initialize a token sale", async () => {
     const startTime = Date.now() / 1000
     const endTime = startTime + (60 * 60 * 24)
     const priceInWei = web3.toWei(1, 'ether')
@@ -33,7 +33,6 @@ contract('SmartToken', function (accounts) {
 
   })
 
-  // TODO add checks that token balances are correct after the purchase
   it("It should allow a user to purchase tokens after the sale has been initialized", async () => {
     const startTime = Math.floor(Date.now() / 1000)
     const endTime = Math.floor(startTime + (60 * 60 * 24))
@@ -41,14 +40,21 @@ contract('SmartToken', function (accounts) {
     const amountForSale = 1000000
     const amountToSpend = web3.toWei(10, 'ether')
     
+    const expectedPurchaseAmount = amountToSpend / priceInWei
+    
+    
     const TokensPurchased = util.promisify(smartTokenInstance.TokensPurchased)()
     
     await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
 
+    const tokenBalanceBefore = await smartTokenInstance.balanceOf(owner)
+    
     await smartTokenInstance.buySmartTokens({ value: amountToSpend, from: owner })
-   
-    return TokensPurchased.then( (result) => {
-      return assert(true)
+
+    const tokenBalanceAfter = await smartTokenInstance.balanceOf(owner)
+    
+    return TokensPurchased.then( () => {
+      return assert(tokenBalanceAfter.equals(tokenBalanceBefore.plus(expectedPurchaseAmount)))
     })
 
   })
@@ -96,19 +102,55 @@ contract('SmartToken', function (accounts) {
     
   })
   
-  // TODO write me
   it("It fail if attempting to purchase tokens before the sale start date", async () => {
-
+    const startTime = Math.floor(Date.now() / 1000) + (60 * 60 * 24)
+    const endTime = Math.floor(startTime + (60 * 60 * 24))
+    const priceInWei = web3.toWei(1, 'ether')
+    const amountForSale = 1000000
+    const amountToSpend = web3.toWei(10, 'ether')
+    
+    await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+    
+    try {
+      await smartTokenInstance.buySmartTokens({ value: amountToSpend, from: owner })
+    } catch(err) {
+      return assert(true)
+    }
+    return assert(false)
   })
   
-  // TODO write me
   it("It fail if attempting to purchase tokens after the sale end date", async () => {
+    const startTime = Math.floor(Date.now() / 1000) - (60 * 60 * 48)
+    const endTime = Math.floor(startTime + (60 * 60 * 24))
+    const priceInWei = web3.toWei(1, 'ether')
+    const amountForSale = 1000000
+    const amountToSpend = web3.toWei(10, 'ether')
 
+    await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+
+    try {
+      await smartTokenInstance.buySmartTokens({ value: amountToSpend, from: owner })
+    } catch(err) {
+      return assert(true)
+    }
+    return assert(false)
   })
 
-  // TODO write me
-  it("It fail if attempting to purchase more tokens than are available for sale", async () => {
+  it.only("It fail if attempting to purchase more tokens than are available for sale", async () => {
+    const startTime = Math.floor(Date.now() / 1000)
+    const endTime = Math.floor(startTime + (60 * 60 * 24))
+    const priceInWei = web3.toWei(1, 'ether')
+    const amountForSale = 1000000
+    const amountToSpend = web3.toWei(10, 'ether') * amountForSale
 
+    await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+
+    try {
+      await smartTokenInstance.buySmartTokens({ value: amountToSpend, from: owner })
+    } catch(err) {
+      return assert(true)
+    }
+    return assert(false)
   })
   
 
