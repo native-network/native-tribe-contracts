@@ -1,6 +1,8 @@
 pragma solidity ^0.4.8;
 
-contract Logger {
+import './utility/Owned.sol';
+
+contract Logger is Owned {
 
     // Tribe
     event TaskCreated(uint _uuid, uint _amount);
@@ -20,37 +22,44 @@ contract Logger {
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
     event Approval(address indexed _owner, address indexed _spender, uint256 _value);
     
+    mapping (address => address) public contractOwners;
 
-    function emitTaskCreated(uint _uuid, uint _amount) public {
+    // validates an address - currently only checks that it isn't null
+    modifier isContractOwner(address _address) {
+        assert(contractOwners[_address] == _address);
+        _;
+    }
+
+    function emitTaskCreated(uint _uuid, uint _amount) public isContractOwner(msg.sender) {
         emit TaskCreated(_uuid, _amount);
     }
 
-    function emitProjectCreated(uint _uuid, uint _amount, address _address) public {
+    function emitProjectCreated(uint _uuid, uint _amount, address _address) public isContractOwner(msg.sender) {
         emit ProjectCreated(_uuid, _amount, _address);
     }
     
-    function emitLaunched(uint _launchUuid, address tribe, address tribeToken) public {
+    function emitLaunched(uint _launchUuid, address tribe, address tribeToken) public isContractOwner(msg.sender) {
         emit Launched(_launchUuid, tribe, tribeToken);
     }
     
 
-    function emitNewSmartToken(address _token) public {
+    function emitNewSmartToken(address _token) public isContractOwner(msg.sender) {
         emit NewSmartToken(_token);
     }
 
-    function emitIssuance(uint256 _amount) public {
+    function emitIssuance(uint256 _amount) public isContractOwner(msg.sender) {
         emit Issuance(_amount);
     }
 
-    function emitDestruction(uint256 _amount) public {
+    function emitDestruction(uint256 _amount) public isContractOwner(msg.sender) {
         emit Destruction(_amount);
     }
 
-    function emitTransfer(address _from, address _to, uint256 _value) public {
+    function emitTransfer(address _from, address _to, uint256 _value) public isContractOwner(msg.sender) {
         emit Transfer(_from, _to, _value);
     }
 
-    function emitApproval(address _owner, address _spender, uint256 _value) public {
+    function emitApproval(address _owner, address _spender, uint256 _value) public isContractOwner(msg.sender) {
         emit Approval(_owner, _spender, _value);
     }
 

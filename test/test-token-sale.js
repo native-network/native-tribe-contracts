@@ -24,7 +24,7 @@ contract('SmartToken', function (accounts) {
     const amountForSale = 1000000
 
     const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-    
+
     await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
 
     return tokenSaleInitializedEvent.then( () => {
@@ -136,7 +136,7 @@ contract('SmartToken', function (accounts) {
     return assert(false)
   })
 
-  it.only("It fail if attempting to purchase more tokens than are available for sale", async () => {
+  it("It fail if attempting to purchase more tokens than are available for sale", async () => {
     const startTime = Math.floor(Date.now() / 1000)
     const endTime = Math.floor(startTime + (60 * 60 * 24))
     const priceInWei = web3.toWei(1, 'ether')
