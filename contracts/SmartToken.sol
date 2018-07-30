@@ -53,7 +53,7 @@ contract SmartToken is Owned {
 
         Logger log = Logger(LoggerContractAddress);
         log.emitIssuance(_amount);
-        log.emitTransfer(this, _to, _amount);
+        // log.emitTransfer(this, _to, _amount);
     }
 
     /**
@@ -134,8 +134,10 @@ contract SmartToken is Owned {
         symbol = _symbol;                               // Set the symbol for display purposes
         version = _version;
         LoggerContractAddress = _LoggerContractAddress;
-
+       
+        Logger log = Logger(LoggerContractAddress);
         emit NewSmartToken(address(this));
+        log.setNewContractOwner(address(this));
     }
 
     // Token sale below
@@ -182,7 +184,7 @@ contract SmartToken is Owned {
         amountRemainingForSale = SafeMath.safeSub(amountRemainingForSale, amountToBuy);
         issue(msg.sender, amountToBuy);
 
-        emit TokensPurchased(msg.sender, amountToBuy);
+        // emit TokensPurchased(msg.sender, amountToBuy);
     }
 
 }

@@ -48,6 +48,7 @@ contract TribeLauncher is Owned {
         launchedTribeCount = safeAdd(launchedTribeCount,1);
 
         Logger log = Logger(LoggerContractAddress);
+        log.setNewContractOwner(address(this));
         log.emitLaunched(_launchUuid, tribe, tribeToken);
     }
 

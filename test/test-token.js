@@ -1,8 +1,18 @@
 const SmartToken = artifacts.require("SmartToken");
+const Logger = artifacts.require("Logger");
 
 contract('SmartToken', function () {
   const owner = web3.eth.accounts[0]
   const nonOwner = web3.eth.accounts[1]
+  let loggerInstance
+
+  before(async () => {
+
+  })
+
+  beforeEach(async () => {
+    loggerInstance = await Logger.deployed()
+  })
 
   it("It should create the smart token.", async function () {
     
@@ -10,7 +20,7 @@ contract('SmartToken', function () {
     const initialTokenSymbol = 'test'
     const initialTokenVersion = 'version'
     const initialTokenDecimals = 18
-    const LoggerContractAddress =  '123'
+    const LoggerContractAddress =  loggerInstance.address
 
     let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner, LoggerContractAddress);
 
@@ -30,7 +40,10 @@ contract('SmartToken', function () {
     const initialTokenSymbol = 'test'
     const initialTokenVersion = 'version'
     const initialTokenDecimals = 18
-    const LoggerContractAddress =  '123'
+    
+    loggerInstance = await Logger.deployed()
+
+    const LoggerContractAddress =  loggerInstance.address
 
     let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner, LoggerContractAddress);
 
@@ -53,7 +66,7 @@ contract('SmartToken', function () {
     const initialTokenVersion = 'version'
     const initialTokenDecimals = 18
 
-    const LoggerContractAddress =  '123'
+    const LoggerContractAddress =  loggerInstance.address
 
     let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner, LoggerContractAddress);
     

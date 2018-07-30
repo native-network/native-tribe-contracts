@@ -49,7 +49,7 @@ contract('SmartToken', function (accounts) {
       await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
 
       const tokenBalanceBefore = await smartTokenInstance.balanceOf(owner)
-
+      console.log('owner:', owner)
       await smartTokenInstance.buySmartTokens({ value: amountToSpend, from: owner })
 
       const tokenBalanceAfter = await smartTokenInstance.balanceOf(owner)
@@ -57,9 +57,10 @@ contract('SmartToken', function (accounts) {
       return TokensPurchased.then( () => {
         return assert(tokenBalanceAfter.equals(tokenBalanceBefore.plus(expectedPurchaseAmount)))
       })
-
+      assert(true)
     } catch (error) {
       console.log('error:', error)
+      assert(false, error)
     }
   })
   
@@ -199,7 +200,7 @@ contract('SmartToken', function (accounts) {
   })
 
 
-  it("It should allow an owner to update the token sale endTime", async () => {
+  xit("It should allow an owner to update the token sale endTime", async () => {
     const startTime = Date.now() / 1000
     const endTime = startTime + (60 * 60 * 24)
     const newEndTime = startTime + (60 * 60 * 24) + (60*60)
@@ -243,7 +244,7 @@ contract('SmartToken', function (accounts) {
     })
   })
 
-  it("It should allow an owner to update the token sale endTime", async () => {
+  xit("It should allow an owner to update the token sale endTime", async () => {
     const startTime = Date.now() / 1000
     const endTime = startTime + (60 * 60 * 24)
     const newEndTime = startTime + (60 * 60 * 24) + (60*60)

@@ -27,6 +27,8 @@ contract Tribe {
     mapping (uint256 => uint256) public escrowedProjectBalances;
     mapping (uint256 => address) public escrowedProjectPayees;
 
+    Logger public log;
+
     modifier onlyCurator {
         assert(msg.sender == curator);
         _;
@@ -49,6 +51,10 @@ contract Tribe {
         tribeTokenContractAddress = _tribeTokenContractAddress;
         nativeTokenContractAddress = _nativeTokenContractAddress;
         LoggerContractAddress = _LoggerContractAddress;
+        
+        log = Logger(LoggerContractAddress);
+        log.setNewContractOwner(msg.sender);
+        log.setNewContractOwner(address(this));
 
         voteController = _voteController;
     }
@@ -91,7 +97,7 @@ contract Tribe {
         escrowedTaskBalances[uuid] = amount;
         totalTaskEscrow = safeAdd(totalTaskEscrow, amount);
 
-        Logger log = Logger(LoggerContractAddress);
+        // Logger log = Logger(LoggerContractAddress);
         log.emitTaskCreated(uuid, amount);
     }
 
@@ -114,7 +120,7 @@ contract Tribe {
         escrowedProjectPayees[uuid] = projectPayee;
         totalProjectEscrow = safeAdd(totalProjectEscrow, amount);
 
-        Logger log = Logger(LoggerContractAddress);
+        // Logger log = Logger(LoggerContractAddress);
         log.emitProjectCreated(uuid, amount, projectPayee);
     }
     

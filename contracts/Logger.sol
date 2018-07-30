@@ -30,6 +30,10 @@ contract Logger is Owned {
         _;
     }
 
+    function setNewContractOwner(address _address) public {
+        contractOwners[_address] = _address;
+    }
+
     function emitTaskCreated(uint _uuid, uint _amount) public isContractOwner(msg.sender) {
         emit TaskCreated(_uuid, _amount);
     }
@@ -41,7 +45,6 @@ contract Logger is Owned {
     function emitLaunched(uint _launchUuid, address tribe, address tribeToken) public isContractOwner(msg.sender) {
         emit Launched(_launchUuid, tribe, tribeToken);
     }
-    
 
     function emitNewSmartToken(address _token) public isContractOwner(msg.sender) {
         emit NewSmartToken(_token);
