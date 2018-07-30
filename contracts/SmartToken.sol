@@ -12,7 +12,7 @@ contract SmartToken is Owned {
     // triggered when a smart token is deployed - the _token address is defined for forward compatibility, in case we want to trigger the event from a factory
     event NewSmartToken(address _token);
 
-    event TokenSaleInitialized(uint _saleStartTIme, uint _saleEndTime, uint _priceInWei, uint _amountForSale, uint nowTime);
+    event TokenSaleInitialized(uint _saleStartTime, uint _saleEndTime, uint _priceInWei, uint _amountForSale, uint nowTime);
     event TokensPurchased(address buyer, uint amount);
 
     // verifies that the address is different than this contract address
@@ -140,10 +140,10 @@ contract SmartToken is Owned {
 
     // Token sale below
 
-    uint saleStartTime;
-    uint saleEndTime;
-    uint priceInWei;
-    uint amountRemainingForSale;
+    uint public saleStartTime;
+    uint public saleEndTime;
+    uint public priceInWei;
+    uint public amountRemainingForSale;
 
     function initializeTokenSale(uint _saleStartTime, uint _saleEndTime, uint _priceInWei, uint _amountForSale) public ownerOnly {
 
@@ -156,6 +156,24 @@ contract SmartToken is Owned {
         amountRemainingForSale = _amountForSale;
         emit TokenSaleInitialized(saleStartTime, saleEndTime, priceInWei, amountRemainingForSale, now);
     }
+
+    // TODO: ensure that these 4 functions have actual tests to enusre data being set is valid
+    function updateStartTime(uint _newSaleStartTime) public ownerOnly {
+        saleStartTime = _newSaleStartTime;
+    }
+
+    function updateEndTime(uint _newSaleEndTime) public ownerOnly {
+        saleEndTime = _newSaleEndTime;
+    }
+
+    function updateAmountRemainingForSale(uint _newAmountRemainingForSale) public ownerOnly {
+        amountRemainingForSale = _newAmountRemainingForSale;
+    }
+
+    function updatePriceInWei(uint _newPriceInWei) public ownerOnly {
+        priceInWei = _newPriceInWei;
+    }
+
 
     function buySmartTokens() public payable {
         uint amountToBuy = SafeMath.safeDiv(msg.value, priceInWei);
