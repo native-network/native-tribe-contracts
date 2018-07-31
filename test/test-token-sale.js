@@ -210,156 +210,288 @@ contract('SmartToken-sale', function (accounts) {
       return assert(true)
     }
   })
+  describe.only("Token Sale Update Functions", async () => {
+    it("It should allow the owner to update the token sale startTime", async () => {
+      const startTime = Date.now() / 1000
+      const newStartTime = (Date.now() / 1000) + (60*60) // updated value
+      const endTime = startTime + (60 * 60 * 24)
+      const priceInWei = web3.toWei(1, 'ether')
+      const amountForSale = 1000000
 
-  it("It should allow the owner to update the token sale startTime", async () => {
-    const startTime = Date.now() / 1000
-    const newStartTime = (Date.now() / 1000) + (60*60) // updated value
-    const endTime = startTime + (60 * 60 * 24)
-    const priceInWei = web3.toWei(1, 'ether')
-    const amountForSale = 1000000
+      const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
 
-    const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
+      await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
 
-    await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
-
-    return tokenSaleInitializedEvent.then( () => {
-      smartTokenInstance.updateStartTime(newStartTime, {from: owner})
-      smartTokenInstance.saleStartTime().then((currentStartTime) => {
-        assert(Math.floor(newStartTime) === Math.floor(currentStartTime))
-      })
-    })
-  })
-
-  it("It should not allow a non-owner to update the token sale startTime", async () => {
-    const startTime = Date.now() / 1000
-    const newStartTime = (Date.now() / 1000) + (60*60) // updated value
-    const endTime = startTime + (60 * 60 * 24)
-    const priceInWei = web3.toWei(1, 'ether')
-    const amountForSale = 1000000
-
-    const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-    await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
-    return tokenSaleInitializedEvent.then( () => {
-      smartTokenInstance.updateStartTime(newStartTime, {from: nonOwner})
-      .then(( ) => {
-        return assert(false); // we should never be hitting this when a nonOwner calls this
-      }).catch(( ) => {
+      return tokenSaleInitializedEvent.then( () => {
+        smartTokenInstance.updateStartTime(newStartTime, {from: owner})
         smartTokenInstance.saleStartTime().then((currentStartTime) => {
-          if (Math.floor(startTime) === Math.floor( currentStartTime )) {
-            return assert(true);
-          } else {
-            return assert(false,'foo');
-          }
+          assert(Math.floor(newStartTime) === Math.floor(currentStartTime))
         })
       })
     })
-  })
 
+    it("It should not allow a non-owner to update the token sale startTime", async () => {
+      const startTime = Date.now() / 1000
+      const newStartTime = (Date.now() / 1000) + (60*60) // updated value
+      const endTime = startTime + (60 * 60 * 24)
+      const priceInWei = web3.toWei(1, 'ether')
+      const amountForSale = 1000000
 
-  it("It should allow an owner to update the token sale endTime", async () => {
-    const startTime = Date.now() / 1000
-    const endTime = startTime + (60 * 60 * 24)
-    const newEndTime = startTime + (60 * 60 * 24) + (60*60)
-    const priceInWei = web3.toWei(1, 'ether')
-    const amountForSale = 1000000
-
-    const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-    await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
-
-    return tokenSaleInitializedEvent.then( () => {
-      try {
-        smartTokenInstance.updateEndTime(newEndTime, {from: owner})
-      } catch (error) {
-        assert(true)
-        smartTokenInstance.saleEndTime().then((currentEndTime) => {
-          return assert(Math.floor(newEndTime) === Math.floor(currentEndTime))
+      const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
+      await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+      return tokenSaleInitializedEvent.then( () => {
+        smartTokenInstance.updateStartTime(newStartTime, {from: nonOwner})
+        .then(( ) => {
+          return assert(false); // we should never be hitting this when a nonOwner calls this
+        }).catch(( ) => {
+          smartTokenInstance.saleStartTime().then((currentStartTime) => {
+            if (Math.floor(startTime) === Math.floor( currentStartTime )) {
+              return assert(true);
+            } else {
+              return assert(false,'foo');
+            }
+          })
         })
-      }
-    })
-  })
-
-  it("It should not allow a non-owner to update the token sale endTime", async () => {
-    const startTime = Date.now() / 1000
-    const endTime = startTime + (60 * 60 * 24)
-    const newEndTime = startTime + (60 * 60 * 24) + (60*60)
-    const priceInWei = web3.toWei(1, 'ether')
-    const amountForSale = 1000000
-
-    const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-    await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
-    return tokenSaleInitializedEvent.then( () => {
-      smartTokenInstance.updateEndTime(newEndTime, {from: nonOwner})
-      .then(() => {
-        assert(false); // should not succeed with a nonOwner
-      }).catch(( ) => {
-        assert(true)
-        smartTokenInstance.saleEndTime().then((currentEndTime) => {
-          return assert(Math.floor(endTime) === Math.floor(currentEndTime))
-        })
-      });
-    })
-  })
-
-  it("It should allow an owner to update the token sale endTime", async () => {
-    const startTime = Date.now() / 1000
-    const endTime = startTime + (60 * 60 * 24)
-    const newEndTime = startTime + (60 * 60 * 24) + (60*60)
-    const priceInWei = web3.toWei(1, 'ether')
-    const amountForSale = 1000000
-
-    const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-    await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
-
-    return tokenSaleInitializedEvent.then( () => {
-      try {
-        smartTokenInstance.updateEndTime(newEndTime, {from: owner})
-      } catch (error) {
-        assert(true)
-        smartTokenInstance.saleEndTime().then((currentEndTime) => {
-          return assert(Math.floor(newEndTime) === Math.floor(currentEndTime))
-        })
-      }
-    })
-  })
-
-  it("It should allow an owner to update the token sale price", async () => {
-    const startTime = Date.now() / 1000
-    const endTime = startTime + (60 * 60 * 24)
-    const priceInWei = web3.toWei(1, 'ether')
-    const newPriceInWei = web3.toWei(100, 'ether')
-    const amountForSale = 1000000
-
-    const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-
-    await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
-
-    return tokenSaleInitializedEvent.then(() => {
-      smartTokenInstance.updatePriceInWei(newPriceInWei, {from: owner})
-      // smartTokenInstance.priceInWei().then((currentPriceInWei) => {
-      //   assert( newPriceInWei.toString() === currentPriceInWei.toString() )
-      // })
-    })
-  })
-
-  it("It should allow an owner to update the token sale amount remaining", async () => {
-    const startTime = Date.now() / 1000
-    const endTime = startTime + (60 * 60 * 24)
-    const priceInWei = web3.toWei(1, 'ether')
-    const amountForSale = 1000000
-    const newAmountRemainingForSale = 100
-
-    const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-
-    await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
-
-    return tokenSaleInitializedEvent.then(() => {
-      smartTokenInstance.updateAmountRemainingForSale(newAmountRemainingForSale, {from: owner})
-      smartTokenInstance.amountRemainingForSale().then((currentAmountRemainingForSale) => {
-        assert(newAmountRemainingForSale.toString() === currentAmountRemainingForSale.toString())
       })
     })
+
+
+    it("It should allow an owner to update the token sale endTime", async () => {
+      const startTime = Date.now() / 1000
+      const endTime = startTime + (60 * 60 * 24)
+      const newEndTime = startTime + (60 * 60 * 24) + (60*60)
+      const priceInWei = web3.toWei(1, 'ether')
+      const amountForSale = 1000000
+
+      const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
+      await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+
+      return tokenSaleInitializedEvent.then( () => {
+        try {
+          smartTokenInstance.updateEndTime(newEndTime, {from: owner})
+        } catch (error) {
+          assert(true)
+          smartTokenInstance.saleEndTime().then((currentEndTime) => {
+            return assert(Math.floor(newEndTime) === Math.floor(currentEndTime))
+          })
+        }
+      })
+    })
+
+    it("It should not allow a non-owner to update the token sale endTime", async () => {
+      const startTime = Date.now() / 1000
+      const endTime = startTime + (60 * 60 * 24)
+      const newEndTime = startTime + (60 * 60 * 24) + (60*60)
+      const priceInWei = web3.toWei(1, 'ether')
+      const amountForSale = 1000000
+
+      const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
+      await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+      return tokenSaleInitializedEvent.then( () => {
+        smartTokenInstance.updateEndTime(newEndTime, {from: nonOwner})
+        .then(() => {
+          assert(false); // should not succeed with a nonOwner
+        }).catch(( ) => {
+          assert(true)
+          smartTokenInstance.saleEndTime().then((currentEndTime) => {
+            return assert(Math.floor(endTime) === Math.floor(currentEndTime))
+          })
+        });
+      })
+    })
+
+    it("It should allow an owner to update the token sale endTime", async () => {
+      const startTime = Date.now() / 1000
+      const endTime = startTime + (60 * 60 * 24)
+      const newEndTime = startTime + (60 * 60 * 24) + (60*60)
+      const priceInWei = web3.toWei(1, 'ether')
+      const amountForSale = 1000000
+
+      const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
+      await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+
+      return tokenSaleInitializedEvent.then( () => {
+        try {
+          smartTokenInstance.updateEndTime(newEndTime, {from: owner})
+        } catch (error) {
+          assert(true)
+          smartTokenInstance.saleEndTime().then((currentEndTime) => {
+            return assert(Math.floor(newEndTime) === Math.floor(currentEndTime))
+          })
+        }
+      })
+    })
+
+    it("It should allow an owner to update the token sale price", async () => {
+      const startTime = Date.now() / 1000
+      const endTime = startTime + (60 * 60 * 24)
+      const priceInWei = web3.toWei(1, 'ether')
+      const newPriceInWei = web3.toWei(100, 'ether')
+      const amountForSale = 1000000
+
+      const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
+
+      await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+
+      return tokenSaleInitializedEvent.then(() => {
+        smartTokenInstance.updatePriceInWei(newPriceInWei, {from: owner}).then((currentPriceInWei) => {
+          return assert(false);
+        }).catch(() => {
+          return assert(true);
+        })
+      })
+    })
+
+    it("It should allow an owner to update the token sale amount remaining", async () => {
+      const startTime = Date.now() / 1000
+      const endTime = startTime + (60 * 60 * 24)
+      const priceInWei = web3.toWei(1, 'ether')
+      const amountForSale = 1000000
+      const newAmountRemainingForSale = 100
+
+      const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
+
+      await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+
+      return tokenSaleInitializedEvent.then(() => {
+        smartTokenInstance.updateAmountRemainingForSale(newAmountRemainingForSale, {from: owner})
+        smartTokenInstance.amountRemainingForSale().then((currentAmountRemainingForSale) => {
+          assert(newAmountRemainingForSale.toString() === currentAmountRemainingForSale.toString())
+        })
+      })
+    })
+    
+
+    
+    it("It should not allow the owner to update the token sale amuount remaining to negative", async () => {
+      const startTime = Date.now() / 1000
+      const endTime = startTime + (60 * 60 * 24)
+      const priceInWei = web3.toWei(1, 'ether')
+      const amountForSale = 1000000
+      const newAmountRemainingForSale = -100
+
+      const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
+
+      await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+
+      return tokenSaleInitializedEvent.then(() => {
+        smartTokenInstance.updateAmountRemainingForSale(newAmountRemainingForSale, {from: owner})
+        smartTokenInstance.amountRemainingForSale().then((currentAmountRemainingForSale) => {
+          return assert(false);
+        }).catch(( ) => {
+          return assert(true);
+        })
+      })
+    });
+    it("It should not allow the owner to update the token sale amuount remaining to a string", async () => {
+      const startTime = Date.now() / 1000
+      const endTime = startTime + (60 * 60 * 24)
+      const priceInWei = web3.toWei(1, 'ether')
+      const amountForSale = 1000000
+      const newAmountRemainingForSale = 'a lot more'
+
+      const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
+
+      await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+
+      return tokenSaleInitializedEvent.then(() => {
+        smartTokenInstance.updateAmountRemainingForSale(newAmountRemainingForSale, {from: owner})
+        smartTokenInstance.amountRemainingForSale().then((currentAmountRemainingForSale) => {
+          return assert(false);
+        }).catch(( ) => {
+          return assert(true);
+        })
+      })
+    });
+
+
+
+    it("It should not allow an owner to update the token sale price to negative", async () => {
+
+    });
+    it("It should not allow an owner to update the token sale price to a string", async () => {
+
+    });
+
+
+
+    it("It should not allow an owner to update the token sale startTime to negative", async () => {
+      const startTime = Date.now() / 1000
+      const endTime = startTime + (60 * 60 * 24)
+      const newStartTime = -100
+      const priceInWei = web3.toWei(1, 'ether')
+      const amountForSale = 1000000
+
+      const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
+      await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+      return tokenSaleInitializedEvent.then( () => {
+        smartTokenInstance.updateStartTime(newStartTime, {from: owner})
+        .then(() => {
+          assert(false);
+        }).catch(( ) => {
+          return assert(true)
+        });
+      })
+    });
+    it("It should not allow an owner to update the token sale startTime to a string", async () => {
+      const startTime = Date.now() / 1000
+      const endTime = startTime + (60 * 60 * 24)
+      const newStartTime = "Next Week"
+      const priceInWei = web3.toWei(1, 'ether')
+      const amountForSale = 1000000
+
+      const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
+      await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+      return tokenSaleInitializedEvent.then( () => {
+        smartTokenInstance.updateStartTime(newStartTime, {from: owner})
+        .then(() => {
+          assert(false);
+        }).catch(( ) => {
+          return assert(true)
+        });
+      })
+    });
+
+
+
+    it("It should not allow an owner to update the token sale endTime to negative", async () => {
+      const startTime = Date.now() / 1000
+      const endTime = startTime + (60 * 60 * 24)
+      const newEndTime = -100
+      const priceInWei = web3.toWei(1, 'ether')
+      const amountForSale = 1000000
+
+      const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
+      await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+      return tokenSaleInitializedEvent.then( () => {
+        smartTokenInstance.updateEndTime(newEndTime, {from:  owner})
+        .then(() => {
+          assert(false);
+        }).catch(( ) => {
+          assert(true)
+          smartTokenInstance.saleEndTime().then((currentEndTime) => {
+            return assert(Math.floor(endTime) != Math.floor(currentEndTime))
+          })
+        });
+      })
+    });
+    it("It should not allow an owner to update the token sale endTime to a string", async () => {
+      const startTime = Date.now() / 1000
+      const endTime = startTime + (60 * 60 * 24)
+      const newEndTime = "Next Week"
+      const priceInWei = web3.toWei(1, 'ether')
+      const amountForSale = 1000000
+
+      const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
+      await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+      return tokenSaleInitializedEvent.then( () => {
+        smartTokenInstance.updateEndTime(newEndTime, {from: owner})
+        .then(() => {
+          assert(false);
+        }).catch(( ) => {
+          return assert(true)
+        });
+      })
+    });
   })
-
-
-
 })
