@@ -4,6 +4,21 @@ import './Logger.sol';
 import './utility/Owned.sol';
 import './utility/SafeMath.sol';
 
+
+interface ERC20 {
+    function allowance(address owner, address spender)
+    external view returns (uint256);
+
+    function transferFrom(address from, address to, uint256 value)
+    external returns (bool);
+
+    function approve(address spender, uint256 value) external returns (bool);
+
+    function totalSupply() external view returns (uint256);
+    function balanceOf(address who) external view returns (uint256);
+    function transfer(address to, uint256 value) external returns (bool);
+}
+
 // TODO -- use safemath for everything
 contract SmartToken is Owned {
     address public LoggerContractAddress;
@@ -181,6 +196,9 @@ contract SmartToken is Owned {
             revert();
         }
         priceInWei = _newPriceInWei;
+    }
+    function withdrawToken(ERC20 _token, uint amount) public ownerOnly {
+        _token.transfer(msg.sender, amount);
     }
     function() public payable {
         uint amountToBuy = SafeMath.safeDiv(msg.value, priceInWei);
