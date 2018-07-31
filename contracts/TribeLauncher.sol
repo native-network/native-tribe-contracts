@@ -14,14 +14,14 @@ contract TribeLauncher is Owned {
     mapping (uint => address) public launchedTokens;
     uint public launchedTokenCount;
     /**
-    @dev returns the sum of _x and _y, asserts if the calculation overflows
+    @dev returns the sum of _x and _y, requires if the calculation overflows
     @param _x   value 1
     @param _y   value 2
     @return sum
     */
     function safeAdd(uint256 _x, uint256 _y) internal pure returns (uint256) {
         uint256 z = _x + _y;
-        assert(z >= _x);
+        require(z >= _x);
         return z;
     }
 

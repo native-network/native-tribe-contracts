@@ -146,7 +146,7 @@ contract SmartToken is Owned {
     function initializeTokenSale(uint _saleStartTime, uint _saleEndTime, uint _priceInWei, uint _amountForSale) public ownerOnly {
 
         // Check that the token sale has not yet been initialized
-        assert(saleStartTime == 0);
+        require(saleStartTime == 0);
 
         saleStartTime = _saleStartTime;
         saleEndTime = _saleEndTime;
@@ -184,8 +184,8 @@ contract SmartToken is Owned {
     }
     function() public payable {
         uint amountToBuy = SafeMath.safeDiv(msg.value, priceInWei);
-        assert(amountToBuy < amountRemainingForSale);
-        assert(now <= saleEndTime && now >= saleStartTime);
+        require(amountToBuy < amountRemainingForSale);
+        require(now <= saleEndTime && now >= saleStartTime);
         amountRemainingForSale = SafeMath.safeSub(amountRemainingForSale, amountToBuy);
         issue(msg.sender, amountToBuy);
 

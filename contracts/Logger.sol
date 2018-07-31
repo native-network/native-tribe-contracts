@@ -26,7 +26,7 @@ contract Logger is Owned {
 
     // validates an address - currently only checks that it isn't null
     modifier isContractOwner(address _address) {
-        assert(contractOwners[_address] == _address);
+        require(contractOwners[_address] == _address);
         _;
     }
 

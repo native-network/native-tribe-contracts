@@ -86,7 +86,7 @@ contract('Tribe', function () {
       await launchedTribeInstance.createNewTask(uuid, taskReward, {from: nonCurator})  
     }
     catch (err) {
-      if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
+      if ( err.toString().indexOf('VM Exception while processing transaction: revert') >= 0 ) {
         return assert(true, "did not allow a user to set a negative task reward")
       } else {
         return assert(false, "did not allow a user to set a negative task reward but threw with an unexpected error")
@@ -107,7 +107,7 @@ contract('Tribe', function () {
       await launchedTribeInstance.createNewTask(uuid, taskReward, {from: nonCurator})  
     }
     catch (err) {
-      if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
+      if ( err.toString().indexOf('VM Exception while processing transaction: revert') >= 0 ) {
         return assert(true, "did not allowed a nonCurator to create a task")
       } else {
         return assert(false, "did not allowed a nonCurator to create a task but with an unexpected error")
@@ -131,7 +131,7 @@ contract('Tribe', function () {
       await launchedTribeInstance.createNewTask(uuid, taskRewardTooHigh, {from: curator})
     }
     catch(err) {
-      if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
+      if ( err.toString().indexOf('VM Exception while processing transaction: revert') >= 0 ) {
         return assert(true, "failed when creating a task with a higher reward than remaining dev fund balance")
       } else {
         return assert(false, "failed when creating the task but with an unexpected error message")
@@ -160,7 +160,7 @@ contract('Tribe', function () {
       await launchedTribeInstance.cancelTask(uuid, {from: nonCurator})  
     }
     catch (err) {
-      if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
+      if ( err.toString().indexOf('VM Exception while processing transaction: revert') >= 0 ) {
 
         const devFundRemainingBalanceAfter = await launchedTribeInstance.getAvailableDevFund()
         return assert(devFundRemainingBalanceAfter.equals(devFundRemainingBalanceBefore))
@@ -209,7 +209,7 @@ contract('Tribe', function () {
       await launchedTribeInstance.rewardTaskCompletion(uuid, rewardee, {from: nonCurator})  
     }
     catch (err) {
-      if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
+      if ( err.toString().indexOf('VM Exception while processing transaction: revert') >= 0 ) {
         const taskEscrowBalance = await launchedTribeInstance.escrowedTaskBalances(uuid)
         const rewardeeBalanceAfter = await nativeTokenInstance.balanceOf(rewardee)
 
@@ -252,7 +252,7 @@ contract('Tribe', function () {
       await launchedTribeInstance.createNewProject(uuid, projectReward, rewardee, {from: nonCurator})
     }
     catch (err) {
-      if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
+      if ( err.toString().indexOf('VM Exception while processing transaction: revert') >= 0 ) {
           return assert(true, "did not allowed a nonCurator to create a project")
       } else {
         return assert(false, "did not allowed a nonCurator to create a project but with an unexpected error")
@@ -277,7 +277,7 @@ contract('Tribe', function () {
       await launchedTribeInstance.createNewProject(uuid, projectRewardTooHigh, rewardee,  {from: curator})
     }
     catch(err) {
-      if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
+      if ( err.toString().indexOf('VM Exception while processing transaction: revert') >= 0 ) {
         return assert(true, "did not allow a project to be created that with a reward higher than the remaining dev fund")
       } else {
         return assert(false, "encountered an unexpected error")
@@ -297,7 +297,7 @@ contract('Tribe', function () {
       await launchedTribeInstance.createNewProject(uuid, projectRewardTooLow, rewardee,  {from: curator})
     }
     catch(err) {
-      if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
+      if ( err.toString().indexOf('VM Exception while processing transaction: revert') >= 0 ) {
         return assert(true, "did not allow a project to be created that with a negative reward")
       } else {
         return assert(false, "encountered an unexpected error")
@@ -331,7 +331,7 @@ contract('Tribe', function () {
     }
     catch (err) {
 
-      if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
+      if ( err.toString().indexOf('VM Exception while processing transaction: revert') >= 0 ) {
         const devFundRemainingBalanceAfter = await launchedTribeInstance.getAvailableDevFund()
         return assert(devFundRemainingBalanceAfter.equals(devFundRemainingBalanceBefore))
         return assert(true, "did not allowed a nonCurator to cancel a project")
@@ -379,7 +379,7 @@ contract('Tribe', function () {
       await launchedTribeInstance.rewardProjectCompletion(uuid, {from: nonCurator})
     }
     catch (err) {
-      if ( err.toString().indexOf('VM Exception while processing transaction: invalid opcode') >= 0 ) {
+      if ( err.toString().indexOf('VM Exception while processing transaction: revert') >= 0 ) {
         return assert(true, "did not allowed a nonCurator to reward a project")
       } else {
         return assert(false, "did not allowed a nonCurator to reward a a project but with an unexpected error")

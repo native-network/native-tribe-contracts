@@ -30,17 +30,17 @@ contract Tribe {
     Logger public log;
 
     modifier onlyCurator {
-        assert(msg.sender == curator);
+        require(msg.sender == curator);
         _;
     }
 
     modifier onlyVoteController {
-        assert(msg.sender == voteController);
+        require(msg.sender == voteController);
         _;
     }
 
     modifier sufficientDevFundBalance (uint amount) {
-        assert(amount <= getAvailableDevFund());
+        require(amount <= getAvailableDevFund());
         _;
     }
 
@@ -59,25 +59,25 @@ contract Tribe {
         voteController = _voteController;
     }
     /**
-    @dev returns the sum of _x and _y, asserts if the calculation overflows
+    @dev returns the sum of _x and _y, requires if the calculation overflows
     @param _x   value 1
     @param _y   value 2
     @return sum
     */
     function safeAdd(uint256 _x, uint256 _y) internal pure returns (uint256) {
         uint256 z = _x + _y;
-        assert(z >= _x);
+        require(z >= _x);
         return z;
     }
 
     /**
-    @dev returns the difference of _x minus _y, asserts if the subtraction results in a negative number
+    @dev returns the difference of _x minus _y, requires if the subtraction results in a negative number
     @param _x   minuend
     @param _y   subtrahend
     @return difference
     */
     function safeSub(uint256 _x, uint256 _y) internal pure returns (uint256) {
-        assert(_x >= _y);
+        require(_x >= _y);
         return _x - _y;
     }
     function getAvailableDevFund() public view returns (uint) {
