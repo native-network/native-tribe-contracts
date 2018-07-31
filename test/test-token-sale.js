@@ -179,8 +179,8 @@ contract('SmartToken-sale', function (accounts) {
       })
     })
   })
-  // fails... but is supposed to fail, not failing and correctly handling
-  xit("It should not allow a non-owner to update the token sale startTime", async () => {
+
+  it("It should not allow a non-owner to update the token sale startTime", async () => {
     const startTime = Date.now() / 1000
     const newStartTime = (Date.now() / 1000) + (60*60) // updated value
     const endTime = startTime + (60 * 60 * 24)
@@ -189,16 +189,19 @@ contract('SmartToken-sale', function (accounts) {
 
     const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
     await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
-
     return tokenSaleInitializedEvent.then( () => {
-      try {
-        smartTokenInstance.updateStartTime(newStartTime, {from: nonOwner})
-      } catch (error) {
-        assert(true)
+      smartTokenInstance.updateStartTime(newStartTime, {from: nonOwner})
+      .then(( ) => {
+        return assert(false); // we should never be hitting this when a nonOwner calls this
+      }).catch(( ) => {
         smartTokenInstance.saleStartTime().then((currentStartTime) => {
-          return assert(Math.floor(startTime) === Math.floor(currentStartTime))
+          if (Math.floor(startTime) === Math.floor( currentStartTime )) {
+            return assert(true);
+          } else {
+            return assert(false,'foo');
+          }
         })
-      }
+      })
     })
   })
 
@@ -225,7 +228,7 @@ contract('SmartToken-sale', function (accounts) {
     })
   })
 
-  xit("It should not allow a non-owner to update the token sale endTime", async () => {
+  it("It should not allow a non-owner to update the token sale endTime", async () => {
     const startTime = Date.now() / 1000
     const endTime = startTime + (60 * 60 * 24)
     const newEndTime = startTime + (60 * 60 * 24) + (60*60)
@@ -234,16 +237,16 @@ contract('SmartToken-sale', function (accounts) {
 
     const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
     await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
-
     return tokenSaleInitializedEvent.then( () => {
-      try {
-        smartTokenInstance.updateEndTime(newEndTime, {from: nonOwner})
-      } catch (error) {
+      smartTokenInstance.updateEndTime(newEndTime, {from: nonOwner})
+      .then(() => {
+        assert(false); // should not succeed with a nonOwner
+      }).catch(( ) => {
         assert(true)
         smartTokenInstance.saleEndTime().then((currentEndTime) => {
           return assert(Math.floor(endTime) === Math.floor(currentEndTime))
         })
-      }
+      });
     })
   })
 
