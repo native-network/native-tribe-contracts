@@ -49,7 +49,6 @@ contract('SmartToken', function (accounts) {
       await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
 
       const tokenBalanceBefore = await smartTokenInstance.balanceOf(owner)
-      console.log('owner:', owner)
       await smartTokenInstance.buySmartTokens({ value: amountToSpend, from: owner })
 
       const tokenBalanceAfter = await smartTokenInstance.balanceOf(owner)

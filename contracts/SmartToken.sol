@@ -184,7 +184,7 @@ contract SmartToken is Owned {
         amountRemainingForSale = SafeMath.safeSub(amountRemainingForSale, amountToBuy);
         issue(msg.sender, amountToBuy);
 
-        // emit TokensPurchased(msg.sender, amountToBuy);
+        emit TokensPurchased(msg.sender, amountToBuy);
     }
 
 }
