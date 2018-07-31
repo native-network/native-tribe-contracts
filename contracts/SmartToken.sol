@@ -159,23 +159,33 @@ contract SmartToken is Owned {
         emit TokenSaleInitialized(saleStartTime, saleEndTime, priceInWei, amountRemainingForSale, now);
     }
 
-    // TODO: ensure that these 4 functions have actual tests to enusre data being set is valid
     function updateStartTime(uint _newSaleStartTime) public ownerOnly {
+        if (_newSaleStartTime < 0 ) {
+            revert();
+        }
         saleStartTime = _newSaleStartTime;
     }
 
     function updateEndTime(uint _newSaleEndTime) public ownerOnly {
+        if (_newSaleEndTime < saleStartTime || _newSaleEndTime < 0) {
+            revert();
+        }
         saleEndTime = _newSaleEndTime;
     }
 
     function updateAmountRemainingForSale(uint _newAmountRemainingForSale) public ownerOnly {
+        if(_newAmountRemainingForSale < 0) {
+            revert();
+        }
         amountRemainingForSale = _newAmountRemainingForSale;
     }
 
     function updatePriceInWei(uint _newPriceInWei) public ownerOnly {
+        if(_newPriceInWei < 0) {
+            revert();
+        }
         priceInWei = _newPriceInWei;
     }
-
 
     function buySmartTokens() public payable {
         uint amountToBuy = SafeMath.safeDiv(msg.value, priceInWei);
