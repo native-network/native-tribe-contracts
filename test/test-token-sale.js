@@ -1,6 +1,10 @@
 const SmartToken = artifacts.require("SmartToken");
 const Logger = artifacts.require("Logger")
 const util = require('util')
+const Web3 = require('web3')
+const web3 = new Web3()
+const provider = new web3.providers.HttpProvider('http://localhost:8545')
+web3.setProvider(provider)
 
 contract('SmartToken-sale', function (accounts) {
   const owner = web3.eth.accounts[0]
@@ -53,14 +57,20 @@ contract('SmartToken-sale', function (accounts) {
       await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
 
       const tokenBalanceBefore = await smartTokenInstance.balanceOf(owner)
-      await smartTokenInstance.buySmartTokens({ value: amountToSpend, from: owner })
 
-      const tokenBalanceAfter = await smartTokenInstance.balanceOf(owner)
+      web3.eth.sendTransaction({
+        from: owner,
+        to: smartTokenInstance.address,
+        value: amountToSpend,
+        gas: 100000
+      }, (err, result) => {
+        smartTokenInstance.balanceOf(owner).then((tokenBalanceAfter)=>{
+          return TokensPurchased.then( () => {
+            return assert(tokenBalanceAfter.equals(tokenBalanceBefore.plus(expectedPurchaseAmount)))
+          })
+        })       
+      });
 
-      return TokensPurchased.then( () => {
-        return assert(tokenBalanceAfter.equals(tokenBalanceBefore.plus(expectedPurchaseAmount)))
-      })
-      assert(true)
     } catch (error) {
       console.log('error:', error)
       assert(false, error)
@@ -101,13 +111,23 @@ contract('SmartToken-sale', function (accounts) {
   it("It fail if attempting to purchase before the sale has been initialized", async () => {
     const amountToSpend = web3.toWei(10, 'ether')
     
+    
     try {
-      await smartTokenInstance.buySmartTokens({ value: amountToSpend, from: owner })
+      web3.eth.sendTransaction({
+        from: owner,
+        to: smartTokenInstance.address,
+        value: amountToSpend,
+        gas: 100000
+      }, (err, result) => {
+        if(err){
+          return assert(true)
+        } else {
+          return assert(false)
+        }
+      });
     } catch(err) {
       return assert(true)
-    }
-    return assert(false)
-    
+    }    
   })
   
   it("It fail if attempting to purchase tokens before the sale start date", async () => {
@@ -120,11 +140,21 @@ contract('SmartToken-sale', function (accounts) {
     await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
     
     try {
-      await smartTokenInstance.buySmartTokens({ value: amountToSpend, from: owner })
+      web3.eth.sendTransaction({
+        from: owner,
+        to: smartTokenInstance.address,
+        value: amountToSpend,
+        gas: 100000
+      }, (err, result) => {
+        if(err){
+          return assert(true)
+        } else {
+          return assert(false)
+        }
+      });
     } catch(err) {
       return assert(true)
     }
-    return assert(false)
   })
   
   it("It fail if attempting to purchase tokens after the sale end date", async () => {
@@ -137,11 +167,21 @@ contract('SmartToken-sale', function (accounts) {
     await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
 
     try {
-      await smartTokenInstance.buySmartTokens({ value: amountToSpend, from: owner })
+      web3.eth.sendTransaction({
+        from: owner,
+        to: smartTokenInstance.address,
+        value: amountToSpend,
+        gas: 100000
+      }, (err, result) => {
+        if(err){
+          return assert(true)
+        } else {
+          return assert(false)
+        }
+      });
     } catch(err) {
       return assert(true)
     }
-    return assert(false)
   })
 
   it("It fail if attempting to purchase more tokens than are available for sale", async () => {
@@ -154,11 +194,21 @@ contract('SmartToken-sale', function (accounts) {
     await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
 
     try {
-      await smartTokenInstance.buySmartTokens({ value: amountToSpend, from: owner })
+      web3.eth.sendTransaction({
+        from: owner,
+        to: smartTokenInstance.address,
+        value: amountToSpend,
+        gas: 100000
+      }, (err, result) => {
+        if(err){
+          return assert(true)
+        } else {
+          return assert(false)
+        }
+      });
     } catch(err) {
       return assert(true)
     }
-    return assert(false)
   })
 
   it("It should allow the owner to update the token sale startTime", async () => {

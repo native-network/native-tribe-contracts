@@ -117,10 +117,6 @@ contract SmartToken is Owned {
     mapping (address => uint256) balances;
     mapping (address => mapping (address => uint256)) allowed;
 
-    function () public {
-        revert();
-    }
-
     string public name;
     uint8 public decimals;
     string public symbol;
@@ -186,8 +182,7 @@ contract SmartToken is Owned {
         }
         priceInWei = _newPriceInWei;
     }
-
-    function buySmartTokens() public payable {
+    function() public payable {
         uint amountToBuy = SafeMath.safeDiv(msg.value, priceInWei);
         assert(amountToBuy < amountRemainingForSale);
         assert(now <= saleEndTime && now >= saleStartTime);
@@ -196,5 +191,4 @@ contract SmartToken is Owned {
 
         emit TokensPurchased(msg.sender, amountToBuy);
     }
-
 }
