@@ -76,7 +76,6 @@ contract Tribe {
         escrowedTaskBalances[uuid] = amount;
         totalTaskEscrow = SafeMath.safeAdd(totalTaskEscrow, amount);
 
-        // Logger log = Logger(LoggerContractAddress);
         log.emitTaskCreated(uuid, amount);
     }
 
@@ -99,7 +98,6 @@ contract Tribe {
         escrowedProjectPayees[uuid] = projectPayee;
         totalProjectEscrow = SafeMath.safeAdd(totalProjectEscrow, amount);
 
-        // Logger log = Logger(LoggerContractAddress);
         log.emitProjectCreated(uuid, amount, projectPayee);
     }
     
