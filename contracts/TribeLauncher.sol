@@ -25,38 +25,41 @@ contract TribeLauncher is Owned {
         require(z >= _x);
         return z;
     }
+    
+    uint _launchUuidIndex = 0;
+    uint _minimumStakingRequirementIndex = 1;
+    uint _lockupPeriodIndex = 2;
+    uint tokenTotalSupplyIndex = 3;
+    uint tokenDecimalsIndex = 4;
 
     function launchTribe(
-        uint _launchUuid, 
-        uint _minimumStakingRequirement, 
-        uint _lockupPeriod, 
+        uint[] ai,
         address _curatorAddress, 
         address _nativeTokenContractAddress, 
         address _voteController,
         string tokenName,
-        uint tokenTotalSupply,
-        uint8 tokenDecimals,
         string tokenSymbol,
-        string tokenVersion
+        string tokenVersion,
+        address _LoggerContractAddress
     ) public ownerOnly {
         
-        SmartToken tribeToken = new SmartToken(tokenName, tokenTotalSupply, tokenDecimals, tokenSymbol, tokenVersion, msg.sender, LoggerContractAddress);
+        SmartToken tribeToken = new SmartToken(tokenName, ai[tokenTotalSupplyIndex], uint8(ai[tokenDecimalsIndex]), tokenSymbol, tokenVersion, msg.sender, LoggerContractAddress);
         launchedTokens[launchedTokenCount] = tribeToken;
         launchedTokenCount = safeAdd(launchedTokenCount,1);
         
-        Tribe tribe = new Tribe(_minimumStakingRequirement, _lockupPeriod, _curatorAddress, address(tribeToken), _nativeTokenContractAddress, _voteController, LoggerContractAddress);
-        launchedTribes[launchedTribeCount] = tribe;
+        Tribe tribe = new Tribe(ai[_minimumStakingRequirementIndex], ai[_lockupPeriodIndex], _curatorAddress, address(tribeToken), _nativeTokenContractAddress, _voteController, LoggerContractAddress);
+        
+        Registrar registrar = new Registrar(address(tribe), _LoggerContractAddress);
+        launchedTribes[launchedTribeCount] = registrar;
         launchedTribeCount = safeAdd(launchedTribeCount,1);
 
-//        Registrar registrar = new Registrar(address(tribe), LoggerContractAddress);
-
-        setupLogger(LoggerContractAddress, _launchUuid, tribe, tribeToken);
+        setupLogger(_LoggerContractAddress, ai[_launchUuidIndex], registrar, tribeToken);
     }
 
-    function setupLogger(address LoggerContractAddress, uint _launchUuid, Tribe tribe, SmartToken tribeToken) {
+    function setupLogger(address LoggerContractAddress, uint _launchUuid, Registrar registrar, SmartToken tribeToken) public {
         Logger log = Logger(LoggerContractAddress);
         log.setNewContractOwner(address(this));
-        log.emitLaunched(_launchUuid, tribe, tribeToken);
+        log.emitLaunched(_launchUuid, registrar, tribeToken);
     }
 
     constructor(address _LoggerContractAddress) public {

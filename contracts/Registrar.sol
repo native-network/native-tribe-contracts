@@ -9,9 +9,9 @@ contract Registrar is Owned {
 
     Logger public logger;
     
-    function addNewAddress(address _newAddress) public ownerOnly {
+    function addNewAddress(address _newAddress) public {
         addresses.push(_newAddress);
-        logger.emitNewTribeAddress(_newAddress);
+        // logger.emitNewTribeAddress(_newAddress);
     }
 
     function getAddresses() public returns (address[]) {

@@ -19,7 +19,6 @@ interface ERC20 {
     function transfer(address to, uint256 value) external returns (bool);
 }
 
-// TODO -- use safemath for everything
 contract SmartToken is Owned {
     address public LoggerContractAddress;
     // Smart token specific stuff
