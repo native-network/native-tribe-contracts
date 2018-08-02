@@ -1,6 +1,7 @@
 pragma solidity ^0.4.8;
 
 import './Logger.sol';
+import './Registrar.sol';
 import './Tribe.sol';
 import './SmartToken.sol';
 import './utility/Owned.sol';
@@ -38,7 +39,7 @@ contract TribeLauncher is Owned {
         string tokenSymbol,
         string tokenVersion
     ) public ownerOnly {
-
+        
         SmartToken tribeToken = new SmartToken(tokenName, tokenTotalSupply, tokenDecimals, tokenSymbol, tokenVersion, msg.sender, LoggerContractAddress);
         launchedTokens[launchedTokenCount] = tribeToken;
         launchedTokenCount = safeAdd(launchedTokenCount,1);
@@ -47,6 +48,12 @@ contract TribeLauncher is Owned {
         launchedTribes[launchedTribeCount] = tribe;
         launchedTribeCount = safeAdd(launchedTribeCount,1);
 
+//        Registrar registrar = new Registrar(address(tribe), LoggerContractAddress);
+
+        setupLogger(LoggerContractAddress, _launchUuid, tribe, tribeToken);
+    }
+
+    function setupLogger(address LoggerContractAddress, uint _launchUuid, Tribe tribe, SmartToken tribeToken) {
         Logger log = Logger(LoggerContractAddress);
         log.setNewContractOwner(address(this));
         log.emitLaunched(_launchUuid, tribe, tribeToken);
