@@ -58,36 +58,15 @@ contract Tribe {
 
         voteController = _voteController;
     }
-    /**
-    @dev returns the sum of _x and _y, requires if the calculation overflows
-    @param _x   value 1
-    @param _y   value 2
-    @return sum
-    */
-    function safeAdd(uint256 _x, uint256 _y) internal pure returns (uint256) {
-        uint256 z = _x + _y;
-        require(z >= _x);
-        return z;
-    }
 
-    /**
-    @dev returns the difference of _x minus _y, requires if the subtraction results in a negative number
-    @param _x   minuend
-    @param _y   subtrahend
-    @return difference
-    */
-    function safeSub(uint256 _x, uint256 _y) internal pure returns (uint256) {
-        require(_x >= _y);
-        return _x - _y;
-    }
     function getAvailableDevFund() public view returns (uint) {
         SmartToken nativeTokenInstance = SmartToken(nativeTokenContractAddress);
         uint devFundBalance = nativeTokenInstance.balanceOf(address(this));
-        return safeSub(devFundBalance, getLockedDevFundAmount());
+        return SafeMath.safeSub(devFundBalance, getLockedDevFundAmount());
     }
     
     function getLockedDevFundAmount() public view returns (uint) {
-        return safeAdd(totalTaskEscrow, totalProjectEscrow);
+        return SafeMath.safeAdd(totalTaskEscrow, totalProjectEscrow);
     }
 
     // Task escrow code below (in native tokens)
@@ -95,21 +74,21 @@ contract Tribe {
     
     function createNewTask(uint uuid, uint amount) public onlyCurator sufficientDevFundBalance (amount) {
         escrowedTaskBalances[uuid] = amount;
-        totalTaskEscrow = safeAdd(totalTaskEscrow, amount);
+        totalTaskEscrow = SafeMath.safeAdd(totalTaskEscrow, amount);
 
         // Logger log = Logger(LoggerContractAddress);
         log.emitTaskCreated(uuid, amount);
     }
 
     function cancelTask(uint uuid) public onlyCurator {
-        totalTaskEscrow = safeSub(totalTaskEscrow,escrowedTaskBalances[uuid]);
+        totalTaskEscrow = SafeMath.safeSub(totalTaskEscrow,escrowedTaskBalances[uuid]);
         escrowedTaskBalances[uuid] = 0;
     }
 
     function rewardTaskCompletion(uint uuid, address user) public onlyVoteController {
         SmartToken nativeTokenInstance = SmartToken(nativeTokenContractAddress);
         nativeTokenInstance.transfer(user, escrowedTaskBalances[uuid]);
-        totalTaskEscrow = safeSub(totalTaskEscrow, escrowedTaskBalances[uuid]);
+        totalTaskEscrow = SafeMath.safeSub(totalTaskEscrow, escrowedTaskBalances[uuid]);
         escrowedTaskBalances[uuid] = 0;
     }
 
@@ -118,21 +97,21 @@ contract Tribe {
     function createNewProject(uint uuid, uint amount, address projectPayee) public onlyCurator sufficientDevFundBalance (amount) {
         escrowedProjectBalances[uuid] = amount;
         escrowedProjectPayees[uuid] = projectPayee;
-        totalProjectEscrow = safeAdd(totalProjectEscrow, amount);
+        totalProjectEscrow = SafeMath.safeAdd(totalProjectEscrow, amount);
 
         // Logger log = Logger(LoggerContractAddress);
         log.emitProjectCreated(uuid, amount, projectPayee);
     }
     
     function cancelProject(uint uuid) public onlyCurator {
-        totalProjectEscrow = safeSub(totalProjectEscrow, escrowedProjectBalances[uuid]);
+        totalProjectEscrow = SafeMath.safeSub(totalProjectEscrow, escrowedProjectBalances[uuid]);
         escrowedProjectBalances[uuid] = 0;
     }
     
     function rewardProjectCompletion(uint uuid) public onlyVoteController {
         SmartToken nativeTokenInstance = SmartToken(nativeTokenContractAddress);
         nativeTokenInstance.transfer(escrowedProjectPayees[uuid], escrowedProjectBalances[uuid]);
-        totalProjectEscrow = safeSub(totalProjectEscrow, escrowedProjectBalances[uuid]);
+        totalProjectEscrow = SafeMath.safeSub(totalProjectEscrow, escrowedProjectBalances[uuid]);
         escrowedProjectBalances[uuid] = 0;
     }
 
@@ -157,8 +136,8 @@ contract Tribe {
             revert();
         }
 
-        stakedBalances[msg.sender] = safeAdd(stakedBalances[msg.sender], amount);
-        totalStaked = safeAdd(totalStaked, amount);
+        stakedBalances[msg.sender] = SafeMath.safeAdd(stakedBalances[msg.sender], amount);
+        totalStaked = SafeMath.safeAdd(totalStaked, amount);
         timeStaked[msg.sender] = now;
     }
 
@@ -173,8 +152,8 @@ contract Tribe {
             revert();
         }
 
-        stakedBalances[msg.sender] = safeSub(stakedBalances[msg.sender], amount);
-        totalStaked = safeSub(totalStaked, amount);
+        stakedBalances[msg.sender] = SafeMath.safeSub(stakedBalances[msg.sender], amount);
+        totalStaked = SafeMath.safeSub(totalStaked, amount);
         tribeTokenInstance.transfer(msg.sender, amount);
     }
 
