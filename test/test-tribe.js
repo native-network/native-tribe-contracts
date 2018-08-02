@@ -480,16 +480,18 @@ contract('Tribe', function () {
   })
   
   // Technically not sure about this one, solidity converts ints into uints and doesn't revert as I would expect.
-  xit("It should not allow setting the minimumStakingRequirement to negative", async function () {
+  it("It should not allow setting the minimumStakingRequirement to negative", async function () {
     const stakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
     const newStakingMinimum = -1050;
-    try {
-      await launchedTribeInstance.setMinimumStakingRequirement( newStakingMinimum, {from: curator})
-    } catch (error) {
-      const finalStakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
-      assert(stakingMinimum.toString() === finalStakingMinimum.toString() && 1 == 2)
-    }
-    const finalStakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
+    launchedTribeInstance.setMinimumStakingRequirement( newStakingMinimum, {from: curator})
+    .then(()=>{
+      // return launchedTribeInstance.minimumStakingRequirement()
+      // assert(stakingMinimum.toString() === finalStakingMinimum.toString() && 1 == 2)
+      // const finalStakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
+      assert(false)
+    }).catch(( ) => {
+      assert(true);
+    })
   })
 
   it("It should not allow setting the minimumStakingRequirement to a string", async function () {

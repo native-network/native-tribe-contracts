@@ -210,7 +210,8 @@ contract('SmartToken-sale', function (accounts) {
       return assert(true)
     }
   })
-  describe.only("Token Sale Update Functions", async () => {
+
+  describe("Token Sale Update Functions", async () => {
     it("It should allow the owner to update the token sale startTime", async () => {
       const startTime = Date.now() / 1000
       const newStartTime = (Date.now() / 1000) + (60*60) // updated value
@@ -254,7 +255,6 @@ contract('SmartToken-sale', function (accounts) {
         })
       })
     })
-
 
     it("It should allow an owner to update the token sale endTime", async () => {
       const startTime = Date.now() / 1000
@@ -360,9 +360,7 @@ contract('SmartToken-sale', function (accounts) {
         })
       })
     })
-    
 
-    
     it("It should not allow the owner to update the token sale amuount remaining to negative", async () => {
       const startTime = Date.now() / 1000
       const endTime = startTime + (60 * 60 * 24)
@@ -383,6 +381,7 @@ contract('SmartToken-sale', function (accounts) {
         })
       })
     });
+
     it("It should not allow the owner to update the token sale amuount remaining to a string", async () => {
       const startTime = Date.now() / 1000
       const endTime = startTime + (60 * 60 * 24)
@@ -404,16 +403,25 @@ contract('SmartToken-sale', function (accounts) {
       })
     });
 
-
-
     it("It should not allow an owner to update the token sale price to negative", async () => {
+      const startTime = Date.now() / 1000
+      const endTime = startTime + (60 * 60 * 24)
+      const priceInWei = web3.toWei(1, 'ether')
+      const newPriceInWei = web3.toWei(-1, 'ether')
+      const amountForSale = 1000000
+      const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
 
+      await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+
+      return tokenSaleInitializedEvent.then(() => {
+        smartTokenInstance.updatePriceInWei(newPriceInWei, {from: owner})
+        smartTokenInstance.amountRemainingForSale().then((currentAmountRemainingForSale) => {
+          return assert(true);
+        }).catch(( ) => {
+          return assert(false);
+        })
+      })
     });
-    it("It should not allow an owner to update the token sale price to a string", async () => {
-
-    });
-
-
 
     it("It should not allow an owner to update the token sale startTime to negative", async () => {
       const startTime = Date.now() / 1000
@@ -433,6 +441,7 @@ contract('SmartToken-sale', function (accounts) {
         });
       })
     });
+  
     it("It should not allow an owner to update the token sale startTime to a string", async () => {
       const startTime = Date.now() / 1000
       const endTime = startTime + (60 * 60 * 24)
@@ -451,8 +460,6 @@ contract('SmartToken-sale', function (accounts) {
         });
       })
     });
-
-
 
     it("It should not allow an owner to update the token sale endTime to negative", async () => {
       const startTime = Date.now() / 1000
@@ -475,6 +482,7 @@ contract('SmartToken-sale', function (accounts) {
         });
       })
     });
+  
     it("It should not allow an owner to update the token sale endTime to a string", async () => {
       const startTime = Date.now() / 1000
       const endTime = startTime + (60 * 60 * 24)
