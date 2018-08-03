@@ -54,7 +54,7 @@ contract('Tribe', function () {
 
     const launchedTribeCount = await tribeLauncherInstance.launchedTribeCount()
     const launchedTribeRegistrarAddress = await tribeLauncherInstance.launchedTribes(launchedTribeCount - 1)
-      
+
     const launchedTribeRegistrar = await Registrar.at(launchedTribeRegistrarAddress)
     const launchedTribeAddresses = await launchedTribeRegistrar.getAddresses.call()
     launchedTribeInstance = await Tribe.at(launchedTribeAddresses.slice(-1)[0])

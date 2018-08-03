@@ -6,12 +6,15 @@ import './Logger.sol';
 contract Registrar is Owned {
     
     address[] addresses;
+    address public loggerContractAddress;    
+    // Logger public logger;
 
-    Logger public logger;
-    
+
     function addNewAddress(address _newAddress) public {
+        Logger logger = Logger(loggerContractAddress);
         addresses.push(_newAddress);
-        // logger.emitNewTribeAddress(_newAddress);
+        logger.emitNewTribeAddress(_newAddress);
+
     }
 
     function getAddresses() public returns (address[]) {
@@ -19,7 +22,9 @@ contract Registrar is Owned {
     }
 
     constructor(address _address, address _loggerContractAddress) public {
-        logger = Logger(_loggerContractAddress);
+        loggerContractAddress = _loggerContractAddress;
+        Logger logger = Logger(loggerContractAddress);
+        logger.setNewContractOwner(address(this));
         addNewAddress(_address);
     }
 }

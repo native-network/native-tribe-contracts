@@ -69,7 +69,7 @@ contract Logger is Owned {
         emit Approval(msg.sender, _owner, _spender, _value);
     }
     
-    function emitNewTribeAddress(address _address) public isContractOwner(msg.sender) {
+    function emitNewTribeAddress(address _address) public isContractOwner (msg.sender) {
         emit NewTribeAddress(msg.sender, _address);
     }
 
