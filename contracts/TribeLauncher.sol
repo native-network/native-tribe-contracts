@@ -11,6 +11,7 @@ contract TribeLauncher is Owned {
     uint public launchedTribeCount;
 
     address public LoggerContractAddress;
+    event Launched(address msgSender, uint launchUuid, address launchedTribeAddress, address launchedTokenAddress);
     
     mapping (uint => address) public launchedTokens;
     uint public launchedTokenCount;
@@ -41,14 +42,9 @@ contract TribeLauncher is Owned {
         Registrar registrar = new Registrar(address(tribe), _LoggerContractAddress);
         launchedTribes[launchedTribeCount] = registrar;
         launchedTribeCount = SafeMath.safeAdd(launchedTribeCount,1);
+        emit Launched(msg.sender, ai[_launchUuidIndex], tribe, tribeToken);
 
-        setupLogger(_LoggerContractAddress, ai[_launchUuidIndex], registrar, tribeToken);
-    }
-
-    function setupLogger(address LoggerContractAddress, uint _launchUuid, Registrar registrar, SmartToken tribeToken) public {
-        Logger log = Logger(LoggerContractAddress);
-        log.setNewContractOwner(address(this));
-        log.emitLaunched(_launchUuid, registrar, tribeToken);
+        // setupLogger(_LoggerContractAddress, ai[_launchUuidIndex], registrar, tribeToken);
     }
 
     constructor(address _LoggerContractAddress) public {

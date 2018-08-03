@@ -65,7 +65,7 @@ contract('TribeLauncher', function () {
       const tribe_minimumStakingRequirement = await launchedTribeInstance.minimumStakingRequirement()
       const tribe_nativeTokenContractAddress = await launchedTribeInstance.nativeTokenContractAddress()
       const tribe_voteController = await launchedTribeInstance.voteController()
-      const launchedEvent = Bluebird.promisify(loggerInstance.Launched)()    
+      const launchedEvent = Bluebird.promisify(tribeLauncherInstance.Launched)()    
 
       return launchedEvent.then( (result) => {
         // just a check to ensure we actually are getting data back and the contract is deployed      

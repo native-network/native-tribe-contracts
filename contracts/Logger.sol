@@ -23,7 +23,7 @@ contract Logger is Owned {
     event Approval(address msgSender, address indexed _owner, address indexed _spender, uint256 _value);
     
     // Logger
-    event NewTribeAddress(address msgSender, address _newAddress);
+    // event NewTribeAddress(address msgSender, address _newAddress);
     
     mapping (address => address) public contractOwners;
 
@@ -69,8 +69,8 @@ contract Logger is Owned {
         emit Approval(msg.sender, _owner, _spender, _value);
     }
     
-    function emitNewTribeAddress(address _address) public isContractOwner (msg.sender) {
-        emit NewTribeAddress(msg.sender, _address);
+    function emitNewTribeAddress(address _address) public {
+        // emit NewTribeAddress(msg.sender, _address);
     }
 
     constructor() public {

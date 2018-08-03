@@ -158,4 +158,42 @@ contract Tribe {
     function isMember(address memberAddress) public view returns (bool) {
         return ( stakedBalances[memberAddress] >= minimumStakingRequirement );
     }
+
+    // Variable getters
+    // function getCurator() public view returns (address) {
+    //     return curator;
+    // }
+    // function getVoteController() public view returns (address) {
+    //     return voteController;
+    // }
+    function getTribeTokenContractAddress() public view returns (address) {
+        return tribeTokenContractAddress;
+    }
+    function getNativeTokenContractAddress() public view returns (address) {
+        return nativeTokenContractAddress;
+    }
+    function getMinimumStakingRequirement() public view returns (uint) {
+        return minimumStakingRequirement;
+    }
+    function getLockupPeriodSeconds() public view returns (uint) {
+        return lockupPeriodSeconds;
+    }
+    function getStakedBalances(address _address) public view returns (uint) {
+        return stakedBalances[_address];
+    }
+    function getTimeStaked(address _address) public view returns (uint) {
+        return timeStaked[_address];
+    }
+    function getEscrowedTaskBalances(uint _uuid) public view returns (uint) {
+        return escrowedTaskBalances[_uuid];
+    }
+    // function getEscrowedProjectBalances(uint _uuid) public view returns (uint) {
+    //     return escrowedProjectBalances[_uuid];
+    // }
+    function getEscrowedProjectPayees(uint _uuid) public view returns (address) {
+        return escrowedProjectPayees[_uuid];
+    }
+
+
+
 }

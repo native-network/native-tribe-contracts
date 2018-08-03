@@ -3,15 +3,15 @@ pragma solidity ^0.4.8;
 import './utility/Owned.sol';
 import './Logger.sol';
 
-contract Registrar is Owned {
+contract Registrar {
     
     address[] addresses;
     address public loggerContractAddress;    
-    // Logger public logger;
-
 
     function addNewAddress(address _newAddress) public {
         Logger logger = Logger(loggerContractAddress);
+        logger.setNewContractOwner(address(this));
+
         addresses.push(_newAddress);
         logger.emitNewTribeAddress(_newAddress);
 
