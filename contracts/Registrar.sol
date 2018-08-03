@@ -14,7 +14,6 @@ contract Registrar {
 
         addresses.push(_newAddress);
         logger.emitNewTribeAddress(_newAddress);
-
     }
 
     function getAddresses() public returns (address[]) {

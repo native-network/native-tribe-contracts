@@ -59,19 +59,21 @@ contract Tribe {
         voteController = _voteController;
     }
 
+    // gets the amount in the dev fund that isn't locked up by a project or task stake
     function getAvailableDevFund() public view returns (uint) {
         SmartToken nativeTokenInstance = SmartToken(nativeTokenContractAddress);
         uint devFundBalance = nativeTokenInstance.balanceOf(address(this));
         return SafeMath.safeSub(devFundBalance, getLockedDevFundAmount());
     }
     
+    // adds the task and project escrows
     function getLockedDevFundAmount() public view returns (uint) {
         return SafeMath.safeAdd(totalTaskEscrow, totalProjectEscrow);
     }
 
     // Task escrow code below (in native tokens)
     
-    
+    // updates the escrow values for a new task
     function createNewTask(uint uuid, uint amount) public onlyCurator sufficientDevFundBalance (amount) {
         escrowedTaskBalances[uuid] = amount;
         totalTaskEscrow = SafeMath.safeAdd(totalTaskEscrow, amount);
@@ -79,11 +81,13 @@ contract Tribe {
         log.emitTaskCreated(uuid, amount);
     }
 
+    // subtracts the tasks escrow and sets the tasks escrow balance to 0
     function cancelTask(uint uuid) public onlyCurator {
         totalTaskEscrow = SafeMath.safeSub(totalTaskEscrow,escrowedTaskBalances[uuid]);
         escrowedTaskBalances[uuid] = 0;
     }
-
+    
+    // pays put to the task completer and updates the escrow balances
     function rewardTaskCompletion(uint uuid, address user) public onlyVoteController {
         SmartToken nativeTokenInstance = SmartToken(nativeTokenContractAddress);
         nativeTokenInstance.transfer(user, escrowedTaskBalances[uuid]);
@@ -92,7 +96,8 @@ contract Tribe {
     }
 
     // Project escrow code below (in native tokens)
-        
+
+    // updates the escrow values along with the project payee for a new project
     function createNewProject(uint uuid, uint amount, address projectPayee) public onlyCurator sufficientDevFundBalance (amount) {
         escrowedProjectBalances[uuid] = amount;
         escrowedProjectPayees[uuid] = projectPayee;
@@ -100,12 +105,14 @@ contract Tribe {
 
         log.emitProjectCreated(uuid, amount, projectPayee);
     }
-    
+
+    // subtracts the tasks escrow and sets the tasks escrow balance to 0
     function cancelProject(uint uuid) public onlyCurator {
         totalProjectEscrow = SafeMath.safeSub(totalProjectEscrow, escrowedProjectBalances[uuid]);
         escrowedProjectBalances[uuid] = 0;
     }
     
+    // pays out the project completion and then updates the escorw balances
     function rewardProjectCompletion(uint uuid) public onlyVoteController {
         SmartToken nativeTokenInstance = SmartToken(nativeTokenContractAddress);
         nativeTokenInstance.transfer(escrowedProjectPayees[uuid], escrowedProjectBalances[uuid]);
@@ -116,11 +123,12 @@ contract Tribe {
 
     // Staking code below (in tribe tokens)
     
-
+    // sets a minimum staking requrinment for a membership
     function setMinimumStakingRequirement(uint _minimumStakingRequirement) public onlyCurator {
         minimumStakingRequirement = _minimumStakingRequirement;
     }
 
+    // set a lockup period for staking
     function setlockupPeriod(uint _lockupPeriodSeconds) public onlyCurator {
         lockupPeriodSeconds = _lockupPeriodSeconds;
     }
@@ -139,6 +147,8 @@ contract Tribe {
         timeStaked[msg.sender] = now;
     }
 
+    // checks that a user is able to unstake by looking at the lokcup period and the balance
+    // unstakes a tribe and sends funds back to the user
     function unstakeTribeTokens(uint amount) public {
 
         SmartToken tribeTokenInstance = SmartToken(tribeTokenContractAddress);
@@ -155,11 +165,16 @@ contract Tribe {
         tribeTokenInstance.transfer(msg.sender, amount);
     }
 
+    // checks that the user is fully staked
     function isMember(address memberAddress) public view returns (bool) {
         return ( stakedBalances[memberAddress] >= minimumStakingRequirement );
     }
 
     // Variable getters
+    /*
+        We are using these getter methods to allow the speration of the data into a unique contract
+    */
+
     // function getCurator() public view returns (address) {
     //     return curator;
     // }
