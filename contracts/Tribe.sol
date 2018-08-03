@@ -19,7 +19,7 @@ contract Tribe {
     mapping (address => uint256) public stakedBalances;
     mapping (address => uint256) public timeStaked;
     uint totalStaked;
-    
+
     // Escrow variables.  In native token
     uint totalTaskEscrow;
     uint totalProjectEscrow;

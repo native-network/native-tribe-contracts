@@ -2,6 +2,7 @@ const TribeLauncher = artifacts.require("TribeLauncher")
 const Tribe = artifacts.require("Tribe")
 const Logger = artifacts.require("Logger")
 const Token = artifacts.require("SmartToken")
+const Registrar = artifacts.require("Registrar")
 const Bluebird = require('Bluebird')
 
 contract('Tribe', function () {
@@ -38,24 +39,30 @@ contract('Tribe', function () {
     nativeTokenInstance = await Token.deployed()
     tribeLauncherInstance = await TribeLauncher.deployed()
     await tribeLauncherInstance.launchTribe(
-      _launchUuid,
+      [_launchUuid,
       _minimumStakingRequirement,
       _lockupPeriod,
+      1000000,
+      18],
       curator,
       nativeTokenInstance.address,
       curator,
       'Test Tribe 1',
-      1000000,
-      18,
       'TT1',
-      1.0, {from: sender})    
+      1.0,
+      loggerInstance.address, {from: sender})
+
     const launchedTribeCount = await tribeLauncherInstance.launchedTribeCount()
-    launchedTribeAddress = await tribeLauncherInstance.launchedTribes(launchedTribeCount - 1)
-    launchedTribeInstance = await Tribe.at(launchedTribeAddress)
+    const launchedTribeRegistrarAddress = await tribeLauncherInstance.launchedTribes(launchedTribeCount - 1)
+
+    const launchedTribeRegistrar = await Registrar.at(launchedTribeRegistrarAddress)
+    const launchedTribeAddresses = await launchedTribeRegistrar.getAddresses.call()
+    launchedTribeInstance = await Tribe.at(launchedTribeAddresses.slice(-1)[0])
     tribeTokenAddress = await launchedTribeInstance.tribeTokenContractAddress()
     tribeTokenInstance = await Token.at(tribeTokenAddress)
+
     // Fund the dev fund
-    await nativeTokenInstance.transfer(launchedTribeAddress, 1000000, {from: sender})
+    await nativeTokenInstance.transfer(launchedTribeInstance.address, 1000000, {from: sender})
   })
 
   it("It should allow a curator to create a task", async function () {
@@ -414,7 +421,7 @@ contract('Tribe', function () {
     assert(finalMembershipStatus === false)
   })
 
-  it("It should allow a staked user to unstake a tribe", async function () {
+  it("It should not allow a staked user to unstake a tribe with more tokens than they entered", async function () {
     // Same as staking
     const startingMembershipStatus = await launchedTribeInstance.isMember(sender)
     amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()

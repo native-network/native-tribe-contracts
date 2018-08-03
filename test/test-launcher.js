@@ -2,7 +2,8 @@ const TribeLauncher = artifacts.require("TribeLauncher");
 const Tribe = artifacts.require("Tribe");
 const Logger = artifacts.require("Logger");
 const SmartToken = artifacts.require("SmartToken");
-const Bluebird = require('Bluebird')
+const Registrar = artifacts.require("Registrar");
+const Bluebird = require('Bluebird');
  
 
 contract('TribeLauncher', function () {
@@ -42,20 +43,23 @@ contract('TribeLauncher', function () {
       const _lockupPeriod = 0;
 
       await tribeLauncherInstance.launchTribe(
-        _launchUuid,
+        [_launchUuid,
         _minimumStakingRequirement,
         _lockupPeriod,
+        1000000,
+        18],
         curator,
         nativeTokenInstance.address,
         curator,
         'Test Tribe 1',
-        1000000,
-        18,
         'TT1',
-        1.0, {from: sender})
+        1.0,
+        loggerInstance.address, {from: sender})
       const launchedTribeCount = await tribeLauncherInstance.launchedTribeCount()
-      const launchedTribeAddress = await tribeLauncherInstance.launchedTribes(launchedTribeCount - 1)
-      const launchedTribeInstance = await Tribe.at(launchedTribeAddress)
+      const launchedTribeRegistrarAddress = await tribeLauncherInstance.launchedTribes(launchedTribeCount - 1)
+      const launchedTribeRegistrar = await Registrar.at(launchedTribeRegistrarAddress)
+      const launchedTribeAddresses = await launchedTribeRegistrar.getAddresses.call()
+      const launchedTribeInstance = await Tribe.at(launchedTribeAddresses.slice(-1)[0])
       
       // all the variables that are set on the contract
       const tribe_minimumStakingRequirement = await launchedTribeInstance.minimumStakingRequirement()
