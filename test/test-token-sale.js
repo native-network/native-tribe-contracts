@@ -1,10 +1,6 @@
 const SmartToken = artifacts.require("SmartToken");
 const Logger = artifacts.require("Logger")
 const util = require('util')
-const Web3 = require('web3')
-const web3 = new Web3()
-const provider = new web3.providers.HttpProvider('http://localhost:8545')
-web3.setProvider(provider)
 
 contract('SmartToken-sale', function (accounts) {
   const owner = web3.eth.accounts[0]
