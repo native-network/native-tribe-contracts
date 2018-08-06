@@ -3,6 +3,7 @@ pragma solidity ^0.4.8;
 import './utility/Owned.sol';
 import './Logger.sol';
 
+// The registrar allows contracts to be upgraded
 contract Registrar {
     
     address[] addresses;

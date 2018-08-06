@@ -2,6 +2,7 @@ pragma solidity ^0.4.8;
 
 import './utility/Owned.sol';
 
+// The logging library allows the events to be watched without the need to watch each contract 
 contract Logger is Owned {
 
     // Tribe
