@@ -34,6 +34,7 @@ contract('TribeLauncher', function () {
 
       const initialDevFund = 1000
       loggerInstance = await Logger.deployed()
+      tribeStorage = await TribeStorage.deployed()
       nativeTokenInstance = await SmartToken.deployed()
       tribeLauncherInstance = await TribeLauncher.deployed()
     })
@@ -54,7 +55,8 @@ contract('TribeLauncher', function () {
         'Test Tribe 1',
         'TT1',
         1.0,
-        loggerInstance.address, {from: sender})
+        loggerInstance.address,
+        tribeStorage.address, {from: sender})
       const launchedTribeCount = await tribeLauncherInstance.launchedTribeCount()
       const launchedTribeRegistrarAddress = await tribeLauncherInstance.launchedTribes(launchedTribeCount - 1)
       const launchedTribeRegistrar = await Registrar.at(launchedTribeRegistrarAddress)

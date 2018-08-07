@@ -17,14 +17,14 @@ contract Registrar {
         logger.emitNewTribeAddress(_newAddress);
     }
 
-    function getAddresses() public returns (address[]) {
+    function getAddresses() public view returns (address[]) {
         return addresses;
     }
 
     constructor(address _address, address _loggerContractAddress) public {
-        loggerContractAddress = _loggerContractAddress;
-        Logger logger = Logger(loggerContractAddress);
-        logger.setNewContractOwner(address(this));
-        addNewAddress(_address);
+        // loggerContractAddress = _loggerContractAddress;
+        // Logger logger = Logger(loggerContractAddress);
+        // logger.setNewContractOwner(address(this));
+        // addNewAddress(_address);
     }
 }
