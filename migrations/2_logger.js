@@ -1,5 +1,5 @@
 const Logger = artifacts.require("./Logger.sol");
 
 module.exports = function(deployer) {
-  deployer.deploy(Logger);
+  return deployer.then( () => deployer.deploy(Logger, {gas: 10000000}))
 };

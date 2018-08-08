@@ -26,54 +26,59 @@ contract Logger is Owned {
     // Logger
     event NewTribeAddress(address msgSender, address _newAddress);
     
-    mapping (address => address) public contractOwners;
+    mapping (address => bool) public permissionedAddresses;
 
     // validates an address - currently only checks that it isn't null
+    // TODO FIX THIS AND HOW ITS USED
     modifier isContractOwner(address _address) {
-        require(contractOwners[_address] == _address);
+//        require(permissionedAddresses[_address] == _address);
+//        _;
+        require(true);
         _;
     }
 
-    function setNewContractOwner(address _address) public {
-        contractOwners[_address] = _address;
+    // TODO FIX THIS AND HOW ITS USED
+    function addNewLoggerPermission(address addressToPermission) ownerOnly public {
+        permissionedAddresses[addressToPermission] = true;
     }
 
-    function emitTaskCreated(uint _uuid, uint _amount) public isContractOwner(msg.sender) {
-        emit TaskCreated(msg.sender, _uuid, _amount);
+    function emitTaskCreated(uint uuid, uint amount) public isContractOwner(msg.sender) {
+        emit TaskCreated(msg.sender, uuid, amount);
     }
 
-    function emitProjectCreated(uint _uuid, uint _amount, address _address) public isContractOwner(msg.sender) {
-        emit ProjectCreated(msg.sender, _uuid, _amount, _address);
+    function emitProjectCreated(uint uuid, uint amount, address rewardAddress) public isContractOwner(msg.sender) {
+        emit ProjectCreated(msg.sender, uuid, amount, rewardAddress);
     }
     
-    function emitLaunched(uint _launchUuid, address tribe, address tribeToken) public isContractOwner(msg.sender) {
-        emit Launched(msg.sender, _launchUuid, tribe, tribeToken);
+    function emitLaunched(uint launchUuid, address tribe, address tribeToken) public isContractOwner(msg.sender) {
+        emit Launched(msg.sender,launchUuid, tribe, tribeToken);
     }
 
-    function emitNewSmartToken(address _token) public isContractOwner(msg.sender) {
-        emit NewSmartToken(msg.sender, _token);
+    function emitNewSmartToken(address token) public isContractOwner(msg.sender) {
+        emit NewSmartToken(msg.sender, token);
     }
 
-    function emitIssuance(uint256 _amount) public isContractOwner(msg.sender) {
-        emit Issuance(msg.sender, _amount);
+    function emitIssuance(uint256 amount) public isContractOwner(msg.sender) {
+        emit Issuance(msg.sender, amount);
     }
 
-    function emitDestruction(uint256 _amount) public isContractOwner(msg.sender) {
-        emit Destruction(msg.sender, _amount);
+    function emitDestruction(uint256 amount) public isContractOwner(msg.sender) {
+        emit Destruction(msg.sender, amount);
     }
 
-    function emitTransfer(address _from, address _to, uint256 _value) public isContractOwner(msg.sender) {
-        emit Transfer(msg.sender, _from, _to, _value);
+    function emitTransfer(address from, address to, uint256 value) public isContractOwner(msg.sender) {
+        emit Transfer(msg.sender, from, to, value);
     }
 
-    function emitApproval(address _owner, address _spender, uint256 _value) public isContractOwner(msg.sender) {
-        emit Approval(msg.sender, _owner, _spender, _value);
+    function emitApproval(address owner, address spender, uint256 value) public isContractOwner(msg.sender) {
+        emit Approval(msg.sender, owner, spender, value);
     }
 
-    function emitNewTribeAddress(address _address) public {
-        emit NewTribeAddress(msg.sender, _address);
+    function emitNewTribeAddress(address newAddress) public {
+        emit NewTribeAddress(msg.sender, newAddress);
     }
 
     constructor() public {
+
     }
 }

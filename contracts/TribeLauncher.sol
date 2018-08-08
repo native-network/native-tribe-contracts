@@ -1,55 +1,67 @@
 pragma solidity ^0.4.8;
 
-import './Logger.sol';
 import './Registrar.sol';
+import './interfaces/ILogger.sol';
 import './Tribe.sol';
-import './SmartToken.sol';
+import './TribeStorage.sol';
+import './factories/SmartTokenFactory.sol';
+import './factories/TribeStorageFactory.sol';
+
 import './utility/Owned.sol';
 
 contract TribeLauncher is Owned {
-    mapping (uint => address) public launchedTribes;
+    mapping (uint => address) public launchedTribeRegistrars;
     uint public launchedTribeCount;
-
-    address public LoggerContractAddress;
+    
     address public TribeStorageContractAddress;
     
-    event Launched(address msgSender, uint launchUuid, address launchedTribeAddress, address launchedTokenAddress);
+    event Launched(address msgSender, uint launchUuid, address launchedTribeAddress, address launchedTokenAddress, address launchedRegistrarddress);
     
     mapping (uint => address) public launchedTokens;
     uint public launchedTokenCount;
-
-    uint _launchUuidIndex = 0;
-    uint _minimumStakingRequirementIndex = 1;
-    uint _lockupPeriodIndex = 2;
-    uint tokenTotalSupplyIndex = 3;
-    uint tokenDecimalsIndex = 4;
-
+    
     function launchTribe(
+        // Put into arrays too fix stack too deep error.
+        // 0 = launchUuid
+        // 1 = minimumStakingRequirement
+        // 2 = lockupPeriodSeconds
+        // 3 = tokenTotalSupply
+        // 4 = tokenDecimals
         uint[] ai,
-        address _curatorAddress, 
-        address _nativeTokenContractAddress, 
-        address _voteController,
+        // Put into arrays too fix stack too deep error.
+        // 0 - curatorAddress
+        // 1 - nativeTokenContractAddress
+        // 2 - voteController
+        // 3 - loggerContractAddress
+        // 4 - smartTokenFactoryContractAddress
+        // 5 - tribeStorageFactoryContractAddress
+    
+        address[] addresses,
         string tokenName,
         string tokenSymbol,
-        string tokenVersion,
-        address _LoggerContractAddress
+        string tokenVersion
     ) public ownerOnly {
-        
-        SmartToken tribeToken = new SmartToken(tokenName, ai[tokenTotalSupplyIndex], uint8(ai[tokenDecimalsIndex]), tokenSymbol, tokenVersion, msg.sender, LoggerContractAddress);
+        SmartTokenFactory smartTokenFactory = SmartTokenFactory(addresses[4]);
+        SmartToken tribeToken = SmartToken(smartTokenFactory.create(tokenName, ai[3], uint8(ai[4]), tokenSymbol, tokenVersion, msg.sender));
+        tribeToken.transferOwnershipNow(addresses[0]);
         launchedTokens[launchedTokenCount] = tribeToken;
         launchedTokenCount = SafeMath.safeAdd(launchedTokenCount,1);
         
-        TribeStorage tribeStorage = new TribeStorage();
-        Tribe tribe = new Tribe(ai[_minimumStakingRequirementIndex], ai[_lockupPeriodIndex], _curatorAddress, address(tribeToken), _nativeTokenContractAddress, _voteController, LoggerContractAddress, address(tribeStorage));
+        TribeStorageFactory tribeStorageFactory = TribeStorageFactory(addresses[5]);
+        TribeStorage tribeStorage = TribeStorage(tribeStorageFactory.create());
         
-        Registrar registrar = new Registrar(address(tribe), _LoggerContractAddress);
-        launchedTribes[launchedTribeCount] = registrar;
-        launchedTribeCount = SafeMath.safeAdd(launchedTribeCount,1);
-        emit Launched(msg.sender, ai[_launchUuidIndex], tribe, tribeToken);
-    }
+        // TODO use a factory to launch the tribe (gas savings)
+        Tribe tribe = new Tribe(ai[1], ai[2], addresses[0], address(tribeToken), addresses[1], addresses[2], addresses[3], address(tribeStorage));
+        tribeStorage.transferOwnershipNow(address(tribe));
 
-    constructor(address _LoggerContractAddress, address _TribeStorageContractAddress) public {
-        LoggerContractAddress = _LoggerContractAddress;
-        TribeStorageContractAddress = _TribeStorageContractAddress;
+        // TODO use a factory to launch the registrar (gas savings)
+        Registrar registrar = new Registrar();
+        registrar.addNewAddress(address(tribe));
+        registrar.transferOwnershipNow(addresses[0]);
+        launchedTribeRegistrars[launchedTribeCount] = registrar;
+        launchedTribeCount = SafeMath.safeAdd(launchedTribeCount, 1);
+
+        emit Launched(msg.sender, ai[0], tribe, tribeToken, registrar);
     }
+    
 }

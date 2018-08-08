@@ -1,34 +1,24 @@
 pragma solidity ^0.4.8;
 
-import './Logger.sol';
 import './utility/Owned.sol';
 import './utility/SafeMath.sol';
+import './interfaces/IERC20.sol';
 
-
-interface ERC20 {
-    function allowance(address owner, address spender)
-    external view returns (uint256);
-
-    function transferFrom(address from, address to, uint256 value)
-    external returns (bool);
-
-    function approve(address spender, uint256 value) external returns (bool);
-
-    function totalSupply() external view returns (uint256);
-    function balanceOf(address who) external view returns (uint256);
-    function transfer(address to, uint256 value) external returns (bool);
-}
 
 contract SmartToken is Owned {
-    address public LoggerContractAddress;
+    
+    
     // Smart token specific stuff
     bool public transfersEnabled = true;    // true if transfer/transferFrom are enabled, false if not
+
     // triggered when a smart token is deployed - the _token address is defined for forward compatibility, in case we want to trigger the event from a factory
     event NewSmartToken(address _token);
-
-    event TokenSaleInitialized(uint _saleStartTime, uint _saleEndTime, uint _priceInWei, uint _amountForSale, uint nowTime);
-    event TokensPurchased(address buyer, uint amount);
-
+    // triggered when the total supply is increased
+    event Issuance(uint256 _amount);
+    // triggered when the total supply is decreased
+    event Destruction(uint256 _amount);
+    
+    
     // verifies that the address is different than this contract address
     modifier notThis(address _address) {
         require(_address != address(this));
@@ -64,10 +54,8 @@ contract SmartToken is Owned {
     {
         totalSupply = SafeMath.safeAdd(totalSupply, _amount);
         balances[_to] = SafeMath.safeAdd(balances[_to], _amount);
-
-        Logger log = Logger(LoggerContractAddress);
-        log.emitIssuance(_amount);
-        // log.emitTransfer(this, _to, _amount);
+        emit Issuance(_amount);
+        emit Transfer(this, _to, _amount);
     }
 
     /**
@@ -78,25 +66,25 @@ contract SmartToken is Owned {
     */
     function destroy(address _from, uint256 _amount) public {
         require(msg.sender == _from || msg.sender == owner); // validate input
-
         balances[_from] = SafeMath.safeSub(balances[_from], _amount);
         totalSupply = SafeMath.safeSub(totalSupply, _amount);
 
-        Logger log = Logger(LoggerContractAddress);
-        log.emitTransfer(_from, this, _amount);
-        log.emitDestruction(_amount);
+        emit Transfer(_from, this, _amount);
+        emit Destruction(_amount);
     }
     
     // ERC20 specific stuff
-    uint256 public totalSupply;    
+    uint256 public totalSupply;
+
+    event Transfer(address indexed _from, address indexed _to, uint256 _value);
+    event Approval(address indexed _owner, address indexed _spender, uint256 _value);
+    
     
     function transfer(address _to, uint256 _value) public returns (bool success) {
         if (balances[msg.sender] >= _value && _value > 0) {
             balances[msg.sender] = SafeMath.safeSub(balances[msg.sender], _value);
             balances[_to] = SafeMath.safeAdd(balances[_to], _value);
-
-            Logger log = Logger(LoggerContractAddress);
-            log.emitTransfer(msg.sender, _to, _value);
+            emit Transfer(msg.sender, _to, _value);
             return true;
         } else {return false; }
     }
@@ -106,9 +94,7 @@ contract SmartToken is Owned {
             balances[_to] = SafeMath.safeAdd(balances[_to], _value);
             balances[_from] = SafeMath.safeSub(balances[_from], _value);
             allowed[_from][msg.sender] = SafeMath.safeSub(allowed[_from][msg.sender], _value);
-
-            Logger log = Logger(LoggerContractAddress);
-            log.emitTransfer(_from, _to, _value);
+            emit Transfer(_from, _to, _value);
             return true;
         } else { return false; }
     }
@@ -119,8 +105,7 @@ contract SmartToken is Owned {
 
     function approve(address _spender, uint256 _value) public returns (bool success) {
         allowed[msg.sender][_spender] = _value;
-        Logger log = Logger(LoggerContractAddress);
-        log.emitApproval(msg.sender, _spender, _value);
+        emit Approval(msg.sender, _spender, _value);
         return true;
     }
 
@@ -136,21 +121,23 @@ contract SmartToken is Owned {
     string public symbol;
     string public version;
 
-    constructor(string _name, uint _totalSupply, uint8 _decimals, string _symbol, string _version, address sender, address _LoggerContractAddress) public {
+    constructor(string _name, uint _totalSupply, uint8 _decimals, string _symbol, string _version, address sender) public {
         balances[sender] = _totalSupply;               // Give the creator all initial tokens
         totalSupply = _totalSupply;                        // Update total supply
         name = _name;                                   // Set the name for display purposes
         decimals = _decimals;                            // Amount of decimals for display purposes
         symbol = _symbol;                               // Set the symbol for display purposes
         version = _version;
-        LoggerContractAddress = _LoggerContractAddress;
        
-        Logger log = Logger(LoggerContractAddress);
         emit NewSmartToken(address(this));
-        log.setNewContractOwner(address(this));
     }
 
     // Token sale below
+
+
+    event TokenSaleInitialized(uint _saleStartTime, uint _saleEndTime, uint _priceInWei, uint _amountForSale, uint nowTime);
+    event TokensPurchased(address buyer, uint amount);
+
 
     uint public saleStartTime;
     uint public saleEndTime;
@@ -196,7 +183,7 @@ contract SmartToken is Owned {
         }
         priceInWei = _newPriceInWei;
     }
-    function withdrawToken(ERC20 _token, uint amount) public ownerOnly {
+    function withdrawToken(IERC20 _token, uint amount) public ownerOnly {
         _token.transfer(msg.sender, amount);
     }
     function() public payable {

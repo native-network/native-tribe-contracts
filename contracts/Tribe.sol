@@ -1,26 +1,21 @@
 pragma solidity ^0.4.8;
 
-import './Logger.sol';
-import './TribeStorage.sol';
-import './SmartToken.sol';
+import './interfaces/ILogger.sol';
+import './interfaces/ITribeStorage.sol';
+import './interfaces/ISmartToken.sol';
 import './utility/SafeMath.sol';
 
 contract Tribe {
+    
+    // TODO should we abstract these into an OwnedTribe utility????? mayber
     address public curator;
     address public voteController;
-
-    address public LoggerContractAddress;
-
-    // Escrow variables.  In native token
-    uint totalTaskEscrow;
-    uint totalProjectEscrow;
-    mapping (uint256 => uint256) public escrowedTaskBalances;
-    mapping (uint256 => uint256) public escrowedProjectBalances;
-    mapping (uint256 => address) public escrowedProjectPayees;
-
-    Logger public log;
-
-    TribeStorage public tribeStorage;
+    uint public minimumStakingRequirement;
+    uint public lockupPeriodSeconds;
+    ISmartToken public nativeTokenInstance;
+    ISmartToken public tribeTokenInstance;
+    ILogger public logger;
+    ITribeStorage public tribeStorage;
 
     modifier onlyCurator {
         require(msg.sender == curator);
@@ -43,99 +38,113 @@ contract Tribe {
                 address _tribeTokenContractAddress,
                 address _nativeTokenContractAddress,
                 address _voteController,
-                address _LoggerContractAddress,
+                address _loggerContractAddress,
                 address _tribeStorageContractAddress) public {
-        
-         // tribeStorageContractAddress = _tribeStorageContractAddress;
-        tribeStorage = TribeStorage(_tribeStorageContractAddress);
-        // tribeStorage.lockupPeriodSeconds();
+                    tribeStorage = ITribeStorage(_tribeStorageContractAddress);
+                    curator = _curator;
+                    minimumStakingRequirement = _minimumStakingRequirement;
+                    lockupPeriodSeconds = _lockupPeriodSeconds;
+                    logger = ILogger(_loggerContractAddress);
+                    voteController = _voteController;
+                    nativeTokenInstance = ISmartToken(_nativeTokenContractAddress);
+                    tribeTokenInstance = ISmartToken(_tribeTokenContractAddress);
+                }
 
+    // TODO add events to each of these
+    function transferCurator(address _curator) onlyCurator {
         curator = _curator;
-        tribeStorage.setMinimumStakingRequirement(_minimumStakingRequirement);
-        tribeStorage.setLockupPeriodSeconds(_lockupPeriodSeconds);
-        tribeStorage.setTribeTokenContractAddress(_tribeTokenContractAddress);
-        tribeStorage.setNativeTokenContractAddress(_nativeTokenContractAddress);
-        
-        LoggerContractAddress = _LoggerContractAddress;    
-        log = Logger(LoggerContractAddress);
-        log.setNewContractOwner(msg.sender);
-        log.setNewContractOwner(address(this));
- 
+    }
+
+    function transferVoteController(address _voteController) onlyCurator {
         voteController = _voteController;
+    }
+
+    function setMinimumStakingRequirement(uint _minimumStakingRequirement) onlyCurator {
+        minimumStakingRequirement = _minimumStakingRequirement;
+    }
+
+    function setLockupPeriodSeconds(uint _lockupPeriodSeconds) onlyCurator {
+        lockupPeriodSeconds = _lockupPeriodSeconds;
+    }
+
+    function setLogger(address newLoggerAddress) onlyCurator {
+        logger = ILogger(newLoggerAddress);
+    }
+
+    function setTokenAddresses(address newNativeTokenAddress, address newTribeTokenAddress) onlyCurator {
+        nativeTokenInstance = ISmartToken(newNativeTokenAddress);
+        tribeTokenInstance = ISmartToken(newTribeTokenAddress);
+    }
+
+    function setTribeStorage(address newTribeStorageAddress) onlyCurator {
+        tribeStorage = ITribeStorage(newTribeStorageAddress);
     }
 
     // gets the amount in the dev fund that isn't locked up by a project or task stake
     function getAvailableDevFund() public view returns (uint) {
-        SmartToken nativeTokenInstance = SmartToken(tribeStorage.nativeTokenContractAddress());
         uint devFundBalance = nativeTokenInstance.balanceOf(address(this));
         return SafeMath.safeSub(devFundBalance, getLockedDevFundAmount());
     }
     
     // adds the task and project escrows
     function getLockedDevFundAmount() public view returns (uint) {
-        return SafeMath.safeAdd(totalTaskEscrow, totalProjectEscrow);
+        return SafeMath.safeAdd(tribeStorage.totalTaskEscrow(), tribeStorage.totalProjectEscrow());
     }
 
     // Task escrow code below (in native tokens)
     
     // updates the escrow values for a new task
     function createNewTask(uint uuid, uint amount) public onlyCurator sufficientDevFundBalance (amount) {
-        escrowedTaskBalances[uuid] = amount;
-        totalTaskEscrow = SafeMath.safeAdd(totalTaskEscrow, amount);
-
-        log.emitTaskCreated(uuid, amount);
+        tribeStorage.setEscrowedTaskBalances(uuid, amount);
+        tribeStorage.setTotalTaskEscrow(SafeMath.safeAdd(tribeStorage.totalTaskEscrow(), amount));
+        logger.emitTaskCreated(uuid, amount);
     }
 
     // subtracts the tasks escrow and sets the tasks escrow balance to 0
     function cancelTask(uint uuid) public onlyCurator {
-        totalTaskEscrow = SafeMath.safeSub(totalTaskEscrow,escrowedTaskBalances[uuid]);
-        escrowedTaskBalances[uuid] = 0;
+        tribeStorage.setTotalTaskEscrow(SafeMath.safeSub(tribeStorage.totalTaskEscrow(), tribeStorage.escrowedTaskBalances(uuid)));
+        tribeStorage.setEscrowedTaskBalances(uuid , 0);
     }
     
     // pays put to the task completer and updates the escrow balances
     function rewardTaskCompletion(uint uuid, address user) public onlyVoteController {
-        SmartToken nativeTokenInstance = SmartToken(tribeStorage.nativeTokenContractAddress());
-        nativeTokenInstance.transfer(user, escrowedTaskBalances[uuid]);
-        totalTaskEscrow = SafeMath.safeSub(totalTaskEscrow, escrowedTaskBalances[uuid]);
-        escrowedTaskBalances[uuid] = 0;
+        nativeTokenInstance.transfer(user, tribeStorage.escrowedTaskBalances(uuid));
+        tribeStorage.setTotalTaskEscrow(SafeMath.safeSub(tribeStorage.totalTaskEscrow(), tribeStorage.escrowedTaskBalances(uuid)));
+        tribeStorage.setEscrowedTaskBalances(uuid, 0);
     }
 
     // Project escrow code below (in native tokens)
 
     // updates the escrow values along with the project payee for a new project
     function createNewProject(uint uuid, uint amount, address projectPayee) public onlyCurator sufficientDevFundBalance (amount) {
-        escrowedProjectBalances[uuid] = amount;
-        escrowedProjectPayees[uuid] = projectPayee;
-        totalProjectEscrow = SafeMath.safeAdd(totalProjectEscrow, amount);
-
-        log.emitProjectCreated(uuid, amount, projectPayee);
+        tribeStorage.setEscrowedProjectBalances(uuid, amount);
+        tribeStorage.setEscrowedProjectPayees(uuid, projectPayee);
+        tribeStorage.setTotalProjectEscrow(SafeMath.safeAdd(tribeStorage.totalProjectEscrow(), amount));
+        logger.emitProjectCreated(uuid, amount, projectPayee);
     }
 
     // subtracts the tasks escrow and sets the tasks escrow balance to 0
     function cancelProject(uint uuid) public onlyCurator {
-        totalProjectEscrow = SafeMath.safeSub(totalProjectEscrow, escrowedProjectBalances[uuid]);
-        escrowedProjectBalances[uuid] = 0;
+        tribeStorage.setTotalProjectEscrow(SafeMath.safeSub(tribeStorage.totalProjectEscrow(), tribeStorage.escrowedProjectBalances(uuid)));
+        tribeStorage.setEscrowedProjectBalances(uuid, 0);
     }
     
     // pays out the project completion and then updates the escrow balances
     function rewardProjectCompletion(uint uuid) public onlyVoteController {
-        SmartToken nativeTokenInstance = SmartToken(tribeStorage.nativeTokenContractAddress());
-        nativeTokenInstance.transfer(escrowedProjectPayees[uuid], escrowedProjectBalances[uuid]);
-        totalProjectEscrow = SafeMath.safeSub(totalProjectEscrow, escrowedProjectBalances[uuid]);
-        escrowedProjectBalances[uuid] = 0;
+        nativeTokenInstance.transfer(tribeStorage.escrowedProjectPayees(uuid), tribeStorage.escrowedProjectBalances(uuid));
+        tribeStorage.setTotalProjectEscrow(SafeMath.safeSub(tribeStorage.totalProjectEscrow(), tribeStorage.escrowedProjectBalances(uuid)));
+        tribeStorage.setEscrowedProjectBalances(uuid, 0);
     }
 
-    // Staking code below (in tribe tokens)      
-    // TODO clarify how staking works.  Can they deposit multiple small amounts over time?   Does it have to be one deposit? etc...
+    // Staking code below (in tribe tokens)
+    // TODO make it not use amount here.  It should just assume enuf tokens can be staked to become a member
     function stakeTribeTokens(uint amount) public {
 
-        SmartToken tribeTokenInstance = SmartToken(tribeStorage.tribeTokenContractAddress());
-        
         if(!tribeTokenInstance.transferFrom(msg.sender, address(this), amount)) {
             revert();
         }
 
-        tribeStorage.setStakedBalances(SafeMath.safeAdd(tribeStorage.getStakedBalances(msg.sender), amount));
+        tribeStorage.setStakedBalances(SafeMath.safeAdd(tribeStorage.stakedBalances(msg.sender), amount));
         tribeStorage.setTotalStaked(SafeMath.safeAdd(tribeStorage.totalStaked(), amount));
         tribeStorage.setTimeStaked(now);
     }
@@ -144,22 +153,20 @@ contract Tribe {
     // unstakes a tribe and sends funds back to the user
     function unstakeTribeTokens(uint amount) public {
 
-        SmartToken tribeTokenInstance = SmartToken(tribeStorage.tribeTokenContractAddress());
-
-        if(tribeStorage.getStakedBalances(msg.sender) < amount) {
+        if(tribeStorage.stakedBalances(msg.sender) < amount) {
             revert();
         }
-        if(now - tribeStorage.getTimeStaked(msg.sender) < tribeStorage.lockupPeriodSeconds()) {
+        if(now - tribeStorage.timeStaked(msg.sender) < lockupPeriodSeconds) {
             revert();
         }
 
-        tribeStorage.setStakedBalances(SafeMath.safeSub(tribeStorage.getStakedBalances(msg.sender), amount));
+        tribeStorage.setStakedBalances(SafeMath.safeSub(tribeStorage.stakedBalances(msg.sender), amount));
         tribeStorage.setTotalStaked(SafeMath.safeSub(tribeStorage.totalStaked(), amount));
         tribeTokenInstance.transfer(msg.sender, amount);
     }
 
     // checks that the user is fully staked
     function isMember(address memberAddress) public view returns (bool) {
-        return ( tribeStorage.getStakedBalances(memberAddress) >= tribeStorage.minimumStakingRequirement() );
+        return ( tribeStorage.stakedBalances(memberAddress) >= minimumStakingRequirement );
     }
 }
