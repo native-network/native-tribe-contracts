@@ -1,8 +1,18 @@
 const SmartToken = artifacts.require("SmartToken");
+const Logger = artifacts.require("Logger");
 
 contract('SmartToken', function () {
   const owner = web3.eth.accounts[0]
   const nonOwner = web3.eth.accounts[1]
+  let loggerInstance
+
+  before(async () => {
+
+  })
+
+  beforeEach(async () => {
+    loggerInstance = await Logger.deployed()
+  })
 
   it("It should create the smart token.", async function () {
     
@@ -10,8 +20,9 @@ contract('SmartToken', function () {
     const initialTokenSymbol = 'test'
     const initialTokenVersion = 'version'
     const initialTokenDecimals = 18
-    
-    let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+    const LoggerContractAddress =  loggerInstance.address
+
+    let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner, LoggerContractAddress);
 
     let name = await token.name.call();
     let symbol = await token.symbol.call();
@@ -29,8 +40,12 @@ contract('SmartToken', function () {
     const initialTokenSymbol = 'test'
     const initialTokenVersion = 'version'
     const initialTokenDecimals = 18
+    
+    loggerInstance = await Logger.deployed()
 
-    let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+    const LoggerContractAddress =  loggerInstance.address
+
+    let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner, LoggerContractAddress);
 
     
     await token.disableTransfers(true);
@@ -51,7 +66,9 @@ contract('SmartToken', function () {
     const initialTokenVersion = 'version'
     const initialTokenDecimals = 18
 
-    let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+    const LoggerContractAddress =  loggerInstance.address
+
+    let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner, LoggerContractAddress);
     
     let transfersEnabled = await token.transfersEnabled.call();        
     assert.equal(transfersEnabled, true);

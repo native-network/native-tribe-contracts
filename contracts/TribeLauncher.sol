@@ -1,57 +1,67 @@
 pragma solidity ^0.4.8;
 
+import './Registrar.sol';
+import './interfaces/ILogger.sol';
 import './Tribe.sol';
-import './SmartToken.sol';
+import './TribeStorage.sol';
+import './factories/SmartTokenFactory.sol';
+import './factories/TribeStorageFactory.sol';
+
 import './utility/Owned.sol';
 
 contract TribeLauncher is Owned {
-
-    event Launched(uint launchUuid, address launchedTribeAddress, address launchedTokenAddress);
-    mapping (uint => address) public launchedTribes;
+    mapping (uint => address) public launchedTribeRegistrars;
     uint public launchedTribeCount;
-
+    
+    address public TribeStorageContractAddress;
+    
+    event Launched(address msgSender, uint launchUuid, address launchedTribeAddress, address launchedTokenAddress, address launchedRegistrarddress);
+    
     mapping (uint => address) public launchedTokens;
     uint public launchedTokenCount;
-    /**
-    @dev returns the sum of _x and _y, asserts if the calculation overflows
-    @param _x   value 1
-    @param _y   value 2
-    @return sum
-    */
-    function safeAdd(uint256 _x, uint256 _y) internal pure returns (uint256) {
-        uint256 z = _x + _y;
-        assert(z >= _x);
-        return z;
-    }
-
+    
     function launchTribe(
-        uint _launchUuid, 
-        uint _minimumStakingRequirement, 
-        uint _lockupPeriod, 
-        address _curatorAddress, 
-        address _nativeTokenContractAddress, 
-        address _voteController,
+        // Put into arrays too fix stack too deep error.
+        // 0 = launchUuid
+        // 1 = minimumStakingRequirement
+        // 2 = lockupPeriodSeconds
+        // 3 = tokenTotalSupply
+        // 4 = tokenDecimals
+        uint[] ai,
+        // Put into arrays too fix stack too deep error.
+        // 0 - curatorAddress
+        // 1 - nativeTokenContractAddress
+        // 2 - voteController
+        // 3 - loggerContractAddress
+        // 4 - smartTokenFactoryContractAddress
+        // 5 - tribeStorageFactoryContractAddress
+    
+        address[] addresses,
         string tokenName,
-        uint tokenTotalSupply,
-        uint8 tokenDecimals,
         string tokenSymbol,
         string tokenVersion
     ) public ownerOnly {
-        
-        SmartToken tribeToken = new SmartToken(tokenName, tokenTotalSupply, tokenDecimals, tokenSymbol, tokenVersion, msg.sender);
+        SmartTokenFactory smartTokenFactory = SmartTokenFactory(addresses[4]);
+        SmartToken tribeToken = SmartToken(smartTokenFactory.create(tokenName, ai[3], uint8(ai[4]), tokenSymbol, tokenVersion, msg.sender));
+        tribeToken.transferOwnershipNow(addresses[0]);
         launchedTokens[launchedTokenCount] = tribeToken;
-        launchedTokenCount = safeAdd(launchedTokenCount,1);
+        launchedTokenCount = SafeMath.safeAdd(launchedTokenCount,1);
         
+        TribeStorageFactory tribeStorageFactory = TribeStorageFactory(addresses[5]);
+        TribeStorage tribeStorage = TribeStorage(tribeStorageFactory.create());
         
-        Tribe tribe = new Tribe(_minimumStakingRequirement, _lockupPeriod, _curatorAddress, address(tribeToken), _nativeTokenContractAddress, _voteController);
-        launchedTribes[launchedTribeCount] = tribe;
-        launchedTribeCount = safeAdd(launchedTribeCount,1);
-        
+        // TODO use a factory to launch the tribe (gas savings)
+        Tribe tribe = new Tribe(ai[1], ai[2], addresses[0], address(tribeToken), addresses[1], addresses[2], addresses[3], address(tribeStorage));
+        tribeStorage.transferOwnershipNow(address(tribe));
 
-        emit Launched(_launchUuid, tribe, tribeToken);
+        // TODO use a factory to launch the registrar (gas savings)
+        Registrar registrar = new Registrar();
+        registrar.addNewAddress(address(tribe));
+        registrar.transferOwnershipNow(addresses[0]);
+        launchedTribeRegistrars[launchedTribeCount] = registrar;
+        launchedTribeCount = SafeMath.safeAdd(launchedTribeCount, 1);
+
+        emit Launched(msg.sender, ai[0], tribe, tribeToken, registrar);
     }
-
-    constructor() public {
-
-    }
+    
 }

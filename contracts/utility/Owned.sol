@@ -18,7 +18,7 @@ contract Owned {
     
     // allows execution by the owner only
     modifier ownerOnly {
-        assert(msg.sender == owner);
+        require(msg.sender == owner);
         _;
     }
     
@@ -42,4 +42,15 @@ contract Owned {
         owner = newOwner;
         newOwner = address(0);
     }
+
+    /**
+        @dev transfers the contract ownership without needing the new owner to accept ownership
+        @param newContractOwner    new contract owner
+    */
+    function transferOwnershipNow(address newContractOwner) ownerOnly public {
+        require(newContractOwner != owner);
+        emit OwnerUpdate(owner, newContractOwner);
+        owner = newContractOwner;
+    }
+
 }

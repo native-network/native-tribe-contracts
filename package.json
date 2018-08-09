@@ -1,0 +1,22 @@
+{
+  "name": "native-tribe-contracts",
+  "version": "1.0.0",
+  "description": "## Environment",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://seanluther@bitbucket.org/devbynature/native-tribe-contracts.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/devbynature/native-tribe-contracts#readme",
+  "dependencies": {
+    "bluebird": "^3.5.1"
+  }
+}
