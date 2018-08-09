@@ -48,7 +48,7 @@ contract Tribe {
                     voteController = _voteController;
                     nativeTokenInstance = ISmartToken(_nativeTokenContractAddress);
                     tribeTokenInstance = ISmartToken(_tribeTokenContractAddress);
-                }
+    }
 
     // TODO add events to each of these
     function transferCurator(address _curator) public onlyCurator {
