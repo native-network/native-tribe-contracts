@@ -6,6 +6,7 @@ const SmartTokenFactory = artifacts.require("SmartTokenFactory");
 const TribeStorageFactory = artifacts.require("TribeStorageFactory");
 const Registrar = artifacts.require("Registrar");
 const RegistrarFactory = artifacts.require("RegistrarFactory");
+const TribeFactory = artifacts.require("TribeFactory");
 const Bluebird = require('Bluebird');
  
 
@@ -20,9 +21,9 @@ contract('TribeLauncher', function () {
     let smartTokenFactoryInstance
     let tribeStorageFactoryInstance
     let registrarFactoryInstance
+    let tribeFactoryInstance
   
     beforeEach(async () => {
-
       const initialDevFund = 1000
       loggerInstance = await Logger.deployed()
       nativeTokenInstance = await SmartToken.deployed()
@@ -31,6 +32,7 @@ contract('TribeLauncher', function () {
       tribeStorageFactoryInstance = await TribeStorageFactory.deployed()
       tribeStorageFactoryInstance = await TribeStorageFactory.deployed()
       registrarFactoryInstance = await RegistrarFactory.deployed()
+      tribeFactoryInstance = await TribeFactory.deployed()
     })
 
     // TODO add tests to show that the tribe account and tribe token were launched correctly
@@ -44,7 +46,7 @@ contract('TribeLauncher', function () {
       
       await tribeLauncherInstance.launchTribe(
         [launchUuid, minimumStakingRequirement, lockupPeriod, totalSupply, tokenDecimals],
-        [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, tribeStorageFactoryInstance.address, registrarFactoryInstance.address],
+        [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, tribeStorageFactoryInstance.address, registrarFactoryInstance.address, tribeFactoryInstance.address],
         'Test Tribe 1',
         'TT1',
         '1.0', {from: sender})

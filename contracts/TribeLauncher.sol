@@ -1,12 +1,13 @@
 pragma solidity ^0.4.8;
 
-import './Registrar.sol';
 import './interfaces/ILogger.sol';
-import './Tribe.sol';
+import './interfaces/ITribe.sol';
+import './Registrar.sol';
 import './TribeStorage.sol';
 import './factories/RegistrarFactory.sol';
 import './factories/SmartTokenFactory.sol';
 import './factories/TribeStorageFactory.sol';
+import './factories/TribeFactory.sol';
 
 import './utility/Owned.sol';
 
@@ -37,7 +38,7 @@ contract TribeLauncher is Owned {
         // 4 - smartTokenFactoryContractAddress
         // 5 - tribeStorageFactoryContractAddress
         // 6 - registrarFactoryContractAddress
-
+        // 7 - tribeFactoryContractAddress
         address[] addresses,
         string tokenName,
         string tokenSymbol,
@@ -53,7 +54,9 @@ contract TribeLauncher is Owned {
         TribeStorage tribeStorage = TribeStorage(tribeStorageFactory.create());
         
         // TODO use a factory to launch the tribe (gas savings)
-        Tribe tribe = new Tribe(ai[1], ai[2], addresses[0], address(tribeToken), addresses[1], addresses[2], addresses[3], address(tribeStorage));
+
+
+        ITribe tribe = launchTribeWithFactory(ai, addresses, address(tribeToken), address(tribeStorage));
         tribeStorage.transferOwnershipNow(address(tribe));
 
         // Using the launchRegistrar function to avoid stack becoming too deep
@@ -65,12 +68,18 @@ contract TribeLauncher is Owned {
         emit Launched(msg.sender, ai[0], tribe, tribeToken, registrar);
     }
 
-    function launchRegistrar(address _registrarFactoryContractAddress, Tribe _tribe, address _curatorAddress) public  returns(Registrar) {
-        RegistrarFactory registrarFactory = RegistrarFactory(_registrarFactoryContractAddress);
-        Registrar registrar = Registrar(registrarFactory.create()); // what does regisrar factory.create need?
-        registrar.addNewAddress(address(_tribe));
-        registrar.transferOwnershipNow(_curatorAddress);
+    function launchRegistrar(address registrarFactoryContractAddress, ITribe tribe, address curatorAddress) public  returns(Registrar) {
+        RegistrarFactory registrarFactory = RegistrarFactory(registrarFactoryContractAddress);
+        Registrar registrar = Registrar(registrarFactory.create());
+        registrar.addNewAddress(address(tribe));
+        registrar.transferOwnershipNow(curatorAddress);
         return registrar;
+    }
+
+    function launchTribeWithFactory(uint[] ai, address[] addresses, address _tribeTokenAddress, address _tribeStorageAddress) public returns(ITribe) {
+        TribeFactory tribeFactory = TribeFactory(addresses[7]);
+        ITribe tribe = ITribe(Tribe(tribeFactory.create(ai[1], ai[2], addresses[0], _tribeTokenAddress, addresses[1], addresses[2], addresses[3], _tribeStorageAddress)));
+        return tribe;
     }
     
 }
