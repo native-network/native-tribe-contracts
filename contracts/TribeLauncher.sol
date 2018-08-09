@@ -70,7 +70,8 @@ contract TribeLauncher is Owned {
         emit Launched(msg.sender, ai[0], tribe, tribeToken, registrar);
     }
 
-    function launchRegistrar(address registrarFactoryContractAddress, Tribe tribe, address curatorAddress) public  returns(Registrar) {
+    // Abstracted to avoid stack-depth error in launchTribe()
+    function launchRegistrar(address registrarFactoryContractAddress, Tribe tribe, address curatorAddress) public returns(Registrar) {
         RegistrarFactory registrarFactory = RegistrarFactory(registrarFactoryContractAddress);
         Registrar registrar = Registrar(registrarFactory.create());
         registrar.addNewAddress(address(tribe));
@@ -78,6 +79,7 @@ contract TribeLauncher is Owned {
         return registrar;
     }
 
+    // Abstracted to avoid stack-depth error in launchTribe()
     function launchTribeWithFactory(uint[] ai, address[] addresses, address _tribeTokenAddress, address _tribeStorageAddress) public returns(Tribe) {
         TribeFactory tribeFactory = TribeFactory(addresses[7]);
         Tribe tribe = Tribe(Tribe(tribeFactory.create(ai[1], ai[2], addresses[0], _tribeTokenAddress, addresses[1], addresses[2], addresses[3], _tribeStorageAddress)));

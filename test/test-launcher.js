@@ -40,8 +40,15 @@ contract('TribeLauncher', function () {
     const curator = web3.eth.accounts[0]
     const voteController = curator
 
-    // TODO add tests to show that the tribe account and tribe token were launched correctly
+    // TODO add tests to show 
+    // TODO 1) that the tribe account is good
+    // TODO 2) tribe token is good
+    // TODO 3) registrar is good
+    
     // TODO also add tribe launch failure cases
+    // TODO 1) fail When non-owner tries to use the tribe launcher
+
+    
     it("It should launch a new tribe contract when calling launchTribe()", async function () {
       const minimumStakingRequirement = 10
       const lockupPeriod = 0

@@ -142,7 +142,7 @@ contract Tribe {
     }
 
     // Staking code below (in tribe tokens)
-    // TODO make it not use amount here.  It should just assume enuf tokens can be staked to become a member
+    // TODO make it steak as much additional funds required to become a member (i.e. if the staking minimum goes up).  Do not use amount variable  
     function stakeTribeTokens(uint amount) public {
 
         if(!tribeTokenInstance.transferFrom(msg.sender, address(tribeStorage), amount)) {
@@ -156,6 +156,8 @@ contract Tribe {
 
     // checks that a user is able to unstake by looking at the lokcup period and the balance
     // unstakes a tribe and sends funds back to the user
+
+    /// TODO unstaking should unstake everything
     function unstakeTribeTokens(uint amount) public {
 
         if(tribeStorage.stakedBalances(msg.sender) < amount) {

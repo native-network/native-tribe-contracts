@@ -15,13 +15,16 @@ contract('SmartToken', function () {
   })
 
   describe("Should test the smart token", function() {
+    
+    // TODO test issue(), destroy(), transfer(), transferFrom() and their negative cases
+    
+    // TODO check that he event was emitted on creation
     it("It should create the smart token.", async function () {
       
       const initialTokenName = 'test'
       const initialTokenSymbol = 'test'
       const initialTokenVersion = 'version'
       const initialTokenDecimals = 18
-      const LoggerContractAddress =  loggerInstance.address
 
       let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
 
@@ -30,6 +33,7 @@ contract('SmartToken', function () {
       let decimals = await token.decimals.call();
       let version = await token.version.call();
 
+      // TODO missing totalSupply, etc
       assert.equal(name, initialTokenName);
       assert.equal(symbol, initialTokenSymbol);   
       assert.equal(decimals, initialTokenDecimals);
@@ -43,11 +47,8 @@ contract('SmartToken', function () {
       const initialTokenDecimals = 18
       
       loggerInstance = await Logger.deployed()
-
-      const LoggerContractAddress =  loggerInstance.address
-
+      
       let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
-
       
       await token.disableTransfers(true);
 
@@ -60,14 +61,13 @@ contract('SmartToken', function () {
       assert.equal(transfersEnabled, true);
     })
 
+    // TODO verify this works
     it("It should not allow a non-owner to enable/disable the transfer method", async function () {
       
       const initialTokenName = 'test'
       const initialTokenSymbol = 'test'
       const initialTokenVersion = 'version'
       const initialTokenDecimals = 18
-
-      const LoggerContractAddress =  loggerInstance.address
 
       let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
       
@@ -91,7 +91,6 @@ contract('SmartToken', function () {
         assert.equal(transfersEnabled, true);
         return;
       }
-      
       
       transfersEnabled = await token.transfersEnabled.call();
       
