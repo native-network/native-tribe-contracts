@@ -23,6 +23,7 @@ contract Logger is Owned {
     // Logger
     event NewTribeAddress(address msgSender, address _newAddress);
     
+    event GenericLog(string messageType, bytes32[] message);
     mapping (address => bool) public permissionedAddresses;
 
     modifier hasLoggerPermissions(address _address) {
@@ -66,6 +67,9 @@ contract Logger is Owned {
         emit NewTribeAddress(msg.sender, newAddress);
     }
 
+    function emitGenericLog(string messageType, bytes32[] message) public {
+        emit GenericLog(messageType, message);
+    }
     constructor() public {
 
     }
