@@ -4,6 +4,7 @@ import './Registrar.sol';
 import './interfaces/ILogger.sol';
 import './Tribe.sol';
 import './TribeStorage.sol';
+import './factories/RegistrarFactory.sol';
 import './factories/SmartTokenFactory.sol';
 import './factories/TribeStorageFactory.sol';
 
@@ -35,7 +36,8 @@ contract TribeLauncher is Owned {
         // 3 - loggerContractAddress
         // 4 - smartTokenFactoryContractAddress
         // 5 - tribeStorageFactoryContractAddress
-    
+        // 6 - registrarFactoryContractAddress
+
         address[] addresses,
         string tokenName,
         string tokenSymbol,
@@ -54,14 +56,21 @@ contract TribeLauncher is Owned {
         Tribe tribe = new Tribe(ai[1], ai[2], addresses[0], address(tribeToken), addresses[1], addresses[2], addresses[3], address(tribeStorage));
         tribeStorage.transferOwnershipNow(address(tribe));
 
-        // TODO use a factory to launch the registrar (gas savings)
-        Registrar registrar = new Registrar();
-        registrar.addNewAddress(address(tribe));
-        registrar.transferOwnershipNow(addresses[0]);
+        // Using the launchRegistrar function to avoid stack becoming too deep
+        Registrar registrar = launchRegistrar(addresses[6], tribe, addresses[0]);
+
         launchedTribeRegistrars[launchedTribeCount] = registrar;
         launchedTribeCount = SafeMath.safeAdd(launchedTribeCount, 1);
 
         emit Launched(msg.sender, ai[0], tribe, tribeToken, registrar);
+    }
+
+    function launchRegistrar(address _registrarFactoryContractAddress, Tribe _tribe, address _curatorAddress) public  returns(Registrar) {
+        RegistrarFactory registrarFactory = RegistrarFactory(_registrarFactoryContractAddress);
+        Registrar registrar = Registrar(registrarFactory.create()); // what does regisrar factory.create need?
+        registrar.addNewAddress(address(_tribe));
+        registrar.transferOwnershipNow(_curatorAddress);
+        return registrar;
     }
     
 }
