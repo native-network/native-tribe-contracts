@@ -75,7 +75,7 @@ contract('Tribe', function () {
     await nativeTokenInstance.transfer(tribeAccountAddress, 1000000, {from: sender})
   })
 
-  describe.only("It should test the tribe", function() {
+  describe("It should test the tribe", function() {
     
   it("It should allow a curator to create a task", async function () {
     
