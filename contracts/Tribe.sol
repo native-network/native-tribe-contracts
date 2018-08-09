@@ -1,7 +1,7 @@
 pragma solidity ^0.4.8;
 
 import './interfaces/ILogger.sol';
-import './interfaces/ITribeStorage.sol';
+import './TribeStorage.sol';
 import './interfaces/ISmartToken.sol';
 import './utility/SafeMath.sol';
 
@@ -15,7 +15,7 @@ contract Tribe {
     ISmartToken public nativeTokenInstance;
     ISmartToken public tribeTokenInstance;
     ILogger public logger;
-    ITribeStorage public tribeStorage;
+    TribeStorage public tribeStorage;
 
     modifier onlyCurator {
         require(msg.sender == curator);
@@ -29,6 +29,7 @@ contract Tribe {
 
     modifier sufficientDevFundBalance (uint amount) {
         require(amount <= getAvailableDevFund());
+            require(true);
         _;
     }
 
@@ -40,7 +41,7 @@ contract Tribe {
                 address _voteController,
                 address _loggerContractAddress,
                 address _tribeStorageContractAddress) public {
-                    tribeStorage = ITribeStorage(_tribeStorageContractAddress);
+                    tribeStorage = TribeStorage(_tribeStorageContractAddress);
                     curator = _curator;
                     minimumStakingRequirement = _minimumStakingRequirement;
                     lockupPeriodSeconds = _lockupPeriodSeconds;
@@ -77,16 +78,15 @@ contract Tribe {
     }
 
     function setTribeStorage(address newTribeStorageAddress) public onlyCurator {
-        tribeStorage = ITribeStorage(newTribeStorageAddress);
+        tribeStorage = TribeStorage(newTribeStorageAddress);
     }
 
     // gets the amount in the dev fund that isn't locked up by a project or task stake
     function getAvailableDevFund() public view returns (uint) {
-        uint devFundBalance = nativeTokenInstance.balanceOf(address(this));
+        uint devFundBalance = nativeTokenInstance.balanceOf(address(tribeStorage));
         return SafeMath.safeSub(devFundBalance, getLockedDevFundAmount());
     }
-    
-    // adds the task and project escrows
+
     function getLockedDevFundAmount() public view returns (uint) {
         return SafeMath.safeAdd(tribeStorage.totalTaskEscrow(), tribeStorage.totalProjectEscrow());
     }
@@ -108,7 +108,9 @@ contract Tribe {
     
     // pays put to the task completer and updates the escrow balances
     function rewardTaskCompletion(uint uuid, address user) public onlyVoteController {
-        nativeTokenInstance.transfer(user, tribeStorage.escrowedTaskBalances(uuid));
+
+        tribeStorage.transferTokensOut(address(nativeTokenInstance), user, tribeStorage.escrowedTaskBalances(uuid));
+
         tribeStorage.setTotalTaskEscrow(SafeMath.safeSub(tribeStorage.totalTaskEscrow(), tribeStorage.escrowedTaskBalances(uuid)));
         tribeStorage.setEscrowedTaskBalances(uuid, 0);
     }
@@ -131,7 +133,10 @@ contract Tribe {
     
     // pays out the project completion and then updates the escrow balances
     function rewardProjectCompletion(uint uuid) public onlyVoteController {
-        nativeTokenInstance.transfer(tribeStorage.escrowedProjectPayees(uuid), tribeStorage.escrowedProjectBalances(uuid));
+//        nativeTokenInstance.transfer(tribeStorage.escrowedProjectPayees(uuid), tribeStorage.escrowedProjectBalances(uuid));
+
+        tribeStorage.transferTokensOut(address(nativeTokenInstance), tribeStorage.escrowedProjectPayees(uuid), tribeStorage.escrowedProjectBalances(uuid));
+
         tribeStorage.setTotalProjectEscrow(SafeMath.safeSub(tribeStorage.totalProjectEscrow(), tribeStorage.escrowedProjectBalances(uuid)));
         tribeStorage.setEscrowedProjectBalances(uuid, 0);
     }
@@ -140,13 +145,13 @@ contract Tribe {
     // TODO make it not use amount here.  It should just assume enuf tokens can be staked to become a member
     function stakeTribeTokens(uint amount) public {
 
-        if(!tribeTokenInstance.transferFrom(msg.sender, address(this), amount)) {
+        if(!tribeTokenInstance.transferFrom(msg.sender, address(tribeStorage), amount)) {
             revert();
         }
 
-        tribeStorage.setStakedBalances(SafeMath.safeAdd(tribeStorage.stakedBalances(msg.sender), amount));
+        tribeStorage.setStakedBalances(SafeMath.safeAdd(tribeStorage.stakedBalances(msg.sender), amount), msg.sender);
         tribeStorage.setTotalStaked(SafeMath.safeAdd(tribeStorage.totalStaked(), amount));
-        tribeStorage.setTimeStaked(now);
+        tribeStorage.setTimeStaked(now, msg.sender);
     }
 
     // checks that a user is able to unstake by looking at the lokcup period and the balance
@@ -160,7 +165,7 @@ contract Tribe {
             revert();
         }
 
-        tribeStorage.setStakedBalances(SafeMath.safeSub(tribeStorage.stakedBalances(msg.sender), amount));
+        tribeStorage.setStakedBalances(SafeMath.safeSub(tribeStorage.stakedBalances(msg.sender), amount), msg.sender);
         tribeStorage.setTotalStaked(SafeMath.safeSub(tribeStorage.totalStaked(), amount));
         tribeTokenInstance.transfer(msg.sender, amount);
     }

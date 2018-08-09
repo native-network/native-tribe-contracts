@@ -11,6 +11,7 @@ const Bluebird = require('Bluebird');
  
 
 contract('TribeLauncher', function () {
+
   const sender = web3.eth.accounts[0]
   const curator = web3.eth.accounts[0]
   const voteController = curator
@@ -35,6 +36,9 @@ contract('TribeLauncher', function () {
     tribeFactoryInstance = await TribeFactory.deployed()
   })
   describe("It should test the launcher", function() {
+    const sender = web3.eth.accounts[0]
+    const curator = web3.eth.accounts[0]
+    const voteController = curator
 
     // TODO add tests to show that the tribe account and tribe token were launched correctly
     // TODO also add tribe launch failure cases

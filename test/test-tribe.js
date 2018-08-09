@@ -4,16 +4,26 @@ const Logger = artifacts.require("Logger")
 const Token = artifacts.require("SmartToken")
 const Registrar = artifacts.require("Registrar")
 const Bluebird = require('Bluebird')
+const RegistrarFactory = artifacts.require("RegistrarFactory");
+const TribeFactory = artifacts.require("TribeFactory");
+const SmartTokenFactory = artifacts.require("SmartTokenFactory");
+const TribeStorageFactory = artifacts.require("TribeStorageFactory");
+const TribeStorage = artifacts.require("TribeStorage");
 
 contract('Tribe', function () {
   const sender = web3.eth.accounts[0]
   const voteController = web3.eth.accounts[0]
   const curator = web3.eth.accounts[0]
   const nonCurator = web3.eth.accounts[1]
-  
-  let tribeLauncherInstance = null
 
-  let launchedTribeAddress = null
+  let tribeLauncherInstance
+  let nativeTokenInstance
+  let loggerInstance
+  let smartTokenFactoryInstance
+  let tribeStorageFactoryInstance
+  let registrarFactoryInstance
+  let tribeFactoryInstance
+  
   let launchedTribeInstance = null
 
   let tribeTokenInstance = null
@@ -21,67 +31,63 @@ contract('Tribe', function () {
   
   let amountRequiredForStaking = null
   let stakedMembershipStatus = null
-  
-  let nativeTokenInstance = null
-  let logger = null
 
   before(async () => {
+    
   })
 
   beforeEach(async () => {
-    const _launchUuid = 123
-    const _minimumStakingRequirement = 456
-    const _lockupPeriod = 0
+    const minimumStakingRequirement = 10
+    const lockupPeriod = 0
+    const launchUuid = 123
+    const totalSupply = 1000000
+    const tokenDecimals = 18
     
     loggerInstance = await Logger.deployed()
     nativeTokenInstance = await Token.deployed()
     tribeLauncherInstance = await TribeLauncher.deployed()
+    smartTokenFactoryInstance = await SmartTokenFactory.deployed()
+    tribeStorageFactoryInstance = await TribeStorageFactory.deployed()
+    registrarFactoryInstance = await RegistrarFactory.deployed()
+    tribeFactoryInstance = await TribeFactory.deployed()
+
+    // The tribe launcher needs momentary access to the logger so it can permission the tribe to use it
+    await loggerInstance.transferOwnershipNow(tribeLauncherInstance.address)
+    
     await tribeLauncherInstance.launchTribe(
-      [_launchUuid,
-      _minimumStakingRequirement,
-      _lockupPeriod,
-      1000000,
-      18],
-      curator,
-      nativeTokenInstance.address,
-      curator,
+      [launchUuid, minimumStakingRequirement, lockupPeriod, totalSupply, tokenDecimals],
+      [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, tribeStorageFactoryInstance.address, registrarFactoryInstance.address, tribeFactoryInstance.address],
       'Test Tribe 1',
       'TT1',
-      1.0,
-      loggerInstance.address, {from: sender})
+      '1.0', {from: sender})
     
     const launchedTribeCount = await tribeLauncherInstance.launchedTribeCount()
-    const launchedTribeRegistrarAddress = await tribeLauncherInstance.launchedTribes(launchedTribeCount - 1)
+    const launchedTribeRegistrarAddress = await tribeLauncherInstance.launchedTribeRegistrars(launchedTribeCount - 1)
     const launchedTribeRegistrar = await Registrar.at(launchedTribeRegistrarAddress)
     const launchedTribeAddresses = await launchedTribeRegistrar.getAddresses.call()
     launchedTribeInstance = await Tribe.at(launchedTribeAddresses.slice(-1)[0])
     
-    Logger.addPermission(launchedTribeInstance.address)
-    
-    tribeTokenAddress = await launchedTribeInstance.getTribeTokenContractAddress()
+    tribeTokenAddress = await launchedTribeInstance.tribeTokenInstance()
     tribeTokenInstance = await Token.at(tribeTokenAddress)
 
-    // Fund the dev fund
-    await nativeTokenInstance.transfer(launchedTribeInstance.address, 1000000, {from: sender})
+    // Fund the dev fund so we can test tasks and projects
+    const tribeAccountAddress = await launchedTribeInstance.tribeStorage()
+    await nativeTokenInstance.transfer(tribeAccountAddress, 1000000, {from: sender})
   })
 
+  describe.only("It should test the tribe", function() {
+    
   it("It should allow a curator to create a task", async function () {
-
+    
     const uuid = 1234
     const taskReward = 1000
-  
-    const launchedEvent = Bluebird.promisify(loggerInstance.TaskCreated)()    
-
+    const launchedEvent = Bluebird.promisify(loggerInstance.TaskCreated)()
     await launchedTribeInstance.createNewTask(uuid, taskReward, {from: curator})
-
-    
-    
     return launchedEvent.then( (result) => {
       return assert(true)
     })
   })
-
-
+    
   it("It should fail to create a task if the reward is set to less than 0", async function () {
 
     const uuid = 1234
@@ -186,13 +192,15 @@ contract('Tribe', function () {
     const uuid = 1234
     await launchedTribeInstance.createNewTask(uuid, taskReward, {from: voteController})
 
-    const devFundBalanceBefore = await nativeTokenInstance.balanceOf(launchedTribeInstance.address)
-    const rewardeeBalanceBefore = await nativeTokenInstance.balanceOf(rewardee)
+    const tribeAccountAddress = await launchedTribeInstance.tribeStorage()
     
+    const devFundBalanceBefore = await nativeTokenInstance.balanceOf(tribeAccountAddress)
+    const rewardeeBalanceBefore = await nativeTokenInstance.balanceOf(rewardee)
     await launchedTribeInstance.rewardTaskCompletion(uuid, rewardee, {from: voteController})
 
-    const devFundBalanceAfter = await nativeTokenInstance.balanceOf(launchedTribeInstance.address)
-    const taskEscrowBalanceAfter = await launchedTribeInstance.getEscrowedTaskBalances(uuid)
+    const devFundBalanceAfter = await nativeTokenInstance.balanceOf(tribeAccountAddress)
+    const tribeAccountInstance = TribeStorage.at(tribeAccountAddress)
+    const taskEscrowBalanceAfter = await tribeAccountInstance.escrowedTaskBalances(uuid)
     const rewardeeBalanceAfter = await nativeTokenInstance.balanceOf(rewardee)
     
     assert(devFundBalanceAfter.equals(devFundBalanceBefore.minus(taskReward)))
@@ -217,7 +225,10 @@ contract('Tribe', function () {
     }
     catch (err) {
       if ( err.toString().indexOf('VM Exception while processing transaction: revert') >= 0 ) {
-        const taskEscrowBalance = await launchedTribeInstance.getEscrowedTaskBalances(uuid)
+        
+        const tribeAccountAddress = await launchedTribeInstance.tribeStorage()
+        const tribeAccountInstance = TribeStorage.at(tribeAccountAddress)
+        const taskEscrowBalance = await tribeAccountInstance.escrowedTaskBalances(uuid)
         const rewardeeBalanceAfter = await nativeTokenInstance.balanceOf(rewardee)
 
         assert(taskEscrowBalance.equals(taskReward))
@@ -357,15 +368,18 @@ contract('Tribe', function () {
     const uuid = 1234
     await launchedTribeInstance.createNewProject(uuid, projectReward, rewardee, {from: voteController})
 
-    const devFundBalanceBefore = await nativeTokenInstance.balanceOf(launchedTribeInstance.address)
+    const tribeAccountAddress = await launchedTribeInstance.tribeStorage()
+    
+    const devFundBalanceBefore = await nativeTokenInstance.balanceOf(tribeAccountAddress)
     const rewardeeBalanceBefore = await nativeTokenInstance.balanceOf(rewardee)
 
     await launchedTribeInstance.rewardProjectCompletion(uuid, {from: voteController})
 
-    const devFundBalanceAfter = await nativeTokenInstance.balanceOf(launchedTribeInstance.address)
-    const taskEscrowBalanceAfter = await launchedTribeInstance.getEscrowedTaskBalances(uuid)
+    const devFundBalanceAfter = await nativeTokenInstance.balanceOf(tribeAccountAddress)
+    const tribeAccountInstance = TribeStorage.at(tribeAccountAddress)
+    const taskEscrowBalanceAfter = await tribeAccountInstance.escrowedTaskBalances(uuid)
     const rewardeeBalanceAfter = await nativeTokenInstance.balanceOf(rewardee)
-
+    
     assert(devFundBalanceAfter.equals(devFundBalanceBefore.minus(projectReward)))
     assert(taskEscrowBalanceAfter.equals(0))
     assert(rewardeeBalanceAfter.equals(rewardeeBalanceBefore.plus(projectReward)))
@@ -394,22 +408,23 @@ contract('Tribe', function () {
     }
     assert(false, "Allowed a non-votecontroller to reward a task")
   })
-
-
+    
   it("It should stake tokens to become a member", async function () {
     const startingMembershipStatus = await launchedTribeInstance.isMember(sender)
-    amountRequiredForStaking = await launchedTribeInstance.getMinimumStakingRequirement()
-    
+    amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
     await tribeTokenInstance.approve(launchedTribeInstance.address, amountRequiredForStaking, {from: sender})
     await launchedTribeInstance.stakeTribeTokens(amountRequiredForStaking, {from: sender})
     stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
+    const tribeAccountAddress = await launchedTribeInstance.tribeStorage()
+    const tribeAccountInstance = TribeStorage.at(tribeAccountAddress)
+    const stakedBalance = await tribeAccountInstance.stakedBalances(sender)
     assert(startingMembershipStatus === false && stakedMembershipStatus === true)
   })
 
   it("It should allow a staked user to unstake a tribe", async function () {
     // Same as staking
     const startingMembershipStatus = await launchedTribeInstance.isMember(sender)
-    amountRequiredForStaking = await launchedTribeInstance.getMinimumStakingRequirement()
+    amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
     await tribeTokenInstance.approve(launchedTribeInstance.address, amountRequiredForStaking, {from: sender})
     await launchedTribeInstance.stakeTribeTokens(amountRequiredForStaking, {from: sender})
     stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
@@ -424,7 +439,7 @@ contract('Tribe', function () {
   it("It should not allow a staked user to unstake a tribe with more tokens than they entered", async function () {
     // Same as staking
     const startingMembershipStatus = await launchedTribeInstance.isMember(sender)
-    amountRequiredForStaking = await launchedTribeInstance.getMinimumStakingRequirement()
+    amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
     await tribeTokenInstance.approve(launchedTribeInstance.address, amountRequiredForStaking, {from: sender})
     await launchedTribeInstance.stakeTribeTokens(amountRequiredForStaking, {from: sender})
     stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
@@ -445,7 +460,7 @@ contract('Tribe', function () {
   it("It should block unstakng for a set amount of time", async function () {
     // Same as staking
     const startingMembershipStatus = await launchedTribeInstance.isMember(sender)
-    amountRequiredForStaking = await launchedTribeInstance.getMinimumStakingRequirement()
+    amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
     await tribeTokenInstance.approve(launchedTribeInstance.address, amountRequiredForStaking, {from: sender})
     await launchedTribeInstance.stakeTribeTokens(amountRequiredForStaking, {from: sender})
     stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
@@ -464,31 +479,31 @@ contract('Tribe', function () {
     // inital set by the curator
     const curatorSetMinimum = 1000
     await launchedTribeInstance.setMinimumStakingRequirement( curatorSetMinimum, {from: curator})
-    const stakingMinimum = await launchedTribeInstance.getMinimumStakingRequirement()
+    const stakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
     
     // malicious user attempts to change minimum staking requirnments
     const maliciousMinimumStakingRequirement = 0
     try {
       await launchedTribeInstance.setMinimumStakingRequirement( maliciousMinimumStakingRequirement, {from: nonCurator})
     } catch(e) {
-      const currentStakingMinimum = await launchedTribeInstance.getMinimumStakingRequirement()
+      const currentStakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
       assert( maliciousMinimumStakingRequirement.toString() != currentStakingMinimum.toString() )
       assert( curatorSetMinimum.toString() === currentStakingMinimum.toString() )
     }
   })
 
   it("It should change the minimumStakingRequirement", async function () {
-    const stakingMinimum = await launchedTribeInstance.getMinimumStakingRequirement()
+    const stakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
     const newStakingMinimum = 1501;
     await launchedTribeInstance.setMinimumStakingRequirement( newStakingMinimum, {from: curator})
-    const finalStakingMinimum = await launchedTribeInstance.getMinimumStakingRequirement()
+    const finalStakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
     assert( stakingMinimum.toString() != finalStakingMinimum.toString() )
     assert( finalStakingMinimum.toString() === newStakingMinimum.toString())
   })
   
   // Technically not sure about this one, solidity converts ints into uints and doesn't revert as I would expect.
   it("It should not allow setting the minimumStakingRequirement to negative", async function () {
-    const stakingMinimum = await launchedTribeInstance.getMinimumStakingRequirement()
+    const stakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
     const newStakingMinimum = -1050;
     launchedTribeInstance.setMinimumStakingRequirement( newStakingMinimum, {from: curator})
     .then(()=>{
@@ -502,35 +517,37 @@ contract('Tribe', function () {
   })
 
   it("It should not allow setting the minimumStakingRequirement to a string", async function () {
-    const stakingMinimum = await launchedTribeInstance.getMinimumStakingRequirement()
+    const stakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
     const newStakingMinimum = 'foo';
     try {
       await launchedTribeInstance.setMinimumStakingRequirement( newStakingMinimum, {from: curator})
     } catch (error) {
-      const finalStakingMinimum = await launchedTribeInstance.getMinimumStakingRequirement()
+      const finalStakingMinimum = await launchedTribeInstance.minimumStakingRequirement()
       assert(stakingMinimum.toString() === finalStakingMinimum.toString())
     }
   })
 
   it("It should change the setlockupPeriod", async function () {
-    const lockupPeriod = await launchedTribeInstance.getLockupPeriodSeconds()
+    const lockupPeriod = await launchedTribeInstance.lockupPeriodSeconds()
     const newLockupPeriod = 1252;
-    await launchedTribeInstance.setlockupPeriod( newLockupPeriod, {from: curator})
-    const finalLockupPeriod = await launchedTribeInstance.getLockupPeriodSeconds()
+    await launchedTribeInstance.setLockupPeriodSeconds( newLockupPeriod, {from: curator})
+    const finalLockupPeriod = await launchedTribeInstance.lockupPeriodSeconds()
     assert( lockupPeriod.toString() != finalLockupPeriod.toString() )
     assert( finalLockupPeriod.toString() === newLockupPeriod.toString())
   })
 
   it("It should not allow setting the setlockupPeriod to a string", async function () {
-    const lockupPeriod = await launchedTribeInstance.getLockupPeriodSeconds()
+    const lockupPeriod = await launchedTribeInstance.lockupPeriodSeconds()
     const newLockupPeriod = 'foo';
     try {
-      await launchedTribeInstance.setlockupPeriod( newLockupPeriod, {from: curator})  
+      await launchedTribeInstance.setLockupPeriodSeconds( newLockupPeriod, {from: curator})  
     } catch(e) {
-      const finalLockupPeriod = await launchedTribeInstance.getLockupPeriodSeconds()
+      const finalLockupPeriod = await launchedTribeInstance.lockupPeriodSeconds()
       assert( lockupPeriod.toString() != newLockupPeriod.toString() )
       assert( finalLockupPeriod .toString() === lockupPeriod.toString())
     }
   })
-  
+
+  })
+
 })

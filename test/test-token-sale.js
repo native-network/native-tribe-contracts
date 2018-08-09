@@ -18,7 +18,7 @@ contract('SmartToken-sale', function (accounts) {
     const initialTokenDecimals = 18
     const initialSupply = 12345
     const loggerInstance = await Logger.deployed()
-    smartTokenInstance = await SmartToken.new(initialTokenName, initialSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+    smartTokenInstance = await SmartToken.new(initialTokenName, initialSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner, loggerInstance.address);
   })
 describe.only("It should test the token sale", function () {
     it("It should allow the owner to initialize a token sale", async () => {
