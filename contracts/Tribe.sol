@@ -51,32 +51,32 @@ contract Tribe {
                 }
 
     // TODO add events to each of these
-    function transferCurator(address _curator) onlyCurator {
+    function transferCurator(address _curator) public onlyCurator {
         curator = _curator;
     }
 
-    function transferVoteController(address _voteController) onlyCurator {
+    function transferVoteController(address _voteController) public onlyCurator {
         voteController = _voteController;
     }
 
-    function setMinimumStakingRequirement(uint _minimumStakingRequirement) onlyCurator {
+    function setMinimumStakingRequirement(uint _minimumStakingRequirement) public onlyCurator {
         minimumStakingRequirement = _minimumStakingRequirement;
     }
 
-    function setLockupPeriodSeconds(uint _lockupPeriodSeconds) onlyCurator {
+    function setLockupPeriodSeconds(uint _lockupPeriodSeconds) public onlyCurator {
         lockupPeriodSeconds = _lockupPeriodSeconds;
     }
 
-    function setLogger(address newLoggerAddress) onlyCurator {
+    function setLogger(address newLoggerAddress) public onlyCurator {
         logger = ILogger(newLoggerAddress);
     }
 
-    function setTokenAddresses(address newNativeTokenAddress, address newTribeTokenAddress) onlyCurator {
+    function setTokenAddresses(address newNativeTokenAddress, address newTribeTokenAddress) public onlyCurator {
         nativeTokenInstance = ISmartToken(newNativeTokenAddress);
         tribeTokenInstance = ISmartToken(newTribeTokenAddress);
     }
 
-    function setTribeStorage(address newTribeStorageAddress) onlyCurator {
+    function setTribeStorage(address newTribeStorageAddress) public onlyCurator {
         tribeStorage = ITribeStorage(newTribeStorageAddress);
     }
 

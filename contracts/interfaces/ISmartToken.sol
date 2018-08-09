@@ -28,7 +28,7 @@ contract ISmartToken is Owned {
     uint public saleEndTime;
     uint public priceInWei;
     uint public amountRemainingForSale;
-    function initializeTokenSale(uint _saleStartTime, uint _saleEndTime, uint _priceInWei, uint _amountForSale);
+    function initializeTokenSale(uint _saleStartTime, uint _saleEndTime, uint _priceInWei, uint _amountForSale) public;
     function updateStartTime(uint _newSaleStartTime) public;
     function updateEndTime(uint _newSaleEndTime) public;
     function updateAmountRemainingForSale(uint _newAmountRemainingForSale) public;
