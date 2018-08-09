@@ -37,7 +37,7 @@ contract('TribeLauncher', function () {
 
     // TODO add tests to show that the tribe account and tribe token were launched correctly
     // TODO also add tribe launch failure cases
-    it.only("It should launch a new tribe contract when calling launchTribe()", async function () {
+    it("It should launch a new tribe contract when calling launchTribe()", async function () {
       const minimumStakingRequirement = 10
       const lockupPeriod = 0
       const launchUuid = 123
