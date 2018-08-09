@@ -30,14 +30,13 @@ contract('TribeLauncher', function () {
       tribeLauncherInstance = await TribeLauncher.deployed()
       smartTokenFactoryInstance = await SmartTokenFactory.deployed()
       tribeStorageFactoryInstance = await TribeStorageFactory.deployed()
-      tribeStorageFactoryInstance = await TribeStorageFactory.deployed()
       registrarFactoryInstance = await RegistrarFactory.deployed()
       tribeFactoryInstance = await TribeFactory.deployed()
     })
 
     // TODO add tests to show that the tribe account and tribe token were launched correctly
     // TODO also add tribe launch failure cases
-    it.only("It should launch a new tribe contract when calling launchTribe()", async function () {
+    it("It should launch a new tribe contract when calling launchTribe()", async function () {
       const minimumStakingRequirement = 10
       const lockupPeriod = 0
       const launchUuid = 123

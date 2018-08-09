@@ -1,6 +1,7 @@
 pragma solidity ^0.4.8;
 
 import './utility/Owned.sol';
+import './interfaces/IERC20.sol';
 
 contract TribeStorage is Owned {
     
@@ -16,14 +17,18 @@ contract TribeStorage is Owned {
     mapping (uint256 => uint256) public escrowedProjectBalances;
     mapping (uint256 => address) public escrowedProjectPayees;
     
-    function setStakedBalances(uint _amount) public ownerOnly {
-        stakedBalances[msg.sender] = _amount;
+    function transferTokensOut(address tokenContractAddress, address destination, uint amount) public ownerOnly {
+        IERC20 token = IERC20(tokenContractAddress);
+        token.transfer(destination, amount);
+    }
+    function setStakedBalances(uint _amount, address msgSender) public ownerOnly {
+        stakedBalances[msgSender] = _amount;
     }
     function setTotalStaked(uint _totalStaked) public ownerOnly {
         totalStaked = _totalStaked;
     }
-    function setTimeStaked(uint _timeStaked) public ownerOnly {
-        timeStaked[msg.sender] = _timeStaked;
+    function setTimeStaked(uint _timeStaked, address msgSender) public ownerOnly {
+        timeStaked[msgSender] = _timeStaked;
     }
 
     function setEscrowedTaskBalances(uint uuid, uint balance) public ownerOnly {
