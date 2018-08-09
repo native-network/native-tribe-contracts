@@ -1,8 +1,8 @@
 pragma solidity ^0.4.8;
 
-import './Registrar.sol';
 import './interfaces/ILogger.sol';
-import './Tribe.sol';
+import './interfaces/ITribe.sol';
+import './Registrar.sol';
 import './TribeStorage.sol';
 import './factories/RegistrarFactory.sol';
 import './factories/SmartTokenFactory.sol';
@@ -56,9 +56,9 @@ contract TribeLauncher is Owned {
         // TODO use a factory to launch the tribe (gas savings)
 
 
-        Tribe tribe = launchTribeWithFactory(ai, addresses, address(tribeToken), address(tribeStorage));
+        ITribe tribe = launchTribeWithFactory(ai, addresses, address(tribeToken), address(tribeStorage));
         tribeStorage.transferOwnershipNow(address(tribe));
-        
+
         // Using the launchRegistrar function to avoid stack becoming too deep
         Registrar registrar = launchRegistrar(addresses[6], tribe, addresses[0]);
 
@@ -68,17 +68,17 @@ contract TribeLauncher is Owned {
         emit Launched(msg.sender, ai[0], tribe, tribeToken, registrar);
     }
 
-    function launchRegistrar(address _registrarFactoryContractAddress, Tribe _tribe, address _curatorAddress) public  returns(Registrar) {
-        RegistrarFactory registrarFactory = RegistrarFactory(_registrarFactoryContractAddress);
+    function launchRegistrar(address registrarFactoryContractAddress, ITribe tribe, address curatorAddress) public  returns(Registrar) {
+        RegistrarFactory registrarFactory = RegistrarFactory(registrarFactoryContractAddress);
         Registrar registrar = Registrar(registrarFactory.create());
-        registrar.addNewAddress(address(_tribe));
-        registrar.transferOwnershipNow(_curatorAddress);
+        registrar.addNewAddress(address(tribe));
+        registrar.transferOwnershipNow(curatorAddress);
         return registrar;
     }
 
-    function launchTribeWithFactory(uint[] ai, address[] addresses, address _tribeTokenAddress, address _tribeStorageAddress) public returns(Tribe) {
+    function launchTribeWithFactory(uint[] ai, address[] addresses, address _tribeTokenAddress, address _tribeStorageAddress) public returns(ITribe) {
         TribeFactory tribeFactory = TribeFactory(addresses[7]);
-        Tribe tribe = Tribe(tribeFactory.create(ai[1], ai[2], addresses[0], _tribeTokenAddress, addresses[1], addresses[2], addresses[3], _tribeStorageAddress));
+        ITribe tribe = ITribe(Tribe(tribeFactory.create(ai[1], ai[2], addresses[0], _tribeTokenAddress, addresses[1], addresses[2], addresses[3], _tribeStorageAddress)));
         return tribe;
     }
     
