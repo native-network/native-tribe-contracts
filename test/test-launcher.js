@@ -11,33 +11,34 @@ const Bluebird = require('Bluebird');
  
 
 contract('TribeLauncher', function () {
-    const sender = web3.eth.accounts[0]
-    const curator = web3.eth.accounts[0]
-    const voteController = curator
-  
-    let tribeLauncherInstance
-    let nativeTokenInstance
-    let loggerInstance
-    let smartTokenFactoryInstance
-    let tribeStorageFactoryInstance
-    let registrarFactoryInstance
-    let tribeFactoryInstance
-  
-    beforeEach(async () => {
-      const initialDevFund = 1000
-      loggerInstance = await Logger.deployed()
-      nativeTokenInstance = await SmartToken.deployed()
-      tribeLauncherInstance = await TribeLauncher.deployed()
-      smartTokenFactoryInstance = await SmartTokenFactory.deployed()
-      tribeStorageFactoryInstance = await TribeStorageFactory.deployed()
-      tribeStorageFactoryInstance = await TribeStorageFactory.deployed()
-      registrarFactoryInstance = await RegistrarFactory.deployed()
-      tribeFactoryInstance = await TribeFactory.deployed()
-    })
+  const sender = web3.eth.accounts[0]
+  const curator = web3.eth.accounts[0]
+  const voteController = curator
+
+  let tribeLauncherInstance
+  let nativeTokenInstance
+  let loggerInstance
+  let smartTokenFactoryInstance
+  let tribeStorageFactoryInstance
+  let registrarFactoryInstance
+  let tribeFactoryInstance
+
+  beforeEach(async () => {
+    const initialDevFund = 1000
+    loggerInstance = await Logger.deployed()
+    nativeTokenInstance = await SmartToken.deployed()
+    tribeLauncherInstance = await TribeLauncher.deployed()
+    smartTokenFactoryInstance = await SmartTokenFactory.deployed()
+    tribeStorageFactoryInstance = await TribeStorageFactory.deployed()
+    tribeStorageFactoryInstance = await TribeStorageFactory.deployed()
+    registrarFactoryInstance = await RegistrarFactory.deployed()
+    tribeFactoryInstance = await TribeFactory.deployed()
+  })
+  describe("It should test the launcher", function() {
 
     // TODO add tests to show that the tribe account and tribe token were launched correctly
     // TODO also add tribe launch failure cases
-    it.only("It should launch a new tribe contract when calling launchTribe()", async function () {
+    it("It should launch a new tribe contract when calling launchTribe()", async function () {
       const minimumStakingRequirement = 10
       const lockupPeriod = 0
       const launchUuid = 123
@@ -78,3 +79,4 @@ contract('TribeLauncher', function () {
       })
     })
   })
+})
