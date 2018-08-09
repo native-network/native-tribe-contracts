@@ -9,9 +9,6 @@ contract Logger is Owned {
     event TaskCreated(address msgSender, uint _uuid, uint _amount);
     event ProjectCreated(address msgSender, uint _uuid, uint _amount, address _address);
 
-    // TribeLauncher
-    event Launched(address msgSender, uint launchUuid, address launchedTribeAddress, address launchedTokenAddress);
-
     // SmartToken
     // triggered when a smart token is deployed - the _token address is defined for forward compatibility, in case we want to trigger the event from a factory
     event NewSmartToken(address msgSender, address _token);
@@ -28,49 +25,40 @@ contract Logger is Owned {
     
     mapping (address => bool) public permissionedAddresses;
 
-    // validates an address - currently only checks that it isn't null
-    // TODO FIX THIS AND HOW ITS USED
-    modifier isContractOwner(address _address) {
-//        require(permissionedAddresses[_address] == _address);
-//        _;
-        require(true);
+    modifier hasLoggerPermissions(address _address) {
+        require(permissionedAddresses[_address] == true);
         _;
     }
 
-    // TODO FIX THIS AND HOW ITS USED
     function addNewLoggerPermission(address addressToPermission) ownerOnly public {
         permissionedAddresses[addressToPermission] = true;
     }
 
-    function emitTaskCreated(uint uuid, uint amount) public isContractOwner(msg.sender) {
+    function emitTaskCreated(uint uuid, uint amount) public hasLoggerPermissions(msg.sender) {
         emit TaskCreated(msg.sender, uuid, amount);
     }
 
-    function emitProjectCreated(uint uuid, uint amount, address rewardAddress) public isContractOwner(msg.sender) {
+    function emitProjectCreated(uint uuid, uint amount, address rewardAddress) public hasLoggerPermissions(msg.sender) {
         emit ProjectCreated(msg.sender, uuid, amount, rewardAddress);
     }
     
-    function emitLaunched(uint launchUuid, address tribe, address tribeToken) public isContractOwner(msg.sender) {
-        emit Launched(msg.sender,launchUuid, tribe, tribeToken);
-    }
-
-    function emitNewSmartToken(address token) public isContractOwner(msg.sender) {
+    function emitNewSmartToken(address token) public hasLoggerPermissions(msg.sender) {
         emit NewSmartToken(msg.sender, token);
     }
 
-    function emitIssuance(uint256 amount) public isContractOwner(msg.sender) {
+    function emitIssuance(uint256 amount) public hasLoggerPermissions(msg.sender) {
         emit Issuance(msg.sender, amount);
     }
 
-    function emitDestruction(uint256 amount) public isContractOwner(msg.sender) {
+    function emitDestruction(uint256 amount) public hasLoggerPermissions(msg.sender) {
         emit Destruction(msg.sender, amount);
     }
 
-    function emitTransfer(address from, address to, uint256 value) public isContractOwner(msg.sender) {
+    function emitTransfer(address from, address to, uint256 value) public hasLoggerPermissions(msg.sender) {
         emit Transfer(msg.sender, from, to, value);
     }
 
-    function emitApproval(address owner, address spender, uint256 value) public isContractOwner(msg.sender) {
+    function emitApproval(address owner, address spender, uint256 value) public hasLoggerPermissions(msg.sender) {
         emit Approval(msg.sender, owner, spender, value);
     }
 

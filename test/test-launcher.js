@@ -43,6 +43,10 @@ contract('TribeLauncher', function () {
       const launchUuid = 123
       const totalSupply = 1000000
       const tokenDecimals = 18
+
+
+      // The tribe launcher needs momentary access to the logger so it can permission the tribe to use it
+      await loggerInstance.transferOwnershipNow(tribeLauncherInstance.address)
       
       await tribeLauncherInstance.launchTribe(
         [launchUuid, minimumStakingRequirement, lockupPeriod, totalSupply, tokenDecimals],

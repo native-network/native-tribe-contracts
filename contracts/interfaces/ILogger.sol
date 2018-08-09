@@ -15,10 +15,10 @@ contract ILogger {
     
     mapping (address => address) public contractOwners;
 
+    function addNewLoggerPermission(address addressToPermission) public;
     function setNewContractOwner(address _address) public;
     function emitTaskCreated(uint _uuid, uint _amount) public;
     function emitProjectCreated(uint _uuid, uint _amount, address _address) public;
-    function emitLaunched(uint _launchUuid, address tribe, address tribeToken) public;
     function emitNewSmartToken(address _token) public;
     function emitIssuance(uint256 _amount) public;
     function emitDestruction(uint256 _amount) public;

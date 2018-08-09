@@ -55,6 +55,9 @@ contract('Tribe', function () {
     const launchedTribeRegistrar = await Registrar.at(launchedTribeRegistrarAddress)
     const launchedTribeAddresses = await launchedTribeRegistrar.getAddresses.call()
     launchedTribeInstance = await Tribe.at(launchedTribeAddresses.slice(-1)[0])
+    
+    Logger.addPermission(launchedTribeInstance.address)
+    
     tribeTokenAddress = await launchedTribeInstance.getTribeTokenContractAddress()
     tribeTokenInstance = await Token.at(tribeTokenAddress)
 
