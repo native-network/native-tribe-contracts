@@ -88,7 +88,6 @@ contract('Tribe', function () {
     })
   })
     
-    // TODO check this failure case works correctly
   it("It should fail to create a task if the reward is set to less than 0", async function () {
 
     const uuid = 1234
@@ -111,7 +110,6 @@ contract('Tribe', function () {
     })
   })
 
-    // TODO check this failure case works correctly
     it("It should not allow a non-curator to create a task", async function () {
 
     const uuid = 1234
@@ -134,7 +132,6 @@ contract('Tribe', function () {
     })
   })
 
-    // TODO check this failure case works correctly
   it("It should fail when creating a task with higher reward than remaining dev fund balance", async function () {
 
     const devFundRemainingBalance = await launchedTribeInstance.getAvailableDevFund()
@@ -167,7 +164,6 @@ contract('Tribe', function () {
     return assert(devFundRemainingBalanceAfter.equals(devFundRemainingBalanceBefore.plus(taskReward)))
   })
 
-    // TODO check this failure case works correctly
   it("It should not allow a non-curator to cancel a task", async function () {
     const taskReward = 1000
     const uuid = 1234
@@ -213,7 +209,6 @@ contract('Tribe', function () {
     assert(rewardeeBalanceAfter.equals(rewardeeBalanceBefore.plus(taskReward)))
   })
 
-    // TODO check this failure case works correctly
   it("It should not allow a non-voteController to reward task completion", async function () {
 
     const rewardee = web3.eth.accounts[1]
@@ -262,7 +257,6 @@ contract('Tribe', function () {
     })
   })
 
-    // TODO check this failure case works correctly
   it("It should not allow a non-curator to create a project", async function () {
 
     const uuid = 1234
@@ -288,7 +282,6 @@ contract('Tribe', function () {
     })
   })
 
-    // TODO check this failure case works correctly
   it("It should fail when creating a project with higher reward than remaining dev fund balance", async function () {
 
     const rewardee = web3.eth.accounts[1]
@@ -310,7 +303,6 @@ contract('Tribe', function () {
     return assert(false, 'Expected to fail but succeeded')
   })
 
-    // TODO check this failure case works correctly
   it("It should fail when creating a project with a reward less than 0", async function () {
 
     const rewardee = web3.eth.accounts[1]
@@ -343,7 +335,6 @@ contract('Tribe', function () {
     return assert(devFundRemainingBalanceAfter.equals(devFundRemainingBalanceBefore.plus(projectReward)))
   })
 
-    // TODO check this failure case works correctly
   it("It should not allow a noncurator to cancel a project", async function () {
     const projectReward = 1000
     const uuid = 1234
@@ -393,7 +384,6 @@ contract('Tribe', function () {
     assert(rewardeeBalanceAfter.equals(rewardeeBalanceBefore.plus(projectReward)))
   })
 
-    // TODO check this failure case works correctly
   it("It should not allow a non-voteController to reward project completion", async function () {
 
     const rewardee = web3.eth.accounts[1]
