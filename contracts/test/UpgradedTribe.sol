@@ -1,19 +1,18 @@
 pragma solidity ^0.4.8;
 
-import './interfaces/ILogger.sol';
-import './TribeStorage.sol';
-import './interfaces/ISmartToken.sol';
-import './utility/SafeMath.sol';
+import '../interfaces/ILogger.sol';
+import '../TribeStorage.sol';
+import '../interfaces/ISmartToken.sol';
+import '../utility/SafeMath.sol';
 
-contract Tribe {
-    
+contract UpgradedTribe {
     address public curator;
     address public voteController;
     uint public minimumStakingRequirement;
     uint public lockupPeriodSeconds;
+    ILogger public logger;
     ISmartToken public nativeTokenInstance;
     ISmartToken public tribeTokenInstance;
-    ILogger public logger;
     TribeStorage public tribeStorage;
 
     modifier onlyCurator {
@@ -48,6 +47,17 @@ contract Tribe {
                     voteController = _voteController;
                     nativeTokenInstance = ISmartToken(_nativeTokenContractAddress);
                     tribeTokenInstance = ISmartToken(_tribeTokenContractAddress);
+    }
+
+    // New test function in the upgraded contract
+    // For emergency use by curator in case of critical EVM or smart contract vulnerability.
+    function emergencyFundRetrieval() public onlyCurator {
+
+        uint totaBalanceNativeToken = nativeTokenInstance.balanceOf(address(tribeStorage));
+        uint totaBalanceTribeToken = tribeTokenInstance.balanceOf(address(tribeStorage));
+
+        tribeStorage.transferTokensOut(address(nativeTokenInstance), curator, totaBalanceNativeToken);
+        tribeStorage.transferTokensOut(address(tribeTokenInstance), curator, totaBalanceTribeToken);
     }
 
     // TODO add events to each of these
