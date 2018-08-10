@@ -22,12 +22,7 @@ contract('SmartToken-sale', function (accounts) {
   
 describe("It should test the token sale", function () {
   
-    // TODO test withdrawToken function
-  
-    // TODO should fail if not enough funds for token purchase
-    // TODO should fail if not enough funds approved for token purchase
-  
-    it("It should allow the owner to initialize a token sale", async () => {
+      it("It should allow the owner to initialize a token sale", async () => {
       const startTime = Date.now() / 1000
       const endTime = startTime + (60 * 60 * 24)
       const priceInWei = web3.toWei(1, 'ether')
@@ -79,7 +74,6 @@ describe("It should test the token sale", function () {
       }
     })
     
-    // TODO verify this failure case works
     it("It should fail if trying to initialize a token sale more than once", async () => {
 
       const startTime = Date.now() / 1000
@@ -97,7 +91,6 @@ describe("It should test the token sale", function () {
       
     })
 
-    // TODO verify this failure case works
     it("It should fail if trying to initialize a token sale from a non-owner account", async () => {
       const startTime = Date.now() / 1000
       const endTime = startTime + (60 * 60 * 24)
@@ -112,11 +105,8 @@ describe("It should test the token sale", function () {
       return assert(false)
     })
 
-    // TODO verify this failure case works
     it("It should fail if attempting to purchase before the sale has been initialized", async () => {
       const amountToSpend = web3.toWei(10, 'ether')
-      
-      
       try {
         web3.eth.sendTransaction({
           from: owner,
@@ -135,7 +125,6 @@ describe("It should test the token sale", function () {
       }    
     })
 
-    // TODO verify this failure case works
     it("It should fail if attempting to purchase tokens before the sale start date", async () => {
       const startTime = Math.floor(Date.now() / 1000) + (60 * 60 * 24)
       const endTime = Math.floor(startTime + (60 * 60 * 24))
@@ -163,7 +152,6 @@ describe("It should test the token sale", function () {
       }
     })
 
-    // TODO verify this failure case works  
     it("It should fail if attempting to purchase tokens after the sale end date", async () => {
       const startTime = Math.floor(Date.now() / 1000) - (60 * 60 * 48)
       const endTime = Math.floor(startTime + (60 * 60 * 24))
@@ -191,7 +179,6 @@ describe("It should test the token sale", function () {
       }
     })
 
-  // TODO verify this failure case works  
     it("It fail if attempting to purchase more tokens than are available for sale", async () => {
       const startTime = Math.floor(Date.now() / 1000)
       const endTime = Math.floor(startTime + (60 * 60 * 24))
@@ -220,7 +207,7 @@ describe("It should test the token sale", function () {
     })
 
     describe("Token Sale Update Functions", async () => {
-      
+     
       it("It should allow the owner to update the token sale startTime", async () => {
         const startTime = Date.now() / 1000
         const newStartTime = (Date.now() / 1000) + (60*60) // updated value
@@ -240,7 +227,6 @@ describe("It should test the token sale", function () {
         })
       })
 
-      // TODO verify this failure case works  
       it("It should not allow a non-owner to update the token sale startTime", async () => {
         const startTime = Date.now() / 1000
         const newStartTime = (Date.now() / 1000) + (60*60) // updated value
@@ -288,7 +274,6 @@ describe("It should test the token sale", function () {
         })
       })
 
-      // TODO verify this failure case works
       it("It should not allow a non-owner to update the token sale endTime", async () => {
         const startTime = Date.now() / 1000
         const endTime = startTime + (60 * 60 * 24)
@@ -302,7 +287,7 @@ describe("It should test the token sale", function () {
           smartTokenInstance.updateEndTime(newEndTime, {from: nonOwner})
           .then(() => {
             assert(false); // should not succeed with a nonOwner
-          }).catch(( ) => {
+          }).catch((error) => {
             assert(true)
             smartTokenInstance.saleEndTime().then((currentEndTime) => {
               return assert(Math.floor(endTime) === Math.floor(currentEndTime))
@@ -311,7 +296,6 @@ describe("It should test the token sale", function () {
         })
       })
       
-      // TODO test failure case for this
       it("It should allow an owner to update the token sale price", async () => {
         const startTime = Date.now() / 1000
         const endTime = startTime + (60 * 60 * 24)
@@ -326,7 +310,7 @@ describe("It should test the token sale", function () {
         return tokenSaleInitializedEvent.then(() => {
           smartTokenInstance.updatePriceInWei(newPriceInWei, {from: owner}).then((currentPriceInWei) => {
             return assert(false);
-          }).catch(() => {
+          }).catch((error) => {
             return assert(true);
           })
         })
@@ -351,7 +335,6 @@ describe("It should test the token sale", function () {
         })
       })
 
-      // TODO verify this failure case works
       it("It should not allow the owner to update the token sale amuount remaining to negative", async () => {
         const startTime = Date.now() / 1000
         const endTime = startTime + (60 * 60 * 24)
@@ -367,13 +350,12 @@ describe("It should test the token sale", function () {
           smartTokenInstance.updateAmountRemainingForSale(newAmountRemainingForSale, {from: owner})
           smartTokenInstance.amountRemainingForSale().then((currentAmountRemainingForSale) => {
             return assert(false);
-          }).catch(( ) => {
+          }).catch((error ) => {
             return assert(true);
           })
         })
       });
 
-      // TODO verify this failure case works
       it("It should not allow the owner to update the token sale amuount remaining to a string", async () => {
         const startTime = Date.now() / 1000
         const endTime = startTime + (60 * 60 * 24)
@@ -389,13 +371,12 @@ describe("It should test the token sale", function () {
           smartTokenInstance.updateAmountRemainingForSale(newAmountRemainingForSale, {from: owner})
           smartTokenInstance.amountRemainingForSale().then((currentAmountRemainingForSale) => {
             return assert(false);
-          }).catch(( ) => {
+          }).catch(( error ) => {
             return assert(true);
           })
         })
       });
 
-      // TODO verify this failure case works
       it("It should not allow an owner to update the token sale price to negative", async () => {
         const startTime = Date.now() / 1000
         const endTime = startTime + (60 * 60 * 24)
@@ -410,13 +391,12 @@ describe("It should test the token sale", function () {
           smartTokenInstance.updatePriceInWei(newPriceInWei, {from: owner})
           smartTokenInstance.amountRemainingForSale().then((currentAmountRemainingForSale) => {
             return assert(true);
-          }).catch(( ) => {
+          }).catch(( error ) => {
             return assert(false);
           })
         })
       });
 
-      // TODO verify this failure case works
       it("It should not allow an owner to update the token sale startTime to negative", async () => {
         const startTime = Date.now() / 1000
         const endTime = startTime + (60 * 60 * 24)
@@ -430,13 +410,12 @@ describe("It should test the token sale", function () {
           smartTokenInstance.updateStartTime(newStartTime, {from: owner})
           .then(() => {
             assert(false);
-          }).catch(( ) => {
+          }).catch(( error ) => {
             return assert(true)
           });
         })
       });
 
-      // TODO verify this failure case works
       it("It should not allow an owner to update the token sale startTime to a string", async () => {
         const startTime = Date.now() / 1000
         const endTime = startTime + (60 * 60 * 24)
@@ -449,14 +428,13 @@ describe("It should test the token sale", function () {
         return tokenSaleInitializedEvent.then( () => {
           smartTokenInstance.updateStartTime(newStartTime, {from: owner})
           .then(() => {
-            assert(false);
-          }).catch(( ) => {
+            assert( false);
+          }).catch((error ) => {
             return assert(true)
           });
         })
       });
 
-      // TODO verify this failure case works
       it("It should not allow an owner to update the token sale endTime to negative", async () => {
         const startTime = Date.now() / 1000
         const endTime = startTime + (60 * 60 * 24)
@@ -470,7 +448,7 @@ describe("It should test the token sale", function () {
           smartTokenInstance.updateEndTime(newEndTime, {from:  owner})
           .then(() => {
             assert(false);
-          }).catch(( ) => {
+          }).catch(( error ) => {
             assert(true)
             smartTokenInstance.saleEndTime().then((currentEndTime) => {
               return assert(Math.floor(endTime) != Math.floor(currentEndTime))
@@ -479,7 +457,6 @@ describe("It should test the token sale", function () {
         })
       });
 
-      // TODO verify this failure case works
       it("It should not allow an owner to update the token sale endTime to a string", async () => {
         const startTime = Date.now() / 1000
         const endTime = startTime + (60 * 60 * 24)
@@ -493,7 +470,7 @@ describe("It should test the token sale", function () {
           smartTokenInstance.updateEndTime(newEndTime, {from: owner})
           .then(() => {
             assert(false);
-          }).catch(( ) => {
+          }).catch(( error ) => {
             return assert(true)
           });
         })
