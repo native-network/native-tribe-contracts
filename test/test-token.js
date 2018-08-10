@@ -15,31 +15,192 @@ contract('SmartToken', function () {
   })
 
   describe("Should test the smart token", function() {
-    
-    // TODO test issue(), destroy(), transfer(), transferFrom() and their negative cases
-    
+        
     // TODO check that he event was emitted on creation
     it("It should create the smart token.", async function () {
-      
+      const initialTotalSupply = 12345
       const initialTokenName = 'test'
       const initialTokenSymbol = 'test'
       const initialTokenVersion = 'version'
       const initialTokenDecimals = 18
 
-      let token = await SmartToken.new(initialTokenName, 12345, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+      let token = await SmartToken.new(initialTokenName, initialTotalSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
 
+      let totalSupply = await token.totalSupply.call();
       let name = await token.name.call();
       let symbol = await token.symbol.call();
       let decimals = await token.decimals.call();
       let version = await token.version.call();
 
-      // TODO missing totalSupply, etc
+      assert.equal(totalSupply, initialTotalSupply);
       assert.equal(name, initialTokenName);
       assert.equal(symbol, initialTokenSymbol);   
       assert.equal(decimals, initialTokenDecimals);
       assert.equal(version, initialTokenVersion);
     })
 
+    it("It should issue tokens as the owner.", async function () {
+      const initialTotalSupply = 12345
+      const initialTokenName = 'test'
+      const initialTokenSymbol = 'test'
+      const initialTokenVersion = 'version'
+      const initialTokenDecimals = 18
+
+      let token = await SmartToken.new(initialTokenName, initialTotalSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+      let totalSupply = await token.totalSupply.call();
+      let newlyIssued = 100;
+      await token.issue(owner, newlyIssued, {from: owner})
+      let finalTotalSupply = await token.totalSupply.call();
+      assert( totalSupply.add(newlyIssued).toString() === finalTotalSupply.toString())
+    });
+
+    it("It should fail to issue tokens as the non-owner.", async function () {
+      const initialTotalSupply = 12345
+      const initialTokenName = 'test'
+      const initialTokenSymbol = 'test'
+      const initialTokenVersion = 'version'
+      const initialTokenDecimals = 18
+
+      let token = await SmartToken.new(initialTokenName, initialTotalSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+      let totalSupply = await token.totalSupply.call();
+      let newlyIssued = 100;
+      try {
+        await token.issue(owner, newlyIssued, {from: nonOwner})        
+      } catch (error) {
+        let finalTotalSupply = await token.totalSupply.call();
+        assert( totalSupply.add(newlyIssued).toString() != finalTotalSupply.toString())
+        assert( totalSupply.toString() === finalTotalSupply.toString())
+      }
+    });
+
+    it("It should destroy tokens as the owner.", async function () {
+      const initialTotalSupply = 12345
+      const initialTokenName = 'test'
+      const initialTokenSymbol = 'test'
+      const initialTokenVersion = 'version'
+      const initialTokenDecimals = 18
+
+      let token = await SmartToken.new(initialTokenName, initialTotalSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+      let totalSupply = await token.totalSupply.call();
+      let newlyDestroyed = 100;
+      await token.destroy(owner, newlyDestroyed, {from: owner})        
+      let finalTotalSupply = await token.totalSupply.call();
+      assert( totalSupply.sub(newlyDestroyed).toString() === finalTotalSupply.toString())
+    });
+
+    it("It should destory to issue tokens as the non-owner.", async function () {
+      const initialTotalSupply = 12345
+      const initialTokenName = 'test'
+      const initialTokenSymbol = 'test'
+      const initialTokenVersion = 'version'
+      const initialTokenDecimals = 18
+
+      let token = await SmartToken.new(initialTokenName, initialTotalSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+      let totalSupply = await token.totalSupply.call();
+      let newlyDestroyed = 100;
+      try {
+        await token.destroy(owner, newlyDestroyed, {from: nonOwner})        
+      } catch (error) {
+        let finalTotalSupply = await token.totalSupply.call();
+        assert( totalSupply.sub(newlyDestroyed).toString() != finalTotalSupply.toString())
+        assert( totalSupply.toString() === finalTotalSupply.toString())
+      }
+    });
+
+    it("It should transfer tokens as the owner.", async function () {
+      const initialTotalSupply = 12345
+      const initialTokenName = 'test'
+      const initialTokenSymbol = 'test'
+      const initialTokenVersion = 'version'
+      const initialTokenDecimals = 18
+
+      let token = await SmartToken.new(initialTokenName, initialTotalSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+      let balance = await token.balanceOf(owner);
+      let nonOwnerBalance = await token.balanceOf(nonOwner);
+
+      let transferAmount = balance;
+
+      await token.transfer(nonOwner, transferAmount, {from: owner})
+      
+      let newOwnerBalance = await token.balanceOf(owner);
+      let newNonOwnerBalance = await token.balanceOf(nonOwner);
+
+      assert( newNonOwnerBalance.toString() === transferAmount.toString() )
+      assert( newOwnerBalance.toString() === "0" )
+    });
+
+    it("It should fail to transfer tokens as the non-owner.", async function () {
+      const initialTotalSupply = 12345
+      const initialTokenName = 'test'
+      const initialTokenSymbol = 'test'
+      const initialTokenVersion = 'version'
+      const initialTokenDecimals = 18
+
+      let token = await SmartToken.new(initialTokenName, initialTotalSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+      let balance = await token.balanceOf(owner);
+      let nonOwnerBalance = await token.balanceOf(nonOwner);
+
+      let transferAmount = balance;
+
+      try {
+        await token.transfer(nonOwner, transferAmount, {from: nonOwner})
+      } catch (error) {
+        let newOwnerBalance = await token.balanceOf(owner);
+        let newNonOwnerBalance = await token.balanceOf(nonOwner);
+  
+        assert( newOwnerBalance.toString() === transferAmount.toString() )
+        assert( newNonOwnerBalance.toString() === "0" )        
+      }
+    });
+
+    it("It should transferFrom tokens as the owner.", async function () {
+      const initialTotalSupply = 12345
+      const initialTokenName = 'test'
+      const initialTokenSymbol = 'test'
+      const initialTokenVersion = 'version'
+      const initialTokenDecimals = 18
+
+      let token = await SmartToken.new(initialTokenName, initialTotalSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+      let balance = await token.balanceOf(owner);
+      let nonOwnerBalance = await token.balanceOf(nonOwner);
+      console.log(balance)
+      let transferAmount = balance;
+      await token.approve(owner, transferAmount, {from: owner});
+      await token.transferFrom(owner, nonOwner, transferAmount, {from: owner});
+      
+      let newOwnerBalance = await token.balanceOf(owner);
+      let newNonOwnerBalance = await token.balanceOf(nonOwner);
+
+      console.log(newNonOwnerBalance, newOwnerBalance, transferAmount)
+      assert( newNonOwnerBalance.toString() === transferAmount.toString() )
+      assert( newOwnerBalance.toString() === "0" )
+    });
+
+    it("It should fail to transferFrom tokens as the non-owner.", async function () {
+      const initialTotalSupply = 12345
+      const initialTokenName = 'test'
+      const initialTokenSymbol = 'test'
+      const initialTokenVersion = 'version'
+      const initialTokenDecimals = 18
+
+      let token = await SmartToken.new(initialTokenName, initialTotalSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+      let balance = await token.balanceOf(owner);
+      let nonOwnerBalance = await token.balanceOf(nonOwner);
+
+      let transferAmount = balance;
+
+      try {
+        await token.approve(owner, transferAmount, {from: owner});
+        await token.transferFrom(owner, nonOwner, transferAmount, {from: nonOwner})
+      } catch (error) {
+        let newOwnerBalance = await token.balanceOf(owner);
+        let newNonOwnerBalance = await token.balanceOf(nonOwner);
+  
+        assert( newOwnerBalance.toString() === transferAmount.toString() )
+        assert( newNonOwnerBalance.toString() === "0" )        
+      }
+    });
+    
     it("It should allow the owner to enable/disable the transfer method", async function () {
       const initialTokenName = 'test'
       const initialTokenSymbol = 'test'
@@ -61,7 +222,6 @@ contract('SmartToken', function () {
       assert.equal(transfersEnabled, true);
     })
 
-    // TODO verify this works
     it("It should not allow a non-owner to enable/disable the transfer method", async function () {
       
       const initialTokenName = 'test'
