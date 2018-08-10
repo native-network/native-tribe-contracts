@@ -2,7 +2,7 @@ const SmartToken = artifacts.require("SmartToken");
 const Logger = artifacts.require("Logger");
 
 contract('SmartToken', function () {
-  const owner = web3.eth.accounts[0]
+  const owner = web3.eth.accounts[0] 
   const nonOwner = web3.eth.accounts[1]
   let loggerInstance
 
