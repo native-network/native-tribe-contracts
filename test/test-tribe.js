@@ -76,7 +76,7 @@ contract('Tribe', function () {
     await nativeTokenInstance.transfer(tribeAccountAddress, 1000000, {from: sender})
   })
 
-  describe.only("It should test the tribe", function() {
+  describe("It should test the tribe", function() {
     
   it("It should allow a curator to create a task", async function () {
     
@@ -420,7 +420,7 @@ contract('Tribe', function () {
     amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
     await tribeTokenInstance.approve(launchedTribeInstance.address, amountRequiredForStaking, {from: sender})
     try {
-      await launchedTribeInstance.stakeTribeTokens(amountRequiredForStaking, {from: brokeUser})
+      await launchedTribeInstance.stakeTribeTokens({from: brokeUser})
       stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
       const tribeAccountAddress = await launchedTribeInstance.tribeStorage()
       const tribeAccountInstance = TribeStorage.at(tribeAccountAddress)
@@ -435,7 +435,7 @@ contract('Tribe', function () {
     amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
     await tribeTokenInstance.approve(launchedTribeInstance.address, amountRequiredForStaking-1, {from: sender})
     try {
-      await launchedTribeInstance.stakeTribeTokens(amountRequiredForStaking, {from: sender})
+      await launchedTribeInstance.stakeTribeTokens({from: sender})
       stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
       const tribeAccountAddress = await launchedTribeInstance.tribeStorage()
       const tribeAccountInstance = TribeStorage.at(tribeAccountAddress)
@@ -461,7 +461,7 @@ contract('Tribe', function () {
   })
 
 
-  it("It should block unstakng for a set amount of time", async function () {
+  it("It should block unstaking for a set amount of time", async function () {
     // Same as staking
     const startingMembershipStatus = await launchedTribeInstance.isMember(sender)
     amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
