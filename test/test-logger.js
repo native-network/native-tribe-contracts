@@ -27,7 +27,6 @@ contract('Logger', function () {
 
   describe.only("It should test the logger", function() {
 
-    // TODO do negative case for this
     it("It should allow a permissioned user to call all logger functions", async function () {
       const uuid = 1234
       const amount = 1000
