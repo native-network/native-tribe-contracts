@@ -14,6 +14,7 @@ contract UpgradedTribe {
     ISmartToken public nativeTokenInstance;
     ISmartToken public tribeTokenInstance;
     TribeStorage public tribeStorage;
+    bool emergencyWithdrawEnabled;
 
     modifier onlyCurator {
         require(msg.sender == curator);
@@ -38,7 +39,9 @@ contract UpgradedTribe {
                 address _nativeTokenContractAddress,
                 address _voteController,
                 address _loggerContractAddress,
-                address _tribeStorageContractAddress) public {
+                address _tribeStorageContractAddress,
+                bool _emergencyWithdrawEnabled
+                ) public {
                     tribeStorage = TribeStorage(_tribeStorageContractAddress);
                     curator = _curator;
                     minimumStakingRequirement = _minimumStakingRequirement;
@@ -47,11 +50,14 @@ contract UpgradedTribe {
                     voteController = _voteController;
                     nativeTokenInstance = ISmartToken(_nativeTokenContractAddress);
                     tribeTokenInstance = ISmartToken(_tribeTokenContractAddress);
+                    emergencyWithdrawEnabled = _emergencyWithdrawEnabled;
     }
 
     // New test function in the upgraded contract
     // For emergency use by curator in case of critical EVM or smart contract vulnerability.
     function emergencyFundRetrieval() public onlyCurator {
+
+        require(emergencyWithdrawEnabled);
 
         uint totaBalanceNativeToken = nativeTokenInstance.balanceOf(address(tribeStorage));
         uint totaBalanceTribeToken = tribeTokenInstance.balanceOf(address(tribeStorage));
@@ -88,6 +94,10 @@ contract UpgradedTribe {
 
     function setTribeStorage(address newTribeStorageAddress) public onlyCurator {
         tribeStorage = TribeStorage(newTribeStorageAddress);
+    }
+
+    function setTribeStorageOwner(address newOwner) public onlyCurator {
+        tribeStorage.transferOwnershipNow(newOwner);
     }
 
     // gets the amount in the dev fund that isn't locked up by a project or task stake
