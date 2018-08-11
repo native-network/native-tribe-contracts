@@ -256,7 +256,7 @@ contract('SmartToken', function () {
       assert.equal(transfersEnabled, true);
     })
 
-    it.only("It should allow the owner to call withdrawToken to retrieve erc20 tokens stuck on the contract", async function () {
+    it("It should allow the owner to call withdrawToken to retrieve erc20 tokens stuck on the contract", async function () {
       const initialTotalSupply = 12345
       const initialTokenName = 'test'
       const initialTokenSymbol = 'test'
@@ -280,6 +280,25 @@ contract('SmartToken', function () {
       const ownerBalanceAfter = await token.balanceOf(owner)
       assert(ownerBalanceAfter.equals(contractBalanceBefore.plus(ownerBalanceBefore)))
       
+    });
+
+    it("It should fail if a non owner calls withdrawToken", async function () {
+      const initialTotalSupply = 12345
+      const initialTokenName = 'test'
+      const initialTokenSymbol = 'test'
+      const initialTokenVersion = 'version'
+      const initialTokenDecimals = 18
+
+      let token = await SmartToken.new(initialTokenName, initialTotalSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+      let newlyIssued = 100;
+      // withdraw them from the smart contract
+      try {
+        await token.withdrawToken(token.address, newlyIssued, {from: nonOwner})
+      } catch(err) {
+        return assert(true)
+      }
+      return assert(false)
+
     });
   })
 })

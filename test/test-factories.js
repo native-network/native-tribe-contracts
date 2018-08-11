@@ -14,7 +14,7 @@ contract('Factory Testing', function (accounts) {
 
   })
   
-  describe.only("It should test the factories", function() {
+  describe("It should test the factories", function() {
     
     it("It should demonstrate RegistrarFactory launching a new registrar", async function () {
       const registrarFactoryInstance = await RegistrarFactory.deployed({from: accounts[0]})
