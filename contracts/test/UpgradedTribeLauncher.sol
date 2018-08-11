@@ -12,7 +12,11 @@ import "./UpgradedTribeFactory.sol";
 import "./UpgradedTribe.sol";
 
 
-// Launches a new upgraded tribe
+/*
+
+Used in integration-test-upgrades.js to demonstrate how we can update a tribe
+
+*/
 contract UpgradedTribeLauncher is Owned {
     mapping (uint => address) public launchedTribeRegistrars;
     uint public launchedTribeCount;

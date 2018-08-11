@@ -2,7 +2,11 @@ pragma solidity ^0.4.8;
 
 import "./utility/Owned.sol";
 
-// The logging library allows the events to be watched without the need to watch each contract 
+/*
+
+Centralized logger allows backend to easily watch all events on all tribes without needing to watch each tribe individually
+
+*/
 contract Logger is Owned {
 
     // Tribe

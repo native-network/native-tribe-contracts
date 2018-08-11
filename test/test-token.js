@@ -162,8 +162,6 @@ contract('SmartToken', function () {
 
       let token = await SmartToken.new(initialTokenName, initialTotalSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
       let balance = await token.balanceOf(owner);
-      let nonOwnerBalance = await token.balanceOf(nonOwner);
-      console.log(balance)
       let transferAmount = balance;
       await token.approve(owner, transferAmount, {from: owner});
       await token.transferFrom(owner, nonOwner, transferAmount, {from: owner});
@@ -171,7 +169,6 @@ contract('SmartToken', function () {
       let newOwnerBalance = await token.balanceOf(owner);
       let newNonOwnerBalance = await token.balanceOf(nonOwner);
 
-      console.log(newNonOwnerBalance, newOwnerBalance, transferAmount)
       assert( newNonOwnerBalance.toString() === transferAmount.toString() )
       assert( newOwnerBalance.toString() === "0" )
     });

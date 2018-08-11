@@ -11,6 +11,16 @@ import "./factories/TribeFactory.sol";
 
 import "./utility/Owned.sol";
 
+/*
+
+This helper contract is used to easily launch and connect all of the pieces required for a new tribe.  These are:
+
+1) Tribe token - The smart token used by the tribe for staking
+2) Tribe storage - Stores and tracks all staked and escrowed funds
+3) Tribe  - Core logic of the tribe
+4) Registrar - Stores latest tribe address
+
+*/
 contract TribeLauncher is Owned {
     mapping (uint => address) public launchedTribeRegistrars;
     uint public launchedTribeCount;
@@ -56,7 +66,6 @@ contract TribeLauncher is Owned {
         Tribe tribe = launchTribeWithFactory(ai, addresses, address(tribeToken), address(tribeStorage));
         tribeStorage.transferOwnershipNow(address(tribe));
 
-        // Using the launchRegistrar function to avoid stack becoming too deep
         Registrar registrar = launchRegistrar(addresses[6], tribe, addresses[0]);
 
         launchedTribeRegistrars[launchedTribeCount] = registrar;
@@ -64,7 +73,8 @@ contract TribeLauncher is Owned {
 
         Logger logger = Logger(addresses[3]);
         logger.addNewLoggerPermission(address(tribe));
-        // THIS MUST BE CALLED to give permission back to the sender
+
+        // THIS MUST BE CALLED to give logger ownership back to the sender
         logger.transferOwnershipNow(msg.sender);
     
         emit Launched(msg.sender, ai[0], tribe, tribeToken, registrar);
