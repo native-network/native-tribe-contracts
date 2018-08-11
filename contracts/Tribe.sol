@@ -140,8 +140,13 @@ contract Tribe {
     }
 
     // Staking code below (in tribe tokens)
-    // TODO make it steak as much additional funds required to become a member (i.e. if the staking minimum goes up).  Do not use amount variable  
-    function stakeTribeTokens(uint amount) public {
+    function stakeTribeTokens() public {
+
+        uint amount = minimumStakingRequirement - tribeStorage.stakedBalances(msg.sender);
+        
+        if(amount <= 0) {
+            revert();
+        }
 
         if(!tribeTokenInstance.transferFrom(msg.sender, address(tribeStorage), amount)) {
             revert();
@@ -153,19 +158,16 @@ contract Tribe {
     }
 
     // checks that a user is able to unstake by looking at the lokcup period and the balance
-    // unstakes a tribe and sends funds back to the user
+    // unstakes a tribe and sends funds back to the user=
+    function unstakeTribeTokens() public {
 
-    /// TODO unstaking should unstake everything
-    function unstakeTribeTokens(uint amount) public {
+        uint amount = tribeStorage.stakedBalances(msg.sender);
 
-        if(tribeStorage.stakedBalances(msg.sender) < amount) {
-            revert();
-        }
         if(now - tribeStorage.timeStaked(msg.sender) < lockupPeriodSeconds) {
             revert();
         }
 
-        tribeStorage.setStakedBalances(SafeMath.safeSub(tribeStorage.stakedBalances(msg.sender), amount), msg.sender);
+        tribeStorage.setStakedBalances(0, msg.sender);
         tribeStorage.setTotalStaked(SafeMath.safeSub(tribeStorage.totalStaked(), amount));
         tribeTokenInstance.transfer(msg.sender, amount);
     }

@@ -76,7 +76,7 @@ contract('Tribe', function () {
     await nativeTokenInstance.transfer(tribeAccountAddress, 1000000, {from: sender})
   })
 
-  describe("It should test the tribe", function() {
+  describe.only("It should test the tribe", function() {
     
   it("It should allow a curator to create a task", async function () {
     
@@ -410,10 +410,8 @@ contract('Tribe', function () {
     const startingMembershipStatus = await launchedTribeInstance.isMember(sender)
     amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
     await tribeTokenInstance.approve(launchedTribeInstance.address, amountRequiredForStaking, {from: sender})
-    await launchedTribeInstance.stakeTribeTokens(amountRequiredForStaking, {from: sender})
+    await launchedTribeInstance.stakeTribeTokens({from: sender})
     stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
-    const tribeAccountAddress = await launchedTribeInstance.tribeStorage()
-    const tribeAccountInstance = TribeStorage.at(tribeAccountAddress)
     assert(startingMembershipStatus === false && stakedMembershipStatus === true)
   })
 
@@ -452,12 +450,12 @@ contract('Tribe', function () {
     const startingMembershipStatus = await launchedTribeInstance.isMember(sender)
     amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
     await tribeTokenInstance.approve(launchedTribeInstance.address, amountRequiredForStaking, {from: sender})
-    await launchedTribeInstance.stakeTribeTokens(amountRequiredForStaking, {from: sender})
+    await launchedTribeInstance.stakeTribeTokens({from: sender})
     stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
     assert(startingMembershipStatus === false && stakedMembershipStatus === true)
 
     // unstake
-    await launchedTribeInstance.unstakeTribeTokens(amountRequiredForStaking, {from: sender})
+    await launchedTribeInstance.unstakeTribeTokens({from: sender})
     const finalMembershipStatus = await launchedTribeInstance.isMember(sender)
     assert(finalMembershipStatus === false)
   })
@@ -468,13 +466,13 @@ contract('Tribe', function () {
     const startingMembershipStatus = await launchedTribeInstance.isMember(sender)
     amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
     await tribeTokenInstance.approve(launchedTribeInstance.address, amountRequiredForStaking, {from: sender})
-    await launchedTribeInstance.stakeTribeTokens(amountRequiredForStaking, {from: sender})
+    await launchedTribeInstance.stakeTribeTokens({from: sender})
     stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
     assert(startingMembershipStatus === false && stakedMembershipStatus === true)
     
     // we expect the unstake to revert as the _lockupPeriod has not been passed
     try {
-      await launchedTribeInstance.unstakeTribeTokens(amountRequiredForStaking, {from: sender}) 
+      await launchedTribeInstance.unstakeTribeTokens({from: sender}) 
     } catch(e) {
       const finalMembershipStatus = await launchedTribeInstance.isMember(sender)
       assert(finalMembershipStatus === true)

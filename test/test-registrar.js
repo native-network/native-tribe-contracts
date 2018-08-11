@@ -12,7 +12,7 @@ contract('Registrar', function () {
     await registrarInstance.addNewAddress(curator);
   })
 
-  describe.only("It should test the Registrar", function() {
+  describe("It should test the Registrar", function() {
     it("It should only allow the curator to get addresses", async function () {
       let addresses = await registrarInstance.getAddresses({from: curator})
       assert(addresses && addresses.length)
