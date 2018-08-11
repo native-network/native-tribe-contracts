@@ -1,6 +1,6 @@
 pragma solidity ^0.4.11;
 
-import '../Tribe.sol';
+import "../Tribe.sol";
 
 contract TribeFactory {
     

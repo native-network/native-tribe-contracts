@@ -1,15 +1,15 @@
 pragma solidity ^0.4.8;
 
-import '../Logger.sol';
-import '../Registrar.sol';
-import '../TribeStorage.sol';
-import '../factories/RegistrarFactory.sol';
-import '../factories/SmartTokenFactory.sol';
-import '../factories/TribeStorageFactory.sol';
-import '../utility/Owned.sol';
+import "../Logger.sol";
+import "../Registrar.sol";
+import "../TribeStorage.sol";
+import "../factories/RegistrarFactory.sol";
+import "../factories/SmartTokenFactory.sol";
+import "../factories/TribeStorageFactory.sol";
+import "../utility/Owned.sol";
 
-import './UpgradedTribeFactory.sol';
-import './UpgradedTribe.sol';
+import "./UpgradedTribeFactory.sol";
+import "./UpgradedTribe.sol";
 
 
 // Launches a new upgraded tribe

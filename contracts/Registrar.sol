@@ -1,6 +1,6 @@
 pragma solidity ^0.4.8;
 
-import './utility/Owned.sol';
+import "./utility/Owned.sol";
 
 // The registrar allows contracts to be upgraded
 contract Registrar is Owned {

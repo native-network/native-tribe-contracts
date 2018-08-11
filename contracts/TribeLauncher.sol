@@ -1,15 +1,15 @@
 pragma solidity ^0.4.8;
 
-import './Logger.sol';
-import './Tribe.sol';
-import './Registrar.sol';
-import './TribeStorage.sol';
-import './factories/RegistrarFactory.sol';
-import './factories/SmartTokenFactory.sol';
-import './factories/TribeStorageFactory.sol';
-import './factories/TribeFactory.sol';
+import "./Logger.sol";
+import "./Tribe.sol";
+import "./Registrar.sol";
+import "./TribeStorage.sol";
+import "./factories/RegistrarFactory.sol";
+import "./factories/SmartTokenFactory.sol";
+import "./factories/TribeStorageFactory.sol";
+import "./factories/TribeFactory.sol";
 
-import './utility/Owned.sol';
+import "./utility/Owned.sol";
 
 contract TribeLauncher is Owned {
     mapping (uint => address) public launchedTribeRegistrars;
@@ -85,5 +85,4 @@ contract TribeLauncher is Owned {
         Tribe tribe = Tribe(Tribe(tribeFactory.create(ai[1], ai[2], addresses[0], _tribeTokenAddress, addresses[1], addresses[2], addresses[3], _tribeStorageAddress)));
         return tribe;
     }
-    
 }

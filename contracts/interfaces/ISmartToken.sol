@@ -1,7 +1,7 @@
 pragma solidity ^0.4.8;
 
-import '../utility/Owned.sol';
-import './IERC20.sol';
+import "../utility/Owned.sol";
+import "./IERC20.sol";
 
 contract ISmartToken is Owned {
     address public LoggerContractAddress;

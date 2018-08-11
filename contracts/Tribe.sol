@@ -1,9 +1,9 @@
 pragma solidity ^0.4.8;
 
-import './interfaces/ILogger.sol';
-import './TribeStorage.sol';
-import './interfaces/ISmartToken.sol';
-import './utility/SafeMath.sol';
+import "./interfaces/ILogger.sol";
+import "./TribeStorage.sol";
+import "./interfaces/ISmartToken.sol";
+import "./utility/SafeMath.sol";
 
 contract Tribe {
     
@@ -106,7 +106,7 @@ contract Tribe {
     // subtracts the tasks escrow and sets the tasks escrow balance to 0
     function cancelTask(uint uuid) public onlyCurator {
         tribeStorage.setTotalTaskEscrow(SafeMath.safeSub(tribeStorage.totalTaskEscrow(), tribeStorage.escrowedTaskBalances(uuid)));
-        tribeStorage.setEscrowedTaskBalances(uuid , 0);
+        tribeStorage.setEscrowedTaskBalances(uuid, 0);
     }
     
     // pays put to the task completer and updates the escrow balances
@@ -141,9 +141,7 @@ contract Tribe {
 
     // Staking code below (in tribe tokens)
     function stakeTribeTokens() public {
-
         uint amount = minimumStakingRequirement - tribeStorage.stakedBalances(msg.sender);
-        
         if(amount <= 0) {
             revert();
         }
@@ -160,7 +158,6 @@ contract Tribe {
     // checks that a user is able to unstake by looking at the lokcup period and the balance
     // unstakes a tribe and sends funds back to the user=
     function unstakeTribeTokens() public {
-
         uint amount = tribeStorage.stakedBalances(msg.sender);
 
         if(now - tribeStorage.timeStaked(msg.sender) < lockupPeriodSeconds) {
@@ -174,6 +171,6 @@ contract Tribe {
 
     // checks that the user is fully staked
     function isMember(address memberAddress) public view returns (bool) {
-        return ( tribeStorage.stakedBalances(memberAddress) >= minimumStakingRequirement );
+        return (tribeStorage.stakedBalances(memberAddress) >= minimumStakingRequirement);
     }
 }
