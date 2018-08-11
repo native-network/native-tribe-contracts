@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-
+// This contract comes from Zepplin
 /**
  * @title SafeMath
  * @dev Math operations with safety checks that throw on error

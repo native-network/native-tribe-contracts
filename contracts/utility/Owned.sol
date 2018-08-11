@@ -1,5 +1,6 @@
 pragma solidity ^0.4.23;
 
+// This contract comes from bancor
 /*
     Provides support and utilities for contract ownership
 */
