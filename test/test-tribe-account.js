@@ -14,7 +14,7 @@ contract('TribeStorage', function () {
     tribeStorageInstance = TribeStorage.at(tribeStorage.receipt.logs[0].address)
   })
 
-  describe.only("It should test the tribe account", function() {
+  describe("It should test the tribe account", function() {
     
     it("It should setStakedBalances", async function () {
       let newStakedBalances = 100;
