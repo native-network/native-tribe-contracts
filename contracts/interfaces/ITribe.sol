@@ -1,6 +1,7 @@
 pragma solidity ^0.4.8;
 
 contract ITribe {
+    // TODO make this better
     // address public voteController;
     // uint public minimumStakingRequirement;
     // uint public lockupPeriodSeconds;
@@ -8,7 +9,6 @@ contract ITribe {
     // ISmartToken public tribeTokenInstance;
     // ILogger public logger;
     // ITribeStorage public tribeStorage;
-    // TODO add events to each of these
     // function transferCurator(address _curator) onlyCurator {
     // }
     // function transferVoteController(address _voteController);

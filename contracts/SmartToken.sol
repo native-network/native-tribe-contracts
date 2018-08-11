@@ -189,7 +189,6 @@ contract SmartToken is Owned {
     }
 
     // allows owner to withdraw erc20 tokens that were accidentally sent to this contract
-    // TODO test this
     function withdrawToken(IERC20 _token, uint amount) public ownerOnly {
         _token.transfer(msg.sender, amount);
     }

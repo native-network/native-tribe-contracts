@@ -4,6 +4,7 @@ const Logger = artifacts.require("Logger");
 contract('SmartToken', function () {
   const owner = web3.eth.accounts[0] 
   const nonOwner = web3.eth.accounts[1]
+  const user = web3.eth.accounts[2]
   let loggerInstance
 
   before(async () => {
@@ -88,6 +89,7 @@ contract('SmartToken', function () {
       assert( totalSupply.sub(newlyDestroyed).toString() === finalTotalSupply.toString())
     });
 
+    // TODO what does this description mean?
     it("It should destory to issue tokens as the non-owner.", async function () {
       const initialTotalSupply = 12345
       const initialTokenName = 'test'
@@ -254,5 +256,49 @@ contract('SmartToken', function () {
       assert.equal(transfersEnabled, true);
     })
 
+    it("It should allow the owner to call withdrawToken to retrieve erc20 tokens stuck on the contract", async function () {
+      const initialTotalSupply = 12345
+      const initialTokenName = 'test'
+      const initialTokenSymbol = 'test'
+      const initialTokenVersion = 'version'
+      const initialTokenDecimals = 18
+
+      let token = await SmartToken.new(initialTokenName, initialTotalSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+      let newlyIssued = 100;
+      
+      // issue some tokens to the smart contract
+      await token.issue(user, newlyIssued, {from: owner})
+      
+      await token.transfer(token.address, newlyIssued, {from: user})
+
+      const contractBalanceBefore = await token.balanceOf(token.address) 
+      const ownerBalanceBefore = await token.balanceOf(owner)
+      
+      // withdraw them from the smart contract
+      await token.withdrawToken(token.address, newlyIssued, {from: owner})
+
+      const ownerBalanceAfter = await token.balanceOf(owner)
+      assert(ownerBalanceAfter.equals(contractBalanceBefore.plus(ownerBalanceBefore)))
+      
+    });
+
+    it("It should fail if a non owner calls withdrawToken", async function () {
+      const initialTotalSupply = 12345
+      const initialTokenName = 'test'
+      const initialTokenSymbol = 'test'
+      const initialTokenVersion = 'version'
+      const initialTokenDecimals = 18
+
+      let token = await SmartToken.new(initialTokenName, initialTotalSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner);
+      let newlyIssued = 100;
+      // withdraw them from the smart contract
+      try {
+        await token.withdrawToken(token.address, newlyIssued, {from: nonOwner})
+      } catch(err) {
+        return assert(true)
+      }
+      return assert(false)
+
+    });
   })
 })
