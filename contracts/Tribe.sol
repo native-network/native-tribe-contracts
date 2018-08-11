@@ -80,6 +80,10 @@ contract Tribe {
         tribeStorage = TribeStorage(newTribeStorageAddress);
     }
 
+    function setTribeStorageOwner(address newOwner) public onlyCurator {
+        tribeStorage.transferOwnershipNow(newOwner);
+    }
+
     // gets the amount in the dev fund that isn't locked up by a project or task stake
     function getAvailableDevFund() public view returns (uint) {
         uint devFundBalance = nativeTokenInstance.balanceOf(address(tribeStorage));
@@ -107,9 +111,7 @@ contract Tribe {
     
     // pays put to the task completer and updates the escrow balances
     function rewardTaskCompletion(uint uuid, address user) public onlyVoteController {
-
         tribeStorage.transferTokensOut(address(nativeTokenInstance), user, tribeStorage.escrowedTaskBalances(uuid));
-
         tribeStorage.setTotalTaskEscrow(SafeMath.safeSub(tribeStorage.totalTaskEscrow(), tribeStorage.escrowedTaskBalances(uuid)));
         tribeStorage.setEscrowedTaskBalances(uuid, 0);
     }
