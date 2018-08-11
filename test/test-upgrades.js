@@ -68,7 +68,7 @@ contract('Upgrades Testing', function (accounts) {
     
   })
   
-  describe.only("It should test upgrading a tribe contract", function() {
+  describe("It should test upgrading a tribe contract", function() {
 
     it("It should test upgrading a tribe contract", async function () {
       
