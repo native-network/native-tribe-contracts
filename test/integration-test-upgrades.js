@@ -68,9 +68,13 @@ contract('Upgrades Testing', function (accounts) {
     
   })
   
-  describe("It should test upgrading a tribe contract", function() {
+  describe.only("It should test upgrading a tribe contract", function() {
 
-    it("It should test upgrading a tribe contract", async function () {
+    /*
+    This integration test demonstrates the process of upgrading a tribe by launching a new tribe and attaching it to the existing 
+    TribeStorage, token and registrar.  The test verifies Staking and Escrow balances after the upgrade.
+   */
+    it("It should demonstrate the steps required for upgrading a tribe contract", async function () {
       
       const minimumStakingRequirement = 10
       const lockupPeriod = 0
@@ -89,14 +93,26 @@ contract('Upgrades Testing', function (accounts) {
       const tribeTokenInstance = SmartToken.at(initialTribeTokenAddress)
       const nativeTokenInstance = SmartToken.at(initialNativeTokenAddress)
       
-      // TODO Do some staking AND test that it worked.  (FIRST WE HAVE TO FIX THE STAKING CODE)!!!
+      // TODO Do some staking AND test that it worked.
       
       // give our users some tribe tokens so they can join the tribes
-      await tribeTokenInstance.transfer(user1, 1000, {from: curator})
-      await tribeTokenInstance.transfer(user2, 1000, {from: curator})
+      await tribeTokenInstance.transfer(user1, minimumStakingRequirement, {from: curator})
+      await tribeTokenInstance.transfer(user2, minimumStakingRequirement, {from: curator})
 
-      initialTribeStorageInstance.stake
-
+      // users approve their tokens so they can stake
+      await tribeTokenInstance.approve(initialTribeInstance.address, minimumStakingRequirement, {from: user1})
+      await tribeTokenInstance.approve(initialTribeInstance.address, minimumStakingRequirement, {from: user2})
+      
+      // users stake into initial tribe
+      await initialTribeInstance.stakeTribeTokens({from: user1})
+      await initialTribeInstance.stakeTribeTokens({from: user2})
+    
+      // Read the staked amounts we set in the initial tribe
+      const user1StakeAmount = await initialTribeStorageInstance.stakedBalances(user1)
+      const user2StakeAmount = await initialTribeStorageInstance.stakedBalances(user2)
+      const user1StakeTime = await initialTribeStorageInstance.timeStaked(user1)
+      const user2StakeTime = await initialTribeStorageInstance.timeStaked(user2)
+      
       // Fund the dev fund so we can make some tasks and projects
       await nativeTokenInstance.transfer(initialTribeStorageAddress, 1000000, {from: curator})
 
@@ -121,10 +137,7 @@ contract('Upgrades Testing', function (accounts) {
       const project1Payee = await initialTribeStorageInstance.escrowedProjectPayees(project1Id)
       const project2Payee = await initialTribeStorageInstance.escrowedProjectPayees(project2Id)
       
-      // Launch an upgraded tribe that include a new function and argument to its constructor
-      // In this case we do not care about the new tribe account or token since we are keeping them from the original tribe
-      // We keep them from the initial tribe
-      
+      // Launch an upgraded tribe that has a new function and an additional argument in its constructor
       const upgradedTribe = await launchUpgradedTestTribe(minimumStakingRequirement, lockupPeriod, launchUuid, totalSupply, tokenDecimals, true)
       
       const upgradedTribeInstance = upgradedTribe.launchedTribeInstance
@@ -135,7 +148,6 @@ contract('Upgrades Testing', function (accounts) {
       await upgradedTribeInstance.setTribeStorage(initialTribeStorageAddress, {from: curator})
       // Attach the old tokens to the new tribe
       await upgradedTribeInstance.setTokenAddresses(initialNativeTokenAddress, initialTribeTokenAddress, {from: curator})
-
       
       // Confirm escrowed balances and stakes on the upgraded tribe match the old tribe
       const upgradedTribeStorageAddress = await upgradedTribeInstance.tribeStorage()
@@ -147,9 +159,23 @@ contract('Upgrades Testing', function (accounts) {
       const project2AmountUpgraded = await upgradedTribeStorageInstance.escrowedProjectBalances(project2Id)
       const project1PayeeUpgraded = await upgradedTribeStorageInstance.escrowedProjectPayees(project1Id)
       const project2PayeeUpgraded = await upgradedTribeStorageInstance.escrowedProjectPayees(project2Id)
+
+      const user1StakeAmountUpgraded = await upgradedTribeStorageInstance.stakedBalances(user1)
+      const user2StakeAmountUpgraded = await upgradedTribeStorageInstance.stakedBalances(user2)
+      const user1StakeTimeUpgraded = await upgradedTribeStorageInstance.timeStaked(user1)
+      const user2StakeTimeUpgraded = await upgradedTribeStorageInstance.timeStaked(user2)
       
+      assert(user1StakeAmount.equals(user1StakeAmountUpgraded))
+      assert(user2StakeAmount.equals(user2StakeAmountUpgraded))
+      assert(user1StakeTime.equals(user1StakeTimeUpgraded))
+      assert(user2StakeTime.equals(user2StakeTimeUpgraded))
+
+      assert(await upgradedTribeInstance.isMember(user1))
+      assert(await upgradedTribeInstance.isMember(user2))
+
       assert(task1Amount.equals(task1AmountUpgraded))
       assert(task2Amount.equals(task2AmountUpgraded))
+
       assert(project1Amount.equals(project1AmountUpgraded))
       assert(project2Amount.equals(project2AmountUpgraded))
       assert(project1Payee === project1PayeeUpgraded)
@@ -165,7 +191,7 @@ contract('Upgrades Testing', function (accounts) {
       await upgradedTribeInstance.rewardProjectCompletion(project1Id, {from: curator})
       await upgradedTribeInstance.rewardProjectCompletion(project2Id, {from: curator})
       
-      // check user balances are expected after rewarding the stuff
+      // check user balances are expected after rewarding
       
       const user1NativeBalanceAfter = await nativeTokenInstance.balanceOf(user1, {from: curator})
       const user2NativeBalanceAfter = await nativeTokenInstance.balanceOf(user2, {from: curator})
@@ -177,12 +203,23 @@ contract('Upgrades Testing', function (accounts) {
       assert(expectedUser2BalanceAfter.equals(user2NativeBalanceAfter))
       
       // test the new emergencyFundRetrieval() function on the upgraded tribe
+
+      const curatorTribeTokenBalance = await tribeTokenInstance.balanceOf(curator)
+      const curatorNativeTokenBalance = await nativeTokenInstance.balanceOf(curator)
+      const tribeStorageTribeTokenBalance = await tribeTokenInstance.balanceOf(upgradedTribeStorageAddress)
+      const tribeStorageNativeTokenBalance = await nativeTokenInstance.balanceOf(upgradedTribeStorageAddress)
       
       await upgradedTribeInstance.emergencyFundRetrieval({from: curator})
-      
-      // TODO check that emergencyFundRetrieval() worked
-      
-      // TODO verify the staking upgraded correctly
+
+      const curatorTribeTokenBalanceAfter = await tribeTokenInstance.balanceOf(curator)
+      const curatorNativeTokenBalanceAfter = await nativeTokenInstance.balanceOf(curator)
+      const tribeStorageTribeTokenBalanceAfter = await tribeTokenInstance.balanceOf(upgradedTribeStorageAddress)
+      const tribeStorageNativeTokenBalanceAfter = await nativeTokenInstance.balanceOf(upgradedTribeStorageAddress)
+
+      assert(tribeStorageTribeTokenBalanceAfter.equals(0))
+      assert(tribeStorageNativeTokenBalanceAfter.equals(0))
+      assert(curatorTribeTokenBalanceAfter.equals(curatorTribeTokenBalance.plus(tribeStorageTribeTokenBalance)))
+      assert(curatorNativeTokenBalanceAfter.equals(curatorNativeTokenBalance.plus(tribeStorageNativeTokenBalance)))
     })
     
   })
@@ -201,7 +238,6 @@ contract('Upgrades Testing', function (accounts) {
 
     const launchedTribeCount = await tribeLauncherInstance.launchedTribeCount()
     const launchedTribeRegistrarAddress = await tribeLauncherInstance.launchedTribeRegistrars(launchedTribeCount - 1)
-
     const launchedTribeRegistrar = await Registrar.at(launchedTribeRegistrarAddress)
     const launchedTribeAddresses = await launchedTribeRegistrar.getAddresses.call()
     const launchedTribeInstance = await Tribe.at(launchedTribeAddresses.slice(-1)[0])
@@ -222,22 +258,14 @@ contract('Upgrades Testing', function (accounts) {
       '2.0',
       true,
       {from: curator})
-
     
     const launchedTribeCount = await upgradedTribeLauncherInstance.launchedTribeCount()
-    
-    
     const launchedTribeRegistrarAddress = await upgradedTribeLauncherInstance.launchedTribeRegistrars(launchedTribeCount - 1)
-
-    
     const launchedTribeRegistrar = await Registrar.at(launchedTribeRegistrarAddress)
     const launchedTribeAddresses = await launchedTribeRegistrar.getAddresses.call()
-    
-    
     const launchedTribeInstance = await UpgradedTribe.at(launchedTribeAddresses.slice(-1)[0])
 
     return { launchedTribeRegistrar, launchedTribeInstance }
-    
   }
   
 })

@@ -5,6 +5,21 @@ import "./TribeStorage.sol";
 import "./interfaces/ISmartToken.sol";
 import "./utility/SafeMath.sol";
 
+/*
+
+This is the main contract containing tribe logic.  It has the following functionality:
+
+- Staking & Unstaking tribe tokens.  THis is how a user "join" or "leaves" the tribe.
+
+- Creating Projects and tasks by locking up Native tokens in escrow until the curator or voteController determines the task has been completed.
+
+- All events are logged to the centralized logger contract.
+
+- The tribeStorage contract is owned by the tribe and holds all staking and escrow related funds and variables.
+  This abstraction of funds allows for a much simpler upgrade process by launching a new tribe and transferring ownership of the existing tribeStorage.
+  The tests in test/integration-test-upgrades.js demonstrate the upgrade process.
+
+*/
 contract Tribe {
     
     address public curator;

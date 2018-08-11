@@ -5,6 +5,11 @@ import "../TribeStorage.sol";
 import "../interfaces/ISmartToken.sol";
 import "../utility/SafeMath.sol";
 
+/*
+
+Used in integration-test-upgrades.js to demonstrate how we can update a tribe
+
+*/
 contract UpgradedTribe {
     address public curator;
     address public voteController;
@@ -53,7 +58,7 @@ contract UpgradedTribe {
                     emergencyWithdrawEnabled = _emergencyWithdrawEnabled;
     }
 
-    // New test function in the upgraded contract
+    // New test function to demonstrate upgraded contract
     // For emergency use by curator in case of critical EVM or smart contract vulnerability.
     function emergencyFundRetrieval() public onlyCurator {
 

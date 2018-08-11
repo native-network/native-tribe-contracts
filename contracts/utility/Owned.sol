@@ -1,7 +1,7 @@
 pragma solidity ^0.4.23;
 
-// This contract comes from bancor
 /*
+    This is the "owned" utility contract used by bancor with one additional function - transferOwnershipNow()
     Provides support and utilities for contract ownership
 */
 contract Owned {

@@ -25,7 +25,7 @@ contract('Logger', function () {
     loggerInstance = await Logger.deployed()
   })
 
-  describe.only("It should test the logger", function() {
+  describe("It should test the logger", function() {
 
     it("It should allow a permissioned user to call all logger functions", async function () {
       const uuid = 1234

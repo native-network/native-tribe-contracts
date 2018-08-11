@@ -2,6 +2,11 @@ pragma solidity ^0.4.11;
 
 import "./UpgradedTribe.sol";
 
+/*
+
+Used in integration-test-upgrades.js to demonstrate how we can update a tribe
+
+*/
 contract UpgradedTribeFactory {
     
     function create(

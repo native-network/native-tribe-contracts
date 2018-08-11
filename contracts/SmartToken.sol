@@ -5,8 +5,13 @@ import "./utility/SafeMath.sol";
 import "./interfaces/IERC20.sol";
 
 
+/*
+
+This contract implements the required functionality to be considered a bancor smart token.
+Additionally it has custom token sale functionality
+
+*/
 contract SmartToken is Owned {
-    
     
     // Smart token specific stuff
     bool public transfersEnabled = true;    // true if transfer/transferFrom are enabled, false if not
@@ -134,7 +139,6 @@ contract SmartToken is Owned {
 
     // Token sale below
 
-
     event TokenSaleInitialized(uint _saleStartTime, uint _saleEndTime, uint _priceInWei, uint _amountForSale, uint nowTime);
     event TokensPurchased(address buyer, uint amount);
 
@@ -183,16 +187,19 @@ contract SmartToken is Owned {
         }
         priceInWei = _newPriceInWei;
     }
+
+    // allows owner to withdraw erc20 tokens that were accidentally sent to this contract
+    // TODO test this
     function withdrawToken(IERC20 _token, uint amount) public ownerOnly {
         _token.transfer(msg.sender, amount);
     }
+
     function() public payable {
         uint amountToBuy = SafeMath.safeDiv(msg.value, priceInWei);
         require(amountToBuy < amountRemainingForSale);
         require(now <= saleEndTime && now >= saleStartTime);
         amountRemainingForSale = SafeMath.safeSub(amountRemainingForSale, amountToBuy);
         issue(msg.sender, amountToBuy);
-
         emit TokensPurchased(msg.sender, amountToBuy);
     }
 }

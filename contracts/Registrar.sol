@@ -2,7 +2,11 @@ pragma solidity ^0.4.8;
 
 import "./utility/Owned.sol";
 
-// The registrar allows contracts to be upgraded
+/*
+
+Contains a record of all previous and current address of a tribe.  For upgradeability.
+
+*/
 contract Registrar is Owned {
 
     address[] addresses;
