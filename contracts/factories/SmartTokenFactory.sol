@@ -1,6 +1,6 @@
 pragma solidity ^0.4.11;
 
-import '../SmartToken.sol';
+import "../SmartToken.sol";
 
 contract SmartTokenFactory {
     

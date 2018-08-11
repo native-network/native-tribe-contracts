@@ -1,6 +1,6 @@
 pragma solidity ^0.4.11;
 
-import './UpgradedTribe.sol';
+import "./UpgradedTribe.sol";
 
 contract UpgradedTribeFactory {
     

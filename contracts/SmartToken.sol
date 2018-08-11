@@ -1,8 +1,8 @@
 pragma solidity ^0.4.8;
 
-import './utility/Owned.sol';
-import './utility/SafeMath.sol';
-import './interfaces/IERC20.sol';
+import "./utility/Owned.sol";
+import "./utility/SafeMath.sol";
+import "./interfaces/IERC20.sol";
 
 
 contract SmartToken is Owned {

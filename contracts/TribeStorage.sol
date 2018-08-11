@@ -1,7 +1,7 @@
 pragma solidity ^0.4.8;
 
-import './utility/Owned.sol';
-import './interfaces/IERC20.sol';
+import "./utility/Owned.sol";
+import "./interfaces/IERC20.sol";
 
 // TODO rename this everywhere TribeAccount because it holds staking and dev fund balances
 contract TribeStorage is Owned {

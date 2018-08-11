@@ -1,9 +1,9 @@
 pragma solidity ^0.4.8;
 
-import './interfaces/ILogger.sol';
-import './TribeStorage.sol';
-import './interfaces/ISmartToken.sol';
-import './utility/SafeMath.sol';
+import "./interfaces/ILogger.sol";
+import "./TribeStorage.sol";
+import "./interfaces/ISmartToken.sol";
+import "./utility/SafeMath.sol";
 
 contract Tribe {
     
