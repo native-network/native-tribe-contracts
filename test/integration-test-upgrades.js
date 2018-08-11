@@ -68,7 +68,7 @@ contract('Upgrades Testing', function (accounts) {
     
   })
   
-  describe.only("It should test upgrading a tribe contract", function() {
+  describe("It should test upgrading a tribe contract", function() {
 
     /*
     This integration test demonstrates the process of upgrading a tribe by launching a new tribe and attaching it to the existing 

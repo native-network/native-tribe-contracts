@@ -2,6 +2,11 @@ pragma solidity ^0.4.11;
 
 import "../SmartToken.sol";
 
+/*
+
+Helps keep TribeLauncher.sol from needing more than the block gas limit
+
+*/
 contract SmartTokenFactory {
     
     function create(string tokenName, uint tokenTotalSupply, uint8 tokenDecimals, string tokenSymbol, string tokenVersion, address msgSender) public returns(address) {

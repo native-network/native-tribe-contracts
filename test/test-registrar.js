@@ -7,8 +7,8 @@ contract('Registrar', function () {
 
   beforeEach(async () => {
     registrarFactoryInstance = await RegistrarFactory.deployed()
-    let registrar = await registrarFactoryInstance.create();
-    registrarInstance = Registrar.at(registrar.receipt.logs[0].address)
+    let tx = await registrarFactoryInstance.create();
+    registrarInstance = Registrar.at(tx.receipt.logs[0].address)
     await registrarInstance.addNewAddress(curator);
   })
 

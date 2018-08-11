@@ -2,6 +2,11 @@ pragma solidity ^0.4.11;
 
 import "../Tribe.sol";
 
+/*
+
+Helps keep TribeLauncher.sol from needing more than the block gas limit
+
+*/
 contract TribeFactory {
     
     function create(
