@@ -1,22 +1,16 @@
-const TribeLauncher = artifacts.require("TribeLauncher");
-const Tribe = artifacts.require("Tribe");
-const Logger = artifacts.require("Logger");
-const SmartToken = artifacts.require("SmartToken");
-const SmartTokenFactory = artifacts.require("SmartTokenFactory");
-const TribeStorageFactory = artifacts.require("TribeStorageFactory");
-const Registrar = artifacts.require("Registrar");
-const RegistrarFactory = artifacts.require("RegistrarFactory");
-const TribeFactory = artifacts.require("TribeFactory");
-const Bluebird = require('Bluebird');
+const TribeLauncher = artifacts.require("TribeLauncher")
+const Tribe = artifacts.require("Tribe")
+const Logger = artifacts.require("Logger")
+const SmartToken = artifacts.require("SmartToken")
+const SmartTokenFactory = artifacts.require("SmartTokenFactory")
+const TribeStorageFactory = artifacts.require("TribeStorageFactory")
+const Registrar = artifacts.require("Registrar")
+const RegistrarFactory = artifacts.require("RegistrarFactory")
+const TribeFactory = artifacts.require("TribeFactory")
+const Bluebird = require('Bluebird')
  
 
 contract('TribeLauncher', function () {
-
-  const sender = web3.eth.accounts[0]
-  const curator = web3.eth.accounts[0]
-  const nonCurator = web3.eth.accounts[5]
-  const voteController = curator
-
   let tribeLauncherInstance
   let nativeTokenInstance
   let loggerInstance
@@ -26,7 +20,6 @@ contract('TribeLauncher', function () {
   let tribeFactoryInstance
 
   beforeEach(async () => {
-    const initialDevFund = 1000
     loggerInstance = await Logger.deployed()
     nativeTokenInstance = await SmartToken.deployed()
     tribeLauncherInstance = await TribeLauncher.deployed()
@@ -39,6 +32,7 @@ contract('TribeLauncher', function () {
   describe("It should test the launcher", function() {
     const sender = web3.eth.accounts[0]
     const curator = web3.eth.accounts[0]
+    const nonCurator = web3.eth.accounts[5]
     const voteController = curator
    
     it("It should launch a new tribe contract when calling launchTribe()", async function () {
@@ -47,7 +41,6 @@ contract('TribeLauncher', function () {
       const launchUuid = 123
       const totalSupply = 1000000
       const tokenDecimals = 18
-
 
       // The tribe launcher needs momentary access to the logger so it can permission the tribe to use it
       await loggerInstance.transferOwnershipNow(tribeLauncherInstance.address)
@@ -81,7 +74,7 @@ contract('TribeLauncher', function () {
         assert(tribe_voteController === voteController)
         assert(true)
       }).catch((rejected) => {
-        assert(false, rejected);
+        assert(false, rejected)
       })
     })
 
@@ -105,7 +98,6 @@ contract('TribeLauncher', function () {
         const launchedTribeCount = await tribeLauncherInstance.launchedTribeCount()
         const launchedTribeRegistrarAddress = await tribeLauncherInstance.launchedTribeRegistrars(launchedTribeCount - 1)
 
-        const launchedTribeRegistrar = await Registrar.at(launchedTribeRegistrarAddress)
         const launchedTribeAddresses = await launchedTribeRegistrar.getAddresses.call()
         const launchedTribeInstance = await Tribe.at(launchedTribeAddresses.slice(-1)[0])
         
@@ -125,13 +117,11 @@ contract('TribeLauncher', function () {
           assert(tribe_voteController === voteController)
           assert(false)
         }).catch((rejected) => {
-          assert(true, rejected);
+          assert(true, rejected)
         })
-      
       } catch (error) {
-        assert(true);
+        assert(true)
       }
-      
     })
   })
 })
