@@ -4,7 +4,6 @@ import "./utility/Owned.sol";
 import "./utility/SafeMath.sol";
 import "./interfaces/IERC20.sol";
 
-
 /*
 
 This contract implements the required functionality to be considered a bancor smart token.
@@ -57,8 +56,8 @@ contract SmartToken is Owned {
     validAddress(_to)
     notThis(_to)
     {
-        totalSupply = SafeMath.safeAdd(totalSupply, _amount);
-        balances[_to] = SafeMath.safeAdd(balances[_to], _amount);
+        totalSupply = SafeMath.add(totalSupply, _amount);
+        balances[_to] = SafeMath.add(balances[_to], _amount);
         emit Issuance(_amount);
         emit Transfer(this, _to, _amount);
     }
@@ -71,8 +70,8 @@ contract SmartToken is Owned {
     */
     function destroy(address _from, uint256 _amount) public {
         require(msg.sender == _from || msg.sender == owner); // validate input
-        balances[_from] = SafeMath.safeSub(balances[_from], _amount);
-        totalSupply = SafeMath.safeSub(totalSupply, _amount);
+        balances[_from] = SafeMath.sub(balances[_from], _amount);
+        totalSupply = SafeMath.sub(totalSupply, _amount);
 
         emit Transfer(_from, this, _amount);
         emit Destruction(_amount);
@@ -87,8 +86,8 @@ contract SmartToken is Owned {
     
     function transfer(address _to, uint256 _value) public returns (bool success) {
         if (balances[msg.sender] >= _value && _value > 0) {
-            balances[msg.sender] = SafeMath.safeSub(balances[msg.sender], _value);
-            balances[_to] = SafeMath.safeAdd(balances[_to], _value);
+            balances[msg.sender] = SafeMath.sub(balances[msg.sender], _value);
+            balances[_to] = SafeMath.add(balances[_to], _value);
             emit Transfer(msg.sender, _to, _value);
             return true;
         } else {return false; }
@@ -96,9 +95,9 @@ contract SmartToken is Owned {
 
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
         if (balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
-            balances[_to] = SafeMath.safeAdd(balances[_to], _value);
-            balances[_from] = SafeMath.safeSub(balances[_from], _value);
-            allowed[_from][msg.sender] = SafeMath.safeSub(allowed[_from][msg.sender], _value);
+            balances[_to] = SafeMath.add(balances[_to], _value);
+            balances[_from] = SafeMath.sub(balances[_from], _value);
+            allowed[_from][msg.sender] = SafeMath.sub(allowed[_from][msg.sender], _value);
             emit Transfer(_from, _to, _value);
             return true;
         } else { return false; }
@@ -194,10 +193,10 @@ contract SmartToken is Owned {
     }
 
     function() public payable {
-        uint amountToBuy = SafeMath.safeDiv(msg.value, priceInWei);
+        uint amountToBuy = SafeMath.div(msg.value, priceInWei);
         require(amountToBuy < amountRemainingForSale);
         require(now <= saleEndTime && now >= saleStartTime);
-        amountRemainingForSale = SafeMath.safeSub(amountRemainingForSale, amountToBuy);
+        amountRemainingForSale = SafeMath.sub(amountRemainingForSale, amountToBuy);
         issue(msg.sender, amountToBuy);
         emit TokensPurchased(msg.sender, amountToBuy);
     }

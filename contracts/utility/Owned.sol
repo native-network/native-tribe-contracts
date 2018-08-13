@@ -1,10 +1,16 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.8;
+
+import "../interfaces/IOwned.sol";
 
 /*
     This is the "owned" utility contract used by bancor with one additional function - transferOwnershipNow()
+    
+    The original unmodified version can be found here:
+    https://github.com/bancorprotocol/contracts/commit/63480ca28534830f184d3c4bf799c1f90d113846
+    
     Provides support and utilities for contract ownership
 */
-contract Owned {
+contract Owned is IOwned {
     address public owner;
     address public newOwner;
 
