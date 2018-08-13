@@ -1,13 +1,13 @@
-const TribeLauncher = artifacts.require("TribeLauncher");
-const Tribe = artifacts.require("Tribe");
-const Logger = artifacts.require("Logger");
-const SmartToken = artifacts.require("SmartToken");
-const SmartTokenFactory = artifacts.require("SmartTokenFactory");
-const TribeStorageFactory = artifacts.require("TribeStorageFactory");
-const Registrar = artifacts.require("Registrar");
-const RegistrarFactory = artifacts.require("RegistrarFactory");
-const TribeFactory = artifacts.require("TribeFactory");
-const Bluebird = require('Bluebird');
+const TribeLauncher = artifacts.require("TribeLauncher")
+const Tribe = artifacts.require("Tribe")
+const Logger = artifacts.require("Logger")
+const SmartToken = artifacts.require("SmartToken")
+const SmartTokenFactory = artifacts.require("SmartTokenFactory")
+const TribeStorageFactory = artifacts.require("TribeStorageFactory")
+const Registrar = artifacts.require("Registrar")
+const RegistrarFactory = artifacts.require("RegistrarFactory")
+const TribeFactory = artifacts.require("TribeFactory")
+const Bluebird = require('Bluebird')
 
 
 contract('Logger', function () {
@@ -18,7 +18,6 @@ contract('Logger', function () {
   const unpermissionedAccount = web3.eth.accounts[3]
   const user1 = web3.eth.accounts[4]
   const user2 = web3.eth.accounts[4]
-
   let loggerInstance
 
   beforeEach(async () => {
@@ -28,6 +27,7 @@ contract('Logger', function () {
   describe("It should test the logger", function() {
 
     it("It should allow a permissioned user to call all logger functions", async function () {
+  
       const uuid = 1234
       const amount = 1000
       const ethereumAddress1 = user1
@@ -92,48 +92,52 @@ contract('Logger', function () {
         assert(results[7].args.message === messageLog)
 
       }).catch((rejected) => {
-        assert(false, rejected);
+        assert(false, rejected)
       })
     })
 
     it("It should fail if an unpermissioned user calls any logger functions", async function () {
       
-      let anySucceeded = false
+      let anySucceeded = []
       
       try {
         loggerInstance.emitTaskCreated(uuid, amount, {from: unpermissionedAccount})
-        anySucceeded = true
+        anySucceeded.push("emitTaskCreated")
       } catch(err) {}
       try {
         loggerInstance.emitProjectCreated(uuid, amount, ethereumAddress1, {from: unpermissionedAccount})
-        anySucceeded = true
+        anySucceeded.push("emitProjectCreated")
       } catch(err) {}
       try {
         loggerInstance.emitNewSmartToken(ethereumAddress1, {from: unpermissionedAccount})
-        anySucceeded = true
+        anySucceeded.push("emitNewSmartToken")
       } catch(err) {}
       try {
         loggerInstance.emitIssuance(amount, {from: unpermissionedAccount})
-        anySucceeded = true
+        anySucceeded.push("emitIssuance")
       } catch(err) {}
       try {
         loggerInstance.emitDestruction(amount, {from: unpermissionedAccount})
-        anySucceeded = true
+        anySucceeded.push("emitDestruction")
       } catch(err) {}
       try {
         loggerInstance.emitTransfer(ethereumAddress1, ethereumAddress2, amount, {from: unpermissionedAccount})
-        anySucceeded = true
+        anySucceeded.push("emitTransfer")
       } catch(err) {}
       try {
         loggerInstance.emitApproval(ethereumAddress1, ethereumAddress2, amount, {from: unpermissionedAccount})
-        anySucceeded = true
+        anySucceeded.push("emitApproval")
       } catch(err) {}
       try {
         loggerInstance.emitGenericLog(messageType, messageLogs, {from: unpermissionedAccount})
-        anySucceeded = true
+        anySucceeded.push("emitGenericLog")
       } catch(err) {}
-      
-      return assert(!anySucceeded)
+      if( anySucceeded.length === 0 ) {
+        assert(true)
+      } else {
+        console.log("anySucceeded:", anySucceeded)
+        assert(false)
+      }
     })
 
     it("It should fail if a non owner tries to permission a new address for logging", async function () {
