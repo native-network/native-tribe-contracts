@@ -1,11 +1,11 @@
 M	contracts/Tribe.sol
 M	contracts/TribeLauncher.sol
-D	contracts/TribeStorage.sol
+D	contracts/TribeAccount.sol
 M	contracts/factories/TribeFactory.sol
-D	contracts/factories/TribeStorageFactory.sol
+D	contracts/factories/TribeAccountFactory.sol
 M	contracts/interfaces/ITribe.sol
 M	contracts/interfaces/ITribeLauncher.sol
-M	contracts/interfaces/ITribeStorage.sol
+M	contracts/interfaces/ITribeAccount.sol
 M	contracts/test/UpgradedTribe.sol
 M	contracts/test/UpgradedTribeFactory.sol
 M	contracts/test/UpgradedTribeLauncher.sol
