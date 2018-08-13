@@ -10,6 +10,7 @@ import "./factories/TribeStorageFactory.sol";
 import "./factories/TribeFactory.sol";
 
 import "./utility/Owned.sol";
+import "./interfaces/ITribeLauncher.sol";
 
 /*
 
@@ -21,7 +22,7 @@ This helper contract is used to easily launch and connect all of the pieces requ
 4) Registrar - Stores latest tribe address
 
 */
-contract TribeLauncher is Owned {
+contract TribeLauncher is Owned, ITribeLauncher {
     mapping (uint => address) public launchedTribeRegistrars;
     uint public launchedTribeCount;
     
@@ -58,18 +59,18 @@ contract TribeLauncher is Owned {
         SmartToken tribeToken = SmartToken(smartTokenFactory.create(tokenName, ai[3], uint8(ai[4]), tokenSymbol, tokenVersion, msg.sender));
         tribeToken.transferOwnershipNow(addresses[0]);
         launchedTokens[launchedTokenCount] = tribeToken;
-        launchedTokenCount = SafeMath.safeAdd(launchedTokenCount,1);
+        launchedTokenCount = SafeMath.add(launchedTokenCount,1);
         
         TribeStorageFactory tribeStorageFactory = TribeStorageFactory(addresses[5]);
         TribeStorage tribeStorage = TribeStorage(tribeStorageFactory.create());
         
-        Tribe tribe = launchTribeWithFactory(ai, addresses, address(tribeToken), address(tribeStorage));
+        ITribe tribe = launchTribeWithFactory(ai, addresses, address(tribeToken), address(tribeStorage));
         tribeStorage.transferOwnershipNow(address(tribe));
 
-        Registrar registrar = launchRegistrar(addresses[6], tribe, addresses[0]);
+        IRegistrar registrar = launchRegistrar(addresses[6], ITribe(tribe), addresses[0]);
 
         launchedTribeRegistrars[launchedTribeCount] = registrar;
-        launchedTribeCount = SafeMath.safeAdd(launchedTribeCount, 1);
+        launchedTribeCount = SafeMath.add(launchedTribeCount, 1);
 
         Logger logger = Logger(addresses[3]);
         logger.addNewLoggerPermission(address(tribe));
@@ -81,16 +82,16 @@ contract TribeLauncher is Owned {
     }
 
     // Abstracted to avoid stack-depth error in launchTribe()
-    function launchRegistrar(address registrarFactoryContractAddress, Tribe tribe, address curatorAddress) public returns(Registrar) {
+    function launchRegistrar(address registrarFactoryContractAddress, ITribe tribe, address curatorAddress) public returns(IRegistrar) {
         RegistrarFactory registrarFactory = RegistrarFactory(registrarFactoryContractAddress);
-        Registrar registrar = Registrar(registrarFactory.create());
+        IRegistrar registrar = Registrar(registrarFactory.create());
         registrar.addNewAddress(address(tribe));
         registrar.transferOwnershipNow(curatorAddress);
         return registrar;
     }
 
     // Abstracted to avoid stack-depth error in launchTribe()
-    function launchTribeWithFactory(uint[] ai, address[] addresses, address _tribeTokenAddress, address _tribeStorageAddress) public returns(Tribe) {
+    function launchTribeWithFactory(uint[] ai, address[] addresses, address _tribeTokenAddress, address _tribeStorageAddress) public returns(ITribe) {
         TribeFactory tribeFactory = TribeFactory(addresses[7]);
         Tribe tribe = Tribe(Tribe(tribeFactory.create(ai[1], ai[2], addresses[0], _tribeTokenAddress, addresses[1], addresses[2], addresses[3], _tribeStorageAddress)));
         return tribe;

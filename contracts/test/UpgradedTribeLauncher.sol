@@ -56,7 +56,7 @@ contract UpgradedTribeLauncher is Owned {
         SmartToken tribeToken = SmartToken(smartTokenFactory.create(tokenName, ai[3], uint8(ai[4]), tokenSymbol, tokenVersion, msg.sender));
         tribeToken.transferOwnershipNow(addresses[0]);
         launchedTokens[launchedTokenCount] = tribeToken;
-        launchedTokenCount = SafeMath.safeAdd(launchedTokenCount,1);
+        launchedTokenCount = SafeMath.add(launchedTokenCount,1);
         
         TribeStorage tribeStorage = TribeStorage(TribeStorageFactory(addresses[5]).create());
 
@@ -67,7 +67,7 @@ contract UpgradedTribeLauncher is Owned {
         Registrar registrar = launchRegistrar(addresses[6], upgradedTribe, addresses[0]);
 
         launchedTribeRegistrars[launchedTribeCount] = registrar;
-        launchedTribeCount = SafeMath.safeAdd(launchedTribeCount, 1);
+        launchedTribeCount = SafeMath.add(launchedTribeCount, 1);
 
         Logger logger = Logger(addresses[3]);
         logger.addNewLoggerPermission(address(upgradedTribe));

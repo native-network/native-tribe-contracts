@@ -7,7 +7,7 @@ import "./utility/Owned.sol";
 Centralized logger allows backend to easily watch all events on all tribes without needing to watch each tribe individually
 
 */
-contract Logger is Owned {
+contract Logger is Owned{
 
     // Tribe
     event TaskCreated(address msgSender, uint _uuid, uint _amount);
@@ -69,9 +69,5 @@ contract Logger is Owned {
 
     function emitGenericLog(string messageType, string message) public hasLoggerPermissions(msg.sender) {
         emit GenericLog(messageType, message);
-    }
-
-    constructor() public {
-
     }
 }
