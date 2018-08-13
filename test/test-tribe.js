@@ -7,8 +7,8 @@ const Bluebird = require('Bluebird')
 const RegistrarFactory = artifacts.require("RegistrarFactory")
 const TribeFactory = artifacts.require("TribeFactory")
 const SmartTokenFactory = artifacts.require("SmartTokenFactory")
-const TribeStorageFactory = artifacts.require("TribeStorageFactory")
-const TribeStorage = artifacts.require("TribeStorage")
+const TribeAccountFactory = artifacts.require("TribeAccountFactory")
+const TribeAccount = artifacts.require("TribeAccount")
 
 contract('Tribe', function () {
   const sender = web3.eth.accounts[0]
@@ -21,7 +21,7 @@ contract('Tribe', function () {
   let nativeTokenInstance
   let loggerInstance
   let smartTokenFactoryInstance
-  let tribeStorageFactoryInstance
+  let tribeAccountFactoryInstance
   let registrarFactoryInstance
   let tribeFactoryInstance
   
@@ -48,7 +48,7 @@ contract('Tribe', function () {
     nativeTokenInstance = await Token.deployed()
     tribeLauncherInstance = await TribeLauncher.deployed()
     smartTokenFactoryInstance = await SmartTokenFactory.deployed()
-    tribeStorageFactoryInstance = await TribeStorageFactory.deployed()
+    tribeAccountFactoryInstance = await TribeAccountFactory.deployed()
     registrarFactoryInstance = await RegistrarFactory.deployed()
     tribeFactoryInstance = await TribeFactory.deployed()
 
@@ -57,7 +57,7 @@ contract('Tribe', function () {
     
     await tribeLauncherInstance.launchTribe(
       [launchUuid, minimumStakingRequirement, lockupPeriod, totalSupply, tokenDecimals],
-      [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, tribeStorageFactoryInstance.address, registrarFactoryInstance.address, tribeFactoryInstance.address],
+      [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, tribeAccountFactoryInstance.address, registrarFactoryInstance.address, tribeFactoryInstance.address],
       'Test Tribe 1',
       'TT1',
       '1.0', {from: sender})
@@ -72,7 +72,7 @@ contract('Tribe', function () {
     tribeTokenInstance = await Token.at(tribeTokenAddress)
 
     // Fund the dev fund so we can test tasks and projects
-    const tribeAccountAddress = await launchedTribeInstance.tribeStorage()
+    const tribeAccountAddress = await launchedTribeInstance.tribeAccount()
     await nativeTokenInstance.transfer(tribeAccountAddress, 1000000, {from: sender})
   })
 
@@ -194,14 +194,14 @@ contract('Tribe', function () {
       const uuid = 1234
       await launchedTribeInstance.createNewTask(uuid, taskReward, {from: voteController})
 
-      const tribeAccountAddress = await launchedTribeInstance.tribeStorage()
+      const tribeAccountAddress = await launchedTribeInstance.tribeAccount()
       
       const devFundBalanceBefore = await nativeTokenInstance.balanceOf(tribeAccountAddress)
       const rewardeeBalanceBefore = await nativeTokenInstance.balanceOf(rewardee)
       await launchedTribeInstance.rewardTaskCompletion(uuid, rewardee, {from: voteController})
 
       const devFundBalanceAfter = await nativeTokenInstance.balanceOf(tribeAccountAddress)
-      const tribeAccountInstance = TribeStorage.at(tribeAccountAddress)
+      const tribeAccountInstance = TribeAccount.at(tribeAccountAddress)
       const taskEscrowBalanceAfter = await tribeAccountInstance.escrowedTaskBalances(uuid)
       const rewardeeBalanceAfter = await nativeTokenInstance.balanceOf(rewardee)
       
@@ -226,8 +226,8 @@ contract('Tribe', function () {
       catch (err) {
         if ( err.toString().indexOf('VM Exception while processing transaction: revert') >= 0 ) {
           
-          const tribeAccountAddress = await launchedTribeInstance.tribeStorage()
-          const tribeAccountInstance = TribeStorage.at(tribeAccountAddress)
+          const tribeAccountAddress = await launchedTribeInstance.tribeAccount()
+          const tribeAccountInstance = TribeAccount.at(tribeAccountAddress)
           const taskEscrowBalance = await tribeAccountInstance.escrowedTaskBalances(uuid)
           const rewardeeBalanceAfter = await nativeTokenInstance.balanceOf(rewardee)
 
@@ -366,7 +366,7 @@ contract('Tribe', function () {
       const uuid = 1234
       await launchedTribeInstance.createNewProject(uuid, projectReward, rewardee, {from: voteController})
 
-      const tribeAccountAddress = await launchedTribeInstance.tribeStorage()
+      const tribeAccountAddress = await launchedTribeInstance.tribeAccount()
       
       const devFundBalanceBefore = await nativeTokenInstance.balanceOf(tribeAccountAddress)
       const rewardeeBalanceBefore = await nativeTokenInstance.balanceOf(rewardee)
@@ -374,7 +374,7 @@ contract('Tribe', function () {
       await launchedTribeInstance.rewardProjectCompletion(uuid, {from: voteController})
 
       const devFundBalanceAfter = await nativeTokenInstance.balanceOf(tribeAccountAddress)
-      const tribeAccountInstance = TribeStorage.at(tribeAccountAddress)
+      const tribeAccountInstance = TribeAccount.at(tribeAccountAddress)
       const taskEscrowBalanceAfter = await tribeAccountInstance.escrowedTaskBalances(uuid)
       const rewardeeBalanceAfter = await nativeTokenInstance.balanceOf(rewardee)
       

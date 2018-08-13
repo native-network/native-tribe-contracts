@@ -17,7 +17,7 @@ contract TribeFactory {
         address nativeTokenContractAddress, 
         address voteController, 
         address loggerContractAddress, 
-        address tribeStorageContractAddress) public returns(address) {
+        address tribeAccountContractAddress) public returns(address) {
         Tribe tribe = new Tribe(
         minimumStakingRequirement, 
         lockupPeriodSeconds, 
@@ -26,7 +26,7 @@ contract TribeFactory {
         nativeTokenContractAddress, 
         voteController,
         loggerContractAddress,
-        tribeStorageContractAddress);
+        tribeAccountContractAddress);
         return address(tribe);
     }
 }

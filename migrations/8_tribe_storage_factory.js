@@ -1,5 +1,5 @@
-const TribeStorageFactory = artifacts.require("./TribeStorageFactory.sol");
+const TribeAccountFactory = artifacts.require("./TribeAccountFactory.sol");
 
 module.exports = function(deployer, network, accounts) {
-  return deployer.then( () => deployer.deploy(TribeStorageFactory, {gas: 10000000}))
+  return deployer.then( () => deployer.deploy(TribeAccountFactory))
 };
