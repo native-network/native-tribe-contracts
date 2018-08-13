@@ -141,6 +141,7 @@ contract('Logger', function () {
     })
 
     it("It should fail if a non owner tries to permission a new address for logging", async function () {
+
       try {
         await loggerInstance.addNewLoggerPermission(permissionedAccount, {from: nonOwner})
       } catch(err) {
