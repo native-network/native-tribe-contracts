@@ -1,18 +1,16 @@
-const TribeLauncher = artifacts.require("TribeLauncher");
-const UpgradedTribeLauncher = artifacts.require("UpgradedTribeLauncher");
-const Tribe = artifacts.require("Tribe");
-const UpgradedTribe = artifacts.require("UpgradedTribe");
-const Logger = artifacts.require("Logger");
-const SmartToken = artifacts.require("SmartToken");
-const SmartTokenFactory = artifacts.require("SmartTokenFactory");
-const TribeStorageFactory = artifacts.require("TribeStorageFactory");
-const TribeStorage = artifacts.require("TribeStorage");
-
-const Registrar = artifacts.require("Registrar");
-const RegistrarFactory = artifacts.require("RegistrarFactory");
-const TribeFactory = artifacts.require("TribeFactory");
-const UpgradedTribeFactory = artifacts.require("UpgradedTribeFactory");
-
+const TribeLauncher = artifacts.require("TribeLauncher")
+const UpgradedTribeLauncher = artifacts.require("UpgradedTribeLauncher")
+const Tribe = artifacts.require("Tribe")
+const UpgradedTribe = artifacts.require("UpgradedTribe")
+const Logger = artifacts.require("Logger")
+const SmartToken = artifacts.require("SmartToken")
+const SmartTokenFactory = artifacts.require("SmartTokenFactory")
+const TribeStorageFactory = artifacts.require("TribeStorageFactory")
+const TribeStorage = artifacts.require("TribeStorage")
+const Registrar = artifacts.require("Registrar")
+const RegistrarFactory = artifacts.require("RegistrarFactory")
+const TribeFactory = artifacts.require("TribeFactory")
+const UpgradedTribeFactory = artifacts.require("UpgradedTribeFactory")
 
 /* 
 Upgrade Tribe Example:
@@ -54,6 +52,7 @@ contract('Upgrades Testing', function (accounts) {
   let upgradedTribeFactoryInstance
   
   beforeEach(async () => {
+
     loggerInstance = await Logger.deployed()
     nativeTokenInstance = await SmartToken.deployed()
     tribeLauncherInstance = await TribeLauncher.deployed()
@@ -65,7 +64,6 @@ contract('Upgrades Testing', function (accounts) {
     registrarFactoryInstance = await RegistrarFactory.deployed()
     tribeFactoryInstance = await TribeFactory.deployed()
     upgradedTribeFactoryInstance = await UpgradedTribeFactory.deployed()
-    
   })
   
   describe("It should test upgrading a tribe contract", function() {
@@ -221,52 +219,49 @@ contract('Upgrades Testing', function (accounts) {
       assert(curatorTribeTokenBalanceAfter.equals(curatorTribeTokenBalance.plus(tribeStorageTribeTokenBalance)))
       assert(curatorNativeTokenBalanceAfter.equals(curatorNativeTokenBalance.plus(tribeStorageNativeTokenBalance)))
     })
-    
-  })
-  
-  async function launchInitialTestTribe(minimumStakingRequirement, lockupPeriod, launchUuid, totalSupply, tokenDecimals) {
-    
-    // The tribe launcher needs momentary access to the logger so it can permission the tribe to use it
-    await loggerInstance.transferOwnershipNow(tribeLauncherInstance.address)
 
-    await tribeLauncherInstance.launchTribe(
-      [launchUuid, minimumStakingRequirement, lockupPeriod, totalSupply, tokenDecimals],
-      [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, tribeStorageFactoryInstance.address, registrarFactoryInstance.address, tribeFactoryInstance.address],
-      'Initial Test Tribe',
-      'TT1',
-      '1.0', {from: sender})
+    async function launchInitialTestTribe(minimumStakingRequirement, lockupPeriod, launchUuid, totalSupply, tokenDecimals) {
+      
+      // The tribe launcher needs momentary access to the logger so it can permission the tribe to use it
+      await loggerInstance.transferOwnershipNow(tribeLauncherInstance.address)
 
-    const launchedTribeCount = await tribeLauncherInstance.launchedTribeCount()
-    const launchedTribeRegistrarAddress = await tribeLauncherInstance.launchedTribeRegistrars(launchedTribeCount - 1)
-    const launchedTribeRegistrar = await Registrar.at(launchedTribeRegistrarAddress)
-    const launchedTribeAddresses = await launchedTribeRegistrar.getAddresses.call()
-    const launchedTribeInstance = await Tribe.at(launchedTribeAddresses.slice(-1)[0])
-    
-    return { launchedTribeRegistrar, launchedTribeInstance }
-  }
+      await tribeLauncherInstance.launchTribe(
+        [launchUuid, minimumStakingRequirement, lockupPeriod, totalSupply, tokenDecimals],
+        [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, tribeStorageFactoryInstance.address, registrarFactoryInstance.address, tribeFactoryInstance.address],
+        'Initial Test Tribe',
+        'TT1',
+        '1.0', {from: sender})
 
-  async function launchUpgradedTestTribe(minimumStakingRequirement, lockupPeriod, launchUuid, totalSupply, tokenDecimals) {
-    
-    // The tribe launcher needs momentary access to the logger so it can permission the tribe to use it
-    await loggerInstance.transferOwnershipNow(upgradedTribeLauncherInstance.address)
-    
-    await upgradedTribeLauncherInstance.launchTribe(
-      [launchUuid, minimumStakingRequirement, lockupPeriod, totalSupply, tokenDecimals],
-      [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, tribeStorageFactoryInstance.address, registrarFactoryInstance.address, upgradedTribeFactoryInstance.address],
-      'Upgraded Test Tribe',
-      'TT2',
-      '2.0',
-      true,
-      {from: curator})
-    
-    const launchedTribeCount = await upgradedTribeLauncherInstance.launchedTribeCount()
-    const launchedTribeRegistrarAddress = await upgradedTribeLauncherInstance.launchedTribeRegistrars(launchedTribeCount - 1)
-    const launchedTribeRegistrar = await Registrar.at(launchedTribeRegistrarAddress)
-    const launchedTribeAddresses = await launchedTribeRegistrar.getAddresses.call()
-    const launchedTribeInstance = await UpgradedTribe.at(launchedTribeAddresses.slice(-1)[0])
+      const launchedTribeCount = await tribeLauncherInstance.launchedTribeCount()
+      const launchedTribeRegistrarAddress = await tribeLauncherInstance.launchedTribeRegistrars(launchedTribeCount - 1)
+      const launchedTribeRegistrar = await Registrar.at(launchedTribeRegistrarAddress)
+      const launchedTribeAddresses = await launchedTribeRegistrar.getAddresses.call()
+      const launchedTribeInstance = await Tribe.at(launchedTribeAddresses.slice(-1)[0])
+      
+      return { launchedTribeRegistrar, launchedTribeInstance }
+    }
 
-    return { launchedTribeRegistrar, launchedTribeInstance }
-  }
-  
+    async function launchUpgradedTestTribe(minimumStakingRequirement, lockupPeriod, launchUuid, totalSupply, tokenDecimals) {
+      
+      // The tribe launcher needs momentary access to the logger so it can permission the tribe to use it
+      await loggerInstance.transferOwnershipNow(upgradedTribeLauncherInstance.address)
+      
+      await upgradedTribeLauncherInstance.launchTribe(
+        [launchUuid, minimumStakingRequirement, lockupPeriod, totalSupply, tokenDecimals],
+        [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, tribeStorageFactoryInstance.address, registrarFactoryInstance.address, upgradedTribeFactoryInstance.address],
+        'Upgraded Test Tribe',
+        'TT2',
+        '2.0',
+        true,
+        {from: curator})
+      
+      const launchedTribeCount = await upgradedTribeLauncherInstance.launchedTribeCount()
+      const launchedTribeRegistrarAddress = await upgradedTribeLauncherInstance.launchedTribeRegistrars(launchedTribeCount - 1)
+      const launchedTribeRegistrar = await Registrar.at(launchedTribeRegistrarAddress)
+      const launchedTribeAddresses = await launchedTribeRegistrar.getAddresses.call()
+      const launchedTribeInstance = await UpgradedTribe.at(launchedTribeAddresses.slice(-1)[0])
+
+      return { launchedTribeRegistrar, launchedTribeInstance }
+    }
+  })  
 })
-
