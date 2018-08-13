@@ -3,7 +3,7 @@ const Tribe = artifacts.require("Tribe")
 const Logger = artifacts.require("Logger")
 const SmartToken = artifacts.require("SmartToken")
 const SmartTokenFactory = artifacts.require("SmartTokenFactory")
-const TribeStorageFactory = artifacts.require("TribeStorageFactory")
+const TribeAccountFactory = artifacts.require("TribeAccountFactory")
 const Registrar = artifacts.require("Registrar")
 const RegistrarFactory = artifacts.require("RegistrarFactory")
 const TribeFactory = artifacts.require("TribeFactory")
@@ -15,7 +15,7 @@ contract('TribeLauncher', function () {
   let nativeTokenInstance
   let loggerInstance
   let smartTokenFactoryInstance
-  let tribeStorageFactoryInstance
+  let tribeAccountFactoryInstance
   let registrarFactoryInstance
   let tribeFactoryInstance
 
@@ -24,8 +24,8 @@ contract('TribeLauncher', function () {
     nativeTokenInstance = await SmartToken.deployed()
     tribeLauncherInstance = await TribeLauncher.deployed()
     smartTokenFactoryInstance = await SmartTokenFactory.deployed()
-    tribeStorageFactoryInstance = await TribeStorageFactory.deployed()
-    tribeStorageFactoryInstance = await TribeStorageFactory.deployed()
+    tribeAccountFactoryInstance = await TribeAccountFactory.deployed()
+    tribeAccountFactoryInstance = await TribeAccountFactory.deployed()
     registrarFactoryInstance = await RegistrarFactory.deployed()
     tribeFactoryInstance = await TribeFactory.deployed()
   })
@@ -47,7 +47,7 @@ contract('TribeLauncher', function () {
       
       await tribeLauncherInstance.launchTribe(
         [launchUuid, minimumStakingRequirement, lockupPeriod, totalSupply, tokenDecimals],
-        [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, tribeStorageFactoryInstance.address, registrarFactoryInstance.address, tribeFactoryInstance.address],
+        [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, tribeAccountFactoryInstance.address, registrarFactoryInstance.address, tribeFactoryInstance.address],
         'Test Tribe 1',
         'TT1',
         '1.0', {from: sender})
@@ -90,7 +90,7 @@ contract('TribeLauncher', function () {
       try {
         await tribeLauncherInstance.launchTribe(
           [launchUuid, minimumStakingRequirement, lockupPeriod, totalSupply, tokenDecimals],
-          [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, tribeStorageFactoryInstance.address, registrarFactoryInstance.address, tribeFactoryInstance.address],
+          [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, tribeAccountFactoryInstance.address, registrarFactoryInstance.address, tribeFactoryInstance.address],
           'Test Tribe 1',
           'TT1',
           '1.0', {from: nonCurator})

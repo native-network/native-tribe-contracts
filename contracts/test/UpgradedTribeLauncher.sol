@@ -2,10 +2,10 @@ pragma solidity ^0.4.8;
 
 import "../Logger.sol";
 import "../Registrar.sol";
-import "../TribeStorage.sol";
+import "../TribeAccount.sol";
 import "../factories/RegistrarFactory.sol";
 import "../factories/SmartTokenFactory.sol";
-import "../factories/TribeStorageFactory.sol";
+import "../factories/TribeAccountFactory.sol";
 import "../utility/Owned.sol";
 
 import "./UpgradedTribeFactory.sol";
@@ -21,7 +21,7 @@ contract UpgradedTribeLauncher is Owned {
     mapping (uint => address) public launchedTribeRegistrars;
     uint public launchedTribeCount;
     
-    address public TribeStorageContractAddress;
+    address public TribeAccountContractAddress;
     
     event Launched(address msgSender, uint launchUuid, address launchedTribeAddress, address launchedTokenAddress, address launchedRegistrarddress);
     
@@ -42,7 +42,7 @@ contract UpgradedTribeLauncher is Owned {
         // 2 - voteController
         // 3 - loggerContractAddress
         // 4 - smartTokenFactoryContractAddress
-        // 5 - tribeStorageFactoryContractAddress
+        // 5 - tribeAccountFactoryContractAddress
         // 6 - registrarFactoryContractAddress
         // 7 - upgradedTribeFactoryContractAddress
         address[] addresses,
@@ -58,10 +58,10 @@ contract UpgradedTribeLauncher is Owned {
         launchedTokens[launchedTokenCount] = tribeToken;
         launchedTokenCount = SafeMath.add(launchedTokenCount,1);
         
-        TribeStorage tribeStorage = TribeStorage(TribeStorageFactory(addresses[5]).create());
+        TribeAccount tribeAccount = TribeAccount(TribeAccountFactory(addresses[5]).create());
 
-        UpgradedTribe upgradedTribe = launchUpgradedTribeWithFactory(ai, addresses, address(tribeToken), address(tribeStorage), emergencyWithdrawEnabled);
-        tribeStorage.transferOwnershipNow(address(upgradedTribe));
+        UpgradedTribe upgradedTribe = launchUpgradedTribeWithFactory(ai, addresses, address(tribeToken), address(tribeAccount), emergencyWithdrawEnabled);
+        tribeAccount.transferOwnershipNow(address(upgradedTribe));
         
         // Using the launchRegistrar function to avoid stack becoming too deep
         Registrar registrar = launchRegistrar(addresses[6], upgradedTribe, addresses[0]);
@@ -87,9 +87,9 @@ contract UpgradedTribeLauncher is Owned {
     }
 
     // Abstracted to avoid stack-depth error in launchTribe()
-    function launchUpgradedTribeWithFactory(uint[] ai, address[] addresses, address _tribeTokenAddress, address tribeStorageAddress, bool emergencyWithdrawEnabled) public returns(UpgradedTribe) {
+    function launchUpgradedTribeWithFactory(uint[] ai, address[] addresses, address _tribeTokenAddress, address tribeAccountAddress, bool emergencyWithdrawEnabled) public returns(UpgradedTribe) {
         UpgradedTribeFactory upgradedTribeFactory = UpgradedTribeFactory(addresses[7]);
-        UpgradedTribe tribe = UpgradedTribe(upgradedTribeFactory.create(ai[1], ai[2], addresses[0], _tribeTokenAddress, addresses[1], addresses[2], addresses[3], tribeStorageAddress, emergencyWithdrawEnabled));
+        UpgradedTribe tribe = UpgradedTribe(upgradedTribeFactory.create(ai[1], ai[2], addresses[0], _tribeTokenAddress, addresses[1], addresses[2], addresses[3], tribeAccountAddress, emergencyWithdrawEnabled));
         return tribe;
     }
     

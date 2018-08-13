@@ -1,11 +1,11 @@
 const RegistrarFactory = artifacts.require("RegistrarFactory")
 const SmartTokenFactory = artifacts.require("SmartTokenFactory")
 const TribeFactory = artifacts.require("TribeFactory")
-const TribeStorageFactory = artifacts.require("TribeStorageFactory")
+const TribeAccountFactory = artifacts.require("TribeAccountFactory")
 const Registrar = artifacts.require("Registrar")
 const SmartToken = artifacts.require("SmartToken")
 const Tribe = artifacts.require("Tribe")
-const TribeStorage = artifacts.require("TribeStorage")
+const TribeAccount = artifacts.require("TribeAccount")
 
 contract('Factory Testing', function (accounts) {
 
@@ -32,12 +32,12 @@ contract('Factory Testing', function (accounts) {
       assert(owner === accounts[0])
     })
 
-    it("It should demonstrate TribeStorageFactory launching a new storage", async function () {
+    it("It should demonstrate TribeAccountFactory launching a new storage", async function () {
 
-      const tribeStorageFactoryInstance = await TribeStorageFactory.deployed({from: accounts[0]})
-      let tx = await tribeStorageFactoryInstance.create({from: accounts[0]})
-      const tribeStorageInstance = TribeStorage.at(tx.receipt.logs[0].address)
-      const owner = await tribeStorageInstance.owner()
+      const tribeAccountFactoryInstance = await TribeAccountFactory.deployed({from: accounts[0]})
+      let tx = await tribeAccountFactoryInstance.create({from: accounts[0]})
+      const tribeAccountInstance = TribeAccount.at(tx.receipt.logs[0].address)
+      const owner = await tribeAccountInstance.owner()
       assert(owner === accounts[0])
     })
     

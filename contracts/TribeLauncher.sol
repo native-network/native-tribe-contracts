@@ -3,10 +3,10 @@ pragma solidity ^0.4.8;
 import "./Logger.sol";
 import "./Tribe.sol";
 import "./Registrar.sol";
-import "./TribeStorage.sol";
+import "./TribeAccount.sol";
 import "./factories/RegistrarFactory.sol";
 import "./factories/SmartTokenFactory.sol";
-import "./factories/TribeStorageFactory.sol";
+import "./factories/TribeAccountFactory.sol";
 import "./factories/TribeFactory.sol";
 
 import "./utility/Owned.sol";
@@ -26,7 +26,7 @@ contract TribeLauncher is Owned, ITribeLauncher {
     mapping (uint => address) public launchedTribeRegistrars;
     uint public launchedTribeCount;
     
-    address public TribeStorageContractAddress;
+    address public TribeAccountContractAddress;
     
     event Launched(address msgSender, uint launchUuid, address launchedTribeAddress, address launchedTokenAddress, address launchedRegistrarddress);
     
@@ -47,7 +47,7 @@ contract TribeLauncher is Owned, ITribeLauncher {
         // 2 - voteController
         // 3 - loggerContractAddress
         // 4 - smartTokenFactoryContractAddress
-        // 5 - tribeStorageFactoryContractAddress
+        // 5 - tribeAccountFactoryContractAddress
         // 6 - registrarFactoryContractAddress
         // 7 - tribeFactoryContractAddress
         address[] addresses,
@@ -61,11 +61,11 @@ contract TribeLauncher is Owned, ITribeLauncher {
         launchedTokens[launchedTokenCount] = tribeToken;
         launchedTokenCount = SafeMath.add(launchedTokenCount,1);
         
-        TribeStorageFactory tribeStorageFactory = TribeStorageFactory(addresses[5]);
-        TribeStorage tribeStorage = TribeStorage(tribeStorageFactory.create());
+        TribeAccountFactory tribeAccountFactory = TribeAccountFactory(addresses[5]);
+        TribeAccount tribeAccount = TribeAccount(tribeAccountFactory.create());
         
-        ITribe tribe = launchTribeWithFactory(ai, addresses, address(tribeToken), address(tribeStorage));
-        tribeStorage.transferOwnershipNow(address(tribe));
+        ITribe tribe = launchTribeWithFactory(ai, addresses, address(tribeToken), address(tribeAccount));
+        tribeAccount.transferOwnershipNow(address(tribe));
 
         IRegistrar registrar = launchRegistrar(addresses[6], ITribe(tribe), addresses[0]);
 
@@ -91,9 +91,9 @@ contract TribeLauncher is Owned, ITribeLauncher {
     }
 
     // Abstracted to avoid stack-depth error in launchTribe()
-    function launchTribeWithFactory(uint[] ai, address[] addresses, address _tribeTokenAddress, address _tribeStorageAddress) public returns(ITribe) {
+    function launchTribeWithFactory(uint[] ai, address[] addresses, address _tribeTokenAddress, address _tribeAccountAddress) public returns(ITribe) {
         TribeFactory tribeFactory = TribeFactory(addresses[7]);
-        Tribe tribe = Tribe(Tribe(tribeFactory.create(ai[1], ai[2], addresses[0], _tribeTokenAddress, addresses[1], addresses[2], addresses[3], _tribeStorageAddress)));
+        Tribe tribe = Tribe(Tribe(tribeFactory.create(ai[1], ai[2], addresses[0], _tribeTokenAddress, addresses[1], addresses[2], addresses[3], _tribeAccountAddress)));
         return tribe;
     }
 }

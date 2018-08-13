@@ -17,7 +17,7 @@ contract UpgradedTribeFactory {
         address nativeTokenContractAddress, 
         address voteController, 
         address loggerContractAddress, 
-        address tribeStorageContractAddress,
+        address tribeAccountContractAddress,
         bool emergencyWithdrawEnabled
         ) public returns(address) {
         UpgradedTribe upgradedTribe = new UpgradedTribe(
@@ -28,7 +28,7 @@ contract UpgradedTribeFactory {
         nativeTokenContractAddress, 
         voteController,
         loggerContractAddress,
-        tribeStorageContractAddress,
+        tribeAccountContractAddress,
         emergencyWithdrawEnabled);
         return address(upgradedTribe);
     }

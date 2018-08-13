@@ -7,8 +7,8 @@ contract ITribe {
     function setLockupPeriodSeconds(uint _lockupPeriodSeconds) public;
     function setLogger(address newLoggerAddress) public;
     function setTokenAddresses(address newNativeTokenAddress, address newTribeTokenAddress) public;
-    function setTribeStorage(address newTribeStorageAddress) public;
-    function setTribeStorageOwner(address newOwner) public;
+    function setTribeAccount(address newTribeAccountAddress) public;
+    function setTribeAccountOwner(address newOwner) public;
     function getAvailableDevFund() public view returns (uint);
     function getLockedDevFundAmount() public view returns (uint);
     function createNewTask(uint uuid, uint amount) public;
