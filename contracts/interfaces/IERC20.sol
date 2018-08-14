@@ -1,5 +1,8 @@
-pragma solidity ^0.4.8;
+pragma solidity ^0.4.24;
 
+/*
+    Smart Token Interface
+*/
 interface IERC20 {
     function totalSupply() external constant returns (uint);
     function balanceOf(address tokenOwner) external constant returns (uint balance);

@@ -1,5 +1,8 @@
-pragma solidity ^0.4.8;
+pragma solidity ^0.4.24;
 
+/*
+    Logger Contract Interface
+*/
 contract ILogger {
     function addNewLoggerPermission(address addressToPermission) public;
     function emitTaskCreated(uint uuid, uint amount) public;

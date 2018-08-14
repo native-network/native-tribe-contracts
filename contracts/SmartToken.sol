@@ -1,4 +1,4 @@
-pragma solidity ^0.4.8;
+pragma solidity ^0.4.24;
 
 import "./utility/Owned.sol";
 import "./utility/SafeMath.sol";
@@ -148,7 +148,6 @@ contract SmartToken is Owned {
     uint public amountRemainingForSale;
 
     function initializeTokenSale(uint _saleStartTime, uint _saleEndTime, uint _priceInWei, uint _amountForSale) public ownerOnly {
-
         // Check that the token sale has not yet been initialized
         require(saleStartTime == 0);
 

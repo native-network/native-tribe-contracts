@@ -1,4 +1,4 @@
-pragma solidity ^0.4.8;
+pragma solidity ^0.4.24;
 
 import "./utility/Owned.sol";
 
@@ -14,7 +14,8 @@ contract Logger is Owned{
     event ProjectCreated(address msgSender, uint _uuid, uint _amount, address _address);
 
     // SmartToken
-    // triggered when a smart token is deployed - the _token address is defined for forward compatibility, in case we want to trigger the event from a factory
+    // triggered when a smart token is deployed - the _token address is defined for forward compatibility
+    //  in case we want to trigger the event from a factory
     event NewSmartToken(address msgSender, address _token);
     // triggered when the total supply is increased
     event Issuance(address msgSender, uint256 _amount);
