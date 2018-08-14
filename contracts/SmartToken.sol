@@ -193,7 +193,7 @@ contract SmartToken is Owned {
 
     function() public payable {
         uint amountToBuy = SafeMath.div(msg.value, priceInWei);
-        require(amountToBuy < amountRemainingForSale);
+        require(amountToBuy <= amountRemainingForSale);
         require(now <= saleEndTime && now >= saleStartTime);
         amountRemainingForSale = SafeMath.sub(amountRemainingForSale, amountToBuy);
         issue(msg.sender, amountToBuy);
