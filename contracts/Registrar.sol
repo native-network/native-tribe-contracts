@@ -11,7 +11,7 @@ Contains a record of all previous and current address of a tribe.  For upgradeab
 contract Registrar is Owned, IRegistrar {
 
     address[] addresses;
-    function addNewAddress(address _newAddress) public {
+    function addNewAddress(address _newAddress) public ownerOnly {
         addresses.push(_newAddress);
     }
 
