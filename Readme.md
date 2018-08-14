@@ -29,9 +29,9 @@
 There are 3 main functionalities of a native tribe:
 
 
--Allow users to stake tribe tokens to become a tribe member.
--Allow the escrow lockup & rewarding  of native tokens to pay for a project.
--Allow the escrow lockup & rewarding of native tokens to pay for a task.
+- Allow users to stake tribe tokens to become a tribe member.
+- Allow the escrow lockup & rewarding  of native tokens to pay for a project.
+- Allow the escrow lockup & rewarding of native tokens to pay for a task.
 
 
 
@@ -91,10 +91,10 @@ Each tribe consists of 4 contracts
 
 	Helper contract is used to easily launch and connect all of the pieces required for a new tribe.  These are:
 
-- Tribe token (SmartToken.sol)
-- Tribe Account (TribeAccount.sol)
-- Tribe (Tribe.sol)
-- Registrar (Registrar.sol)
+	- Tribe token (SmartToken.sol)
+	- Tribe Account (TribeAccount.sol)
+	- Tribe (Tribe.sol)
+	- Registrar (Registrar.sol)
 
 ### Other contracts
 
@@ -128,6 +128,7 @@ The following example shows the overall flow of upgrading a tribe contract.  Thi
 1. Curator launches a new tribe using a new version of TribeLauncher.sol. 
 
 	**Note** The example from integration-test-upgrades.js utilizes the launchTribe() function to launch all 4 tribe contracts (tribe, account, registrar, token).  Only the newly upgraded tribe contract is used in this test and the remaining new contracts are ignored.
+	
 
 2. Curator Updates the old tribe Registrar.sol contract to point to the newly created tribe contract.
 
