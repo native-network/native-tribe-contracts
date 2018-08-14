@@ -27,7 +27,7 @@
 There are 3 main functionalities of a native tribe:
 
 
-- Allow users to stake tribe tokens to become a tribe member.
+-Allow users to stake tribe tokens to become a tribe member.
 -Allow the escrow lockup & rewarding  of native tokens to pay for a project.
 -Allow the escrow lockup & rewarding of native tokens to pay for a task.
 
