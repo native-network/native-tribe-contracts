@@ -3,6 +3,7 @@ pragma solidity ^0.4.24;
 /*
     Logger Contract Interface
 */
+
 contract ILogger {
     function addNewLoggerPermission(address addressToPermission) public;
     function emitTaskCreated(uint uuid, uint amount) public;
@@ -11,6 +12,6 @@ contract ILogger {
     function emitIssuance(uint256 amount) public;
     function emitDestruction(uint256 amount) public;
     function emitTransfer(address from, address to, uint256 value) public;
-    function emitApproval(address owner, uint spender, uint256 value) public;
+    function emitApproval(address owner, address spender, uint256 value) public;
     function emitGenericLog(string messageType, string message) public;
 }

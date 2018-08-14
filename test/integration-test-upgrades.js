@@ -91,8 +91,6 @@ contract('Upgrades Testing', function (accounts) {
       const tribeTokenInstance = SmartToken.at(initialTribeTokenAddress)
       const nativeTokenInstance = SmartToken.at(initialNativeTokenAddress)
       
-      // TODO Do some staking AND test that it worked.
-      
       // give our users some tribe tokens so they can join the tribes
       await tribeTokenInstance.transfer(user1, minimumStakingRequirement, {from: curator})
       await tribeTokenInstance.transfer(user2, minimumStakingRequirement, {from: curator})

@@ -3,14 +3,16 @@ pragma solidity ^0.4.24;
 import "./utility/Owned.sol";
 import "./utility/SafeMath.sol";
 import "./interfaces/IERC20.sol";
+import "./interfaces/ISmartToken.sol";
 
 /*
 
 This contract implements the required functionality to be considered a bancor smart token.
-Additionally it has custom token sale functionality
+Additionally it has custom token sale functionality and the ability twithdraw tokens accidentally deposited
 
+//TODO abstract this into 3 contracts and inherit from them: 1) ERC20, 2) Smart Token, 3) Native specific functionality
 */
-contract SmartToken is Owned {
+contract SmartToken is Owned, IERC20, ISmartToken {
     
     // Smart token specific stuff
     bool public transfersEnabled = true;    // true if transfer/transferFrom are enabled, false if not
