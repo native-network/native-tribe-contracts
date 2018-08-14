@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 
 import "./utility/Owned.sol";
 import "./interfaces/IERC20.sol";
+import "./interfaces/ITribeAccount.sol";
 
 
 /*
@@ -12,8 +13,7 @@ This contract is used as a tribes data store. This has two distinct advantages
 
 */
 
-// TODO rename this everywhere TribeAccount because it holds staking and dev fund balances
-contract TribeAccount is Owned {
+contract TribeAccount is Owned, ITribeAccount {
     
     // Staking Variables.  In tribe token
     mapping (address => uint256) public stakedBalances;

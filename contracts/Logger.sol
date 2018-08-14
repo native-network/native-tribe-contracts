@@ -1,13 +1,14 @@
 pragma solidity ^0.4.24;
 
 import "./utility/Owned.sol";
+import "./interfaces/ILogger.sol";
 
 /*
 
 Centralized logger allows backend to easily watch all events on all tribes without needing to watch each tribe individually
 
 */
-contract Logger is Owned{
+contract Logger is Owned, ILogger  {
 
     // Tribe
     event TaskCreated(address msgSender, uint _uuid, uint _amount);
