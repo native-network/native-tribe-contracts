@@ -8,6 +8,8 @@
 
 2. npm install -g truffle
 
+3. npm install
+
 3. Ganache-cli -l 8000000
 
 ## Deploy contracts
