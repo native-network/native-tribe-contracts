@@ -78,16 +78,16 @@ Each tribe consists of 4 contracts
 
 1. SmartToken.sol (used as native token)
 
-Bancor compatible smart token with built in token sale functionality.  Used as the native token
+	Bancor compatible smart token with built in token sale functionality.  Used as the native token
 
 2. Logger.sol
 
-Centralized logging contract to help backend watch for tribe events.  All tribes log all events to this contract.
+	Centralized logging contract to help backend watch for tribe events.  All tribes log all events to this contract.
 
 
 3. Tribe Launcher
 
-Helper contract is used to easily launch and connect all of the pieces required for a new tribe.  These are:
+	Helper contract is used to easily launch and connect all of the pieces required for a new tribe.  These are:
 
 - Tribe token (SmartToken.sol)
 - Tribe Account (TribeAccount.sol)
