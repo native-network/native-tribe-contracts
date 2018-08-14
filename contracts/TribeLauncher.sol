@@ -1,4 +1,4 @@
-pragma solidity ^0.4.8;
+pragma solidity ^0.4.24;
 
 import "./Logger.sol";
 import "./Tribe.sol";
@@ -8,7 +8,6 @@ import "./factories/RegistrarFactory.sol";
 import "./factories/SmartTokenFactory.sol";
 import "./factories/TribeAccountFactory.sol";
 import "./factories/TribeFactory.sol";
-
 import "./utility/Owned.sol";
 import "./interfaces/ITribeLauncher.sol";
 
@@ -28,7 +27,12 @@ contract TribeLauncher is Owned, ITribeLauncher {
     
     address public TribeAccountContractAddress;
     
-    event Launched(address msgSender, uint launchUuid, address launchedTribeAddress, address launchedTokenAddress, address launchedRegistrarddress);
+    event Launched(
+        address msgSender,
+        uint launchUuid,
+        address launchedTribeAddress,
+        address launchedTokenAddress,
+        address launchedRegistrarddress);
     
     mapping (uint => address) public launchedTokens;
     uint public launchedTokenCount;
@@ -91,9 +95,23 @@ contract TribeLauncher is Owned, ITribeLauncher {
     }
 
     // Abstracted to avoid stack-depth error in launchTribe()
-    function launchTribeWithFactory(uint[] ai, address[] addresses, address _tribeTokenAddress, address _tribeAccountAddress) public returns(ITribe) {
+    function launchTribeWithFactory(
+        uint[] ai,
+        address[] addresses,
+        address _tribeTokenAddress,
+        address _tribeAccountAddress
+        ) public returns(ITribe) {
         TribeFactory tribeFactory = TribeFactory(addresses[7]);
-        Tribe tribe = Tribe(Tribe(tribeFactory.create(ai[1], ai[2], addresses[0], _tribeTokenAddress, addresses[1], addresses[2], addresses[3], _tribeAccountAddress)));
+        Tribe tribe = Tribe(
+            Tribe(tribeFactory.create(
+                ai[1],
+                ai[2],
+                addresses[0],
+                _tribeTokenAddress,
+                addresses[1],
+                addresses[2],
+                addresses[3],
+                _tribeAccountAddress)));
         return tribe;
     }
 }

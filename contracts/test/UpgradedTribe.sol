@@ -1,4 +1,4 @@
-pragma solidity ^0.4.8;
+pragma solidity ^0.4.24;
 
 import "../Logger.sol";
 import "../TribeAccount.sol";
@@ -61,7 +61,6 @@ contract UpgradedTribe {
     // New test function to demonstrate upgraded contract
     // For emergency use by curator in case of critical EVM or smart contract vulnerability.
     function emergencyFundRetrieval() public onlyCurator {
-
         require(emergencyWithdrawEnabled);
 
         uint totaBalanceNativeToken = nativeTokenInstance.balanceOf(address(tribeAccount));
@@ -132,9 +131,7 @@ contract UpgradedTribe {
     
     // pays put to the task completer and updates the escrow balances
     function rewardTaskCompletion(uint uuid, address user) public onlyVoteController {
-
         tribeAccount.transferTokensOut(address(nativeTokenInstance), user, tribeAccount.escrowedTaskBalances(uuid));
-
         tribeAccount.setTotalTaskEscrow(SafeMath.sub(tribeAccount.totalTaskEscrow(), tribeAccount.escrowedTaskBalances(uuid)));
         tribeAccount.setEscrowedTaskBalances(uuid, 0);
     }
@@ -151,21 +148,27 @@ contract UpgradedTribe {
 
     // subtracts the tasks escrow and sets the tasks escrow balance to 0
     function cancelProject(uint uuid) public onlyCurator {
-        tribeAccount.setTotalProjectEscrow(SafeMath.sub(tribeAccount.totalProjectEscrow(), tribeAccount.escrowedProjectBalances(uuid)));
+        tribeAccount.setTotalProjectEscrow(SafeMath.sub(
+            tribeAccount.totalProjectEscrow(),
+            tribeAccount.escrowedProjectBalances(uuid)));
         tribeAccount.setEscrowedProjectBalances(uuid, 0);
     }
     
     // pays out the project completion and then updates the escrow balances
     function rewardProjectCompletion(uint uuid) public onlyVoteController {
-        tribeAccount.transferTokensOut(address(nativeTokenInstance), tribeAccount.escrowedProjectPayees(uuid), tribeAccount.escrowedProjectBalances(uuid));
-        tribeAccount.setTotalProjectEscrow(SafeMath.sub(tribeAccount.totalProjectEscrow(), tribeAccount.escrowedProjectBalances(uuid)));
+        tribeAccount.transferTokensOut(
+            address(nativeTokenInstance),
+            tribeAccount.escrowedProjectPayees(uuid),
+            tribeAccount.escrowedProjectBalances(uuid));
+        tribeAccount.setTotalProjectEscrow(SafeMath.sub(
+            tribeAccount.totalProjectEscrow(),
+            tribeAccount.escrowedProjectBalances(uuid)));
         tribeAccount.setEscrowedProjectBalances(uuid, 0);
     }
 
     // Staking code below (in tribe tokens)
     //  make it steak as much additional funds required to become a member (i.e. if the staking minimum goes up).  Do not use amount variable  
     function stakeTribeTokens(uint amount) public {
-
         if(!tribeTokenInstance.transferFrom(msg.sender, address(tribeAccount), amount)) {
             revert();
         }

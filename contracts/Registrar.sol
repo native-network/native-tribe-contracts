@@ -1,4 +1,4 @@
-pragma solidity ^0.4.8;
+pragma solidity ^0.4.24;
 
 import "./utility/Owned.sol";
 import "./interfaces/IRegistrar.sol";
@@ -14,6 +14,7 @@ contract Registrar is Owned, IRegistrar {
     function addNewAddress(address _newAddress) public {
         addresses.push(_newAddress);
     }
+
     function getAddresses() public view returns (address[]) {
         return addresses;
     }

@@ -1,5 +1,8 @@
-pragma solidity ^0.4.8;
+pragma solidity ^0.4.24;
 
+/*
+    Tribe Interface
+*/
 contract ITribe {
     function transferCurator(address _curator) public;
     function transferVoteController(address _voteController) public;

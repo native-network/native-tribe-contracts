@@ -1,7 +1,10 @@
-pragma solidity ^0.4.8;
+pragma solidity ^0.4.24;
 
 import "../interfaces/IOwned.sol";
 
+/*
+    Tribe Account Interface
+*/
 contract ITribeAccount is IOwned {
     function setLockupPeriodSeconds(uint _lockupPeriodSeconds) public;
     function setMinimumStakingRequirement(uint _minimumStakingRequirement) public;

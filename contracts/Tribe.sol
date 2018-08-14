@@ -1,5 +1,4 @@
-pragma solidity ^0.4.8;
-
+pragma solidity ^0.4.24;
 import "./Logger.sol";
 import "./TribeAccount.sol";
 import "./interfaces/ISmartToken.sol";
@@ -110,7 +109,7 @@ contract Tribe is ITribe {
         return SafeMath.add(tribeAccount.totalTaskEscrow(), tribeAccount.totalProjectEscrow());
     }
 
-    // Task escrow code below (in native tokens)
+    /* Task escrow code below (in native tokens) */
     
     // updates the escrow values for a new task
     function createNewTask(uint uuid, uint amount) public onlyCurator sufficientDevFundBalance (amount) {
@@ -132,7 +131,7 @@ contract Tribe is ITribe {
         tribeAccount.setEscrowedTaskBalances(uuid, 0);
     }
 
-    // Project escrow code below (in native tokens)
+    /* Project escrow code below (in native tokens) */
 
     // updates the escrow values along with the project payee for a new project
     function createNewProject(uint uuid, uint amount, address projectPayee) public onlyCurator sufficientDevFundBalance (amount) {
@@ -150,7 +149,10 @@ contract Tribe is ITribe {
     
     // pays out the project completion and then updates the escrow balances
     function rewardProjectCompletion(uint uuid) public onlyVoteController {
-        tribeAccount.transferTokensOut(address(nativeTokenInstance), tribeAccount.escrowedProjectPayees(uuid), tribeAccount.escrowedProjectBalances(uuid));
+        tribeAccount.transferTokensOut(
+            address(nativeTokenInstance),
+            tribeAccount.escrowedProjectPayees(uuid),
+            tribeAccount.escrowedProjectBalances(uuid));
         tribeAccount.setTotalProjectEscrow(SafeMath.sub(tribeAccount.totalProjectEscrow(), tribeAccount.escrowedProjectBalances(uuid)));
         tribeAccount.setEscrowedProjectBalances(uuid, 0);
     }

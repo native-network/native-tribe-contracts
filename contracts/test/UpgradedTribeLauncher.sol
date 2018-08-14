@@ -1,4 +1,4 @@
-pragma solidity ^0.4.8;
+pragma solidity ^0.4.24;
 
 import "../Logger.sol";
 import "../Registrar.sol";
@@ -23,7 +23,11 @@ contract UpgradedTribeLauncher is Owned {
     
     address public TribeAccountContractAddress;
     
-    event Launched(address msgSender, uint launchUuid, address launchedTribeAddress, address launchedTokenAddress, address launchedRegistrarddress);
+    event Launched(address msgSender,
+        uint launchUuid,
+        address launchedTribeAddress,
+        address launchedTokenAddress,
+        address launchedRegistrarddress);
     
     mapping (uint => address) public launchedTokens;
     uint public launchedTokenCount;
@@ -60,7 +64,12 @@ contract UpgradedTribeLauncher is Owned {
         
         TribeAccount tribeAccount = TribeAccount(TribeAccountFactory(addresses[5]).create());
 
-        UpgradedTribe upgradedTribe = launchUpgradedTribeWithFactory(ai, addresses, address(tribeToken), address(tribeAccount), emergencyWithdrawEnabled);
+        UpgradedTribe upgradedTribe = launchUpgradedTribeWithFactory(
+            ai,
+            addresses,
+            address(tribeToken),
+            address(tribeAccount),
+            emergencyWithdrawEnabled);
         tribeAccount.transferOwnershipNow(address(upgradedTribe));
         
         // Using the launchRegistrar function to avoid stack becoming too deep
@@ -87,9 +96,24 @@ contract UpgradedTribeLauncher is Owned {
     }
 
     // Abstracted to avoid stack-depth error in launchTribe()
-    function launchUpgradedTribeWithFactory(uint[] ai, address[] addresses, address _tribeTokenAddress, address tribeAccountAddress, bool emergencyWithdrawEnabled) public returns(UpgradedTribe) {
+    function launchUpgradedTribeWithFactory(
+        uint[] ai,
+        address[] addresses,
+        address _tribeTokenAddress,
+        address tribeAccountAddress,
+        bool emergencyWithdrawEnabled) public returns(UpgradedTribe) {
         UpgradedTribeFactory upgradedTribeFactory = UpgradedTribeFactory(addresses[7]);
-        UpgradedTribe tribe = UpgradedTribe(upgradedTribeFactory.create(ai[1], ai[2], addresses[0], _tribeTokenAddress, addresses[1], addresses[2], addresses[3], tribeAccountAddress, emergencyWithdrawEnabled));
+        UpgradedTribe tribe = UpgradedTribe(
+            upgradedTribeFactory.create(
+                ai[1],
+                ai[2],
+                addresses[0],
+                _tribeTokenAddress, 
+                addresses[1],
+                addresses[2],
+                addresses[3],
+                tribeAccountAddress,
+                emergencyWithdrawEnabled));
         return tribe;
     }
     

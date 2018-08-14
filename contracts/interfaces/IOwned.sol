@@ -1,7 +1,7 @@
-pragma solidity ^0.4.8;
+pragma solidity ^0.4.24;
 
 /*
-    Owned contract interface
+    Owned Contract Interface
 */
 contract IOwned {
     function transferOwnership(address _newOwner) public;
