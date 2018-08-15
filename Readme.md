@@ -62,25 +62,25 @@ Each tribe consists of 4 contracts
 	This is the main contract containing tribe logic.  It has the following functionality:
 
 	- Staking & unstaking tribe tokens for users to join tribes.
-	- Allows creating projects and tasks by the curator and voteController
-	- Allows reward project and task completion with native tokens 
+	- Allows creating projects and tasks by the curator and voteController.
+	- Allows reward project and task completion with native tokens.
 	- Uses tribeAccount contract to store and track all staking and escrow funds.
 
 3. TribeAccount.sol
 
-	Owned by the Tribe contract. Stores and tracks all staked tribe tokens and escrowed native tokens
+	Owned by the Tribe contract. Stores and tracks all staked tribe tokens and escrowed native tokens,
 
 
 4. SmartToken.sol (used as tribe token)
 
-	Bancor compatible smart token with built in token sale functionality.  Used as the tribe contract.
+	Bancor compatible smart token with built in token sale functionality.  Used as the tribe token.
 
 
 ### Non-tribe native contracts
 
 1. SmartToken.sol (used as native token)
 
-	Bancor compatible smart token with built in token sale functionality.  Used as the native token
+	Bancor compatible smart token with built in token sale functionality.  Used as the native token.
 
 2. Logger.sol
 
@@ -136,5 +136,5 @@ The following example shows the overall flow of upgrading a tribe contract.  Thi
 
 4. Curator updates the owner of the old tribe account to the new tribe.
 
-5. Curator updates the new tribe to use the old tribe account
+5. Curator updates the new tribe to use the old tribe account.
 
