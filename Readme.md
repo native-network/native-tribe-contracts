@@ -37,7 +37,7 @@ There are 3 main functionalities of a native tribe:
 
 Projects Vs. Tasks:
 
-Creating projects and tasks both require funds to be locked up until the task or project has been deemed complete.  There are two key differences between projects and tasks:
+Creating projects and tasks are both created by the curator and require funds to be locked up until the task or project has been deemed complete.  There are two key differences between projects and tasks:
 
 
 - Project completion is decided by the “voteController” address and has the “rewardee” address set when creating the project.
