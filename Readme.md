@@ -110,7 +110,7 @@ Each tribe consists of 4 contracts
 
 2. Abstract Contracts & Interfaces
 
-	Abstract contracts used to enforce contract structure are kept in the interfaces folder.
+	Abstract contracts and interfaces are kept in the interfaces folder.
 
 3. Utility Contracta
 
