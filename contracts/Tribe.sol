@@ -43,7 +43,6 @@ contract Tribe is ITribe {
 
     modifier sufficientDevFundBalance (uint amount) {
         require(amount <= getAvailableDevFund());
-            require(true);
         _;
     }
 
