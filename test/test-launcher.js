@@ -72,7 +72,6 @@ contract('TribeLauncher', function () {
         assert(tribe_minimumStakingRequirement.toString() === minimumStakingRequirement.toString())
         assert(tribe_nativeTokenContractAddress === nativeTokenInstance.address)
         assert(tribe_voteController === voteController)
-        assert(true)
       }).catch((rejected) => {
         assert(false, rejected)
       })
@@ -94,27 +93,11 @@ contract('TribeLauncher', function () {
           'Test Tribe 1',
           'TT1',
           '1.0', {from: nonCurator})
-        
-        const launchedTribeCount = await tribeLauncherInstance.launchedTribeCount()
-        const launchedTribeRegistrarAddress = await tribeLauncherInstance.launchedTribeRegistrars(launchedTribeCount - 1)
-
-        const launchedTribeAddresses = await launchedTribeRegistrar.getAddresses.call()
-        const launchedTribeInstance = await Tribe.at(launchedTribeAddresses.slice(-1)[0])
-        
+       
         // all the variables that are set on the contract
-        const tribe_minimumStakingRequirement = await launchedTribeInstance.minimumStakingRequirement()
-        const tribe_nativeTokenContractAddress = await launchedTribeInstance.nativeTokenInstance()
-        const tribe_voteController = await launchedTribeInstance.voteController()
         const launchedEvent = Bluebird.promisify(tribeLauncherInstance.Launched)()
 
-        return launchedEvent.then( (result) => {
-          assert(launchedTribeInstance.tribeTokenInstance)
-          assert(launchedTribeAddresses.length > 0)
-          assert(launchedTribeRegistrarAddress.length > 0)
-          assert(result.args.launchUuid.toString() === launchUuid.toString())
-          assert(tribe_minimumStakingRequirement.toString() === minimumStakingRequirement.toString())
-          assert(tribe_nativeTokenContractAddress === nativeTokenInstance.address)
-          assert(tribe_voteController === voteController)
+        return launchedEvent.then(() => {
           assert(false)
         }).catch((rejected) => {
           assert(true, rejected)

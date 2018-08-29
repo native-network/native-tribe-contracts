@@ -9,9 +9,6 @@ const TribeAccount = artifacts.require("TribeAccount")
 
 contract('Factory Testing', function (accounts) {
 
-  beforeEach(async () => {
-  })
-  
   describe("It should test the factories", function() {
 
     it("It should demonstrate RegistrarFactory launching a new registrar", async function () {
@@ -40,22 +37,6 @@ contract('Factory Testing', function (accounts) {
       const owner = await tribeAccountInstance.owner()
       assert(owner === accounts[0])
     })
-    
-    // TODO figure out why we arent getting back the launched address in the logs
-    /*
-    it("It should demonstrate TribeFactory launching a new tribe", async function () {
-    
-      const tribeFactoryInstance = await TribeFactory.deployed({from: accounts[0]})  
-      let tx = await tribeFactoryInstance.create(1000, 1000, accounts[0], '0x0', '0x0', '0x0', '0x0', '0x0', {from: accounts[0]});
-      
-      console.log('tx', tx)
-      
-      const tribeInstance = Tribe.at(tx.receipt.logs[0].address)
-      const curator = await tribeInstance.curator()
-      assert(curator === accounts[0])
-    })
-    */
-
   })
   
 })

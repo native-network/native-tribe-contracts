@@ -33,10 +33,6 @@ contract('Tribe', function () {
   let amountRequiredForStaking = null
   let stakedMembershipStatus = null
 
-  before(async () => {
-    
-  })
-
   beforeEach(async () => {
     const minimumStakingRequirement = 10
     const lockupPeriod = 0
@@ -271,7 +267,7 @@ contract('Tribe', function () {
       }
       catch (err) {
         if ( err.toString().indexOf('VM Exception while processing transaction: revert') >= 0 ) {
-            return assert(true, "did not allowed a nonCurator to create a project")
+          return assert(true, "did not allowed a nonCurator to create a project")
         } else {
           return assert(false, "did not allowed a nonCurator to create a project but with an unexpected error")
         }
@@ -414,16 +410,15 @@ contract('Tribe', function () {
     })
 
     it("It should fail if the user does not have enough tokens for staking", async function () {
-      const startingMembershipStatus = await launchedTribeInstance.isMember(sender)
       amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
       await tribeTokenInstance.approve(launchedTribeInstance.address, amountRequiredForStaking, {from: sender})
       try {
         await launchedTribeInstance.stakeTribeTokens({from: brokeUser})
         stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
-        assert(false)
       } catch (error) {
-        assert(true)
+        return assert(true)
       }
+      assert(false)
     })
 
     it("It should fail if the user does not approve enough tokens for staking", async function () {
@@ -432,10 +427,10 @@ contract('Tribe', function () {
       try {
         await launchedTribeInstance.stakeTribeTokens({from: sender})
         stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
-        assert(false)
       } catch (error) {
-        assert(true)
+        return assert(true)
       }
+      assert(false)
     })
 
     it("It should allow a staked user to unstake a tribe", async function () {
@@ -456,20 +451,20 @@ contract('Tribe', function () {
 
     it("It should block unstaking for a set amount of time", async function () {
       // Same as staking
-      const startingMembershipStatus = await launchedTribeInstance.isMember(sender)
       amountRequiredForStaking = await launchedTribeInstance.minimumStakingRequirement()
       await tribeTokenInstance.approve(launchedTribeInstance.address, amountRequiredForStaking, {from: sender})
+      await launchedTribeInstance.setLockupPeriodSeconds( 1000000, {from: curator})
       await launchedTribeInstance.stakeTribeTokens({from: sender})
       stakedMembershipStatus = await launchedTribeInstance.isMember(sender)
-      assert(startingMembershipStatus === false && stakedMembershipStatus === true)
-      
+
       // we expect the unstake to revert as the _lockupPeriod has not been passed
       try {
-        await launchedTribeInstance.unstakeTribeTokens({from: sender}) 
+        await launchedTribeInstance.unstakeTribeTokens({from: sender})
       } catch(e) {
         const finalMembershipStatus = await launchedTribeInstance.isMember(sender)
-        assert(finalMembershipStatus === true)
+        return assert(finalMembershipStatus === true)
       }
+      assert(false);
     })
 
       it("It should change the minimumStakingRequirement", async function () {
@@ -519,12 +514,12 @@ contract('Tribe', function () {
       const newLockupPeriod = 1252
       try {
         await launchedTribeInstance.setLockupPeriodSeconds( newLockupPeriod, {from: nonCurator})
-        assert(false)
       } catch (e) {
         const finalLockupPeriod = await launchedTribeInstance.lockupPeriodSeconds()
         assert(true)
-        assert( lockupPeriod.toString() === finalLockupPeriod.toString() )
+        return assert( lockupPeriod.toString() === finalLockupPeriod.toString() )
       }
+      assert(false)
     })
   })
 

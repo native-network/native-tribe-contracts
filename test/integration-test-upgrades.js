@@ -33,7 +33,7 @@ Upgrade Logger Example:
  */
 
 
-contract('Upgrades Testing', function (accounts) {
+contract('Upgrades Testing', function () {
 
   const sender = web3.eth.accounts[0]
   const curator = web3.eth.accounts[0]
@@ -261,5 +261,5 @@ contract('Upgrades Testing', function (accounts) {
 
       return { launchedTribeRegistrar, launchedTribeInstance }
     }
-  })  
+  })
 })

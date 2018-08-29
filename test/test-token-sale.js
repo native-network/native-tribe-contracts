@@ -1,15 +1,15 @@
 const SmartToken = artifacts.require("SmartToken")
-const Logger = artifacts.require("Logger")
 const util = require('util')
+const Bluebird = require('bluebird')
+
 
 contract('SmartToken-sale', function () {
 
   const owner = web3.eth.accounts[0]
   const nonOwner = web3.eth.accounts[1]
-  let smartTokenInstance
-
-  before(async () => {
-  })
+  const beneficiary = web3.eth.accounts[2]
+  let smartNativeTokenInstance  
+  let smartTribeTokenInstance
 
   beforeEach(async () => {
 
@@ -17,24 +17,132 @@ contract('SmartToken-sale', function () {
     const initialTokenSymbol = 'test'
     const initialTokenVersion = 'version'
     const initialTokenDecimals = 18
-    const initialSupply = 12345
-    smartTokenInstance = await SmartToken.new(initialTokenName, initialSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner)
+    const initialSupply = 10000000000
+    smartNativeTokenInstance = await SmartToken.new(initialTokenName, initialSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner)
+
+    const initialTribeTokenName = 'test_tribe'
+    const initialTribeTokenSymbol = 'test_tribe'
+    const initialTribeTokenVersion = 'version'
+    const initialTribeTokenDecimals = 18
+    const initialTribeSupply = 10000000000
+              
+    smartTribeTokenInstance = await SmartToken.new(initialTribeTokenName, initialTribeSupply, initialTribeTokenDecimals, initialTribeTokenSymbol, initialTribeTokenVersion, owner)
   })
 
   describe("It should test the token sale", function () {
+    describe("It should test the tokenSale with native token", function () {
+      it("It should allow a user to purchase tokens after the sale has been initialized with Native", async () => {
+        
+        // give some native tokens to buy tribe tokens with
+        await smartNativeTokenInstance.issue(nonOwner, 10000000000, {from: owner})
 
+        const startTime = Math.floor(Date.now() / 1000)
+        const endTime = Math.floor(startTime + (60 * 60 * 24))
+        const priceTokensPerNative = 1
+        const amountForSale = 1000000
+        const amountToSpend = 10
+        const expectedPurchaseAmount = amountToSpend
+        
+        const tokenBalanceBefore = await smartNativeTokenInstance.balanceOf(nonOwner)
+        const tribeTokenBalanceBefore = await smartTribeTokenInstance.balanceOf(nonOwner)
+        const beneficiaryBalanceBefore = await smartNativeTokenInstance.balanceOf(beneficiary)
+        
+        try {
+          await smartTribeTokenInstance.initializeTokenSaleWithToken(startTime, endTime, priceTokensPerNative, amountForSale, beneficiary, smartNativeTokenInstance.address, {from: owner})
+          await smartNativeTokenInstance.approve(smartTribeTokenInstance.address, amountToSpend, {from: nonOwner})
+          await smartTribeTokenInstance.buyWithToken(smartNativeTokenInstance.address, amountToSpend, {from: nonOwner})
+          const tribeTokensPurchased = util.promisify(smartTribeTokenInstance.TokensPurchased)()
+          const tokenBalanceAfter = await smartNativeTokenInstance.balanceOf(nonOwner)
+          const tribeTokenBalanceAfter = await smartTribeTokenInstance.balanceOf(nonOwner)
+          const beneficiaryBalanceAfter = await smartNativeTokenInstance.balanceOf(beneficiary)
+          return tribeTokensPurchased.then(() => {
+            assert(tribeTokenBalanceAfter.equals(tribeTokenBalanceBefore.plus(expectedPurchaseAmount)))
+            assert(tokenBalanceAfter.equals(tokenBalanceBefore.minus(expectedPurchaseAmount)))
+            return assert(beneficiaryBalanceAfter.equals(beneficiaryBalanceBefore.plus(expectedPurchaseAmount)))
+          })
+        } catch (error) {
+          assert(false, error.toString())
+        }
+      })
+
+      it("It should not allow a user to purchase with a token other than Native", async () => {
+        const initialTribeTokenName = 'Untrusted Token With Approve'
+        const initialTribeTokenSymbol = 'UTWA'
+        const initialTribeTokenVersion = '1.0'
+        const initialTribeTokenDecimals = 18
+        const initialTribeSupply = 10000000000
+
+        const untrustedTokenInstance = await SmartToken.new(initialTribeTokenName, initialTribeSupply, initialTribeTokenDecimals, initialTribeTokenSymbol, initialTribeTokenVersion, owner)
+        // give some native tokens to buy tribe tokens with
+        await smartNativeTokenInstance.issue(nonOwner, 10000000000, {from: owner})
+
+        const startTime = Math.floor(Date.now() / 1000)
+        const endTime = Math.floor(startTime + (60 * 60 * 24))
+        const priceTokensPerNative = 1
+        const amountForSale = 1000000
+        const amountToSpend = 10
+
+        try {
+          await smartTribeTokenInstance.initializeTokenSaleWithToken(startTime, endTime, priceTokensPerNative, amountForSale, beneficiary, smartNativeTokenInstance.address, {from: owner})
+          await untrustedTokenInstance.approve(smartTribeTokenInstance.address, amountToSpend, {from: nonOwner})
+
+          try {
+            await smartTribeTokenInstance.buyWithToken(untrustedTokenInstance.address, amountToSpend, {from: nonOwner})
+          } catch (error) {
+            return assert(error.message.includes('revert'));
+          }
+        } catch (error) {
+          assert(false, error.toString())
+        }
+      })
+
+      it("It should allow the owner to initialize a token sale with Native where the price per Native is greater than 1 and allow nonOwner to purchase tokens with Native", async () => {
+        // give some native tokens to buy tribe tokens with
+        await smartNativeTokenInstance.issue(nonOwner, 100000, {from: owner})
+
+        const startTime = Math.floor(Date.now() / 1000)
+        const endTime = Math.floor(startTime + (60 * 60 * 24))
+        const priceTokensPerNative = 100
+        const amountForSale = 1000000
+        const amountToSpend = 10
+        const expectedPurchaseAmount = amountToSpend * priceTokensPerNative
+        const tokenBalanceBefore = await smartNativeTokenInstance.balanceOf(nonOwner)
+        const tribeTokenBalanceBefore = await smartTribeTokenInstance.balanceOf(nonOwner)
+        try{
+
+          await smartTribeTokenInstance.initializeTokenSaleWithToken(startTime, endTime, priceTokensPerNative, amountForSale, beneficiary, smartNativeTokenInstance.address, {from: owner})
+          await smartNativeTokenInstance.approve(smartTribeTokenInstance.address, amountToSpend, {from: nonOwner})
+          await smartTribeTokenInstance.buyWithToken(smartNativeTokenInstance.address, amountToSpend, {from: nonOwner})
+
+          const tribeTokensPurchased = util.promisify(smartTribeTokenInstance.TokensPurchased)()
+          const tokenBalanceAfter = await smartNativeTokenInstance.balanceOf(nonOwner)
+          const tribeTokenBalanceAfter = await smartTribeTokenInstance.balanceOf(nonOwner)
+
+          return tribeTokensPurchased.then(() => {
+            assert(tribeTokenBalanceAfter.equals(tribeTokenBalanceBefore.plus(expectedPurchaseAmount)))
+            assert(tokenBalanceAfter.equals(tokenBalanceBefore.minus(amountToSpend)))
+          })
+
+        } catch (error) {
+          assert(false, error.toString())
+        }
+      })
+    })
+   
     it("It should allow the owner to initialize a token sale", async () => {
 
-      const startTime = Date.now() / 1000
-      const endTime = startTime + (60 * 60 * 24)
-      const priceInWei = web3.toWei(1, 'ether')
+      const startTime = Math.floor(Date.now() / 1000)
+      const endTime = Math.floor(startTime + (60 * 60 * 24))
+      const price = web3.toWei(1, 'ether')
       const amountForSale = 1000000
 
-      const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-      await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+      const tokenSaleInitializedEvent = util.promisify(smartNativeTokenInstance.TokenSaleInitialized)()
+      await smartNativeTokenInstance.initializeTokenSale(startTime, endTime, price, amountForSale, beneficiary, { from: owner })
 
       return tokenSaleInitializedEvent.then(() => {
         return assert(true)
+      }).catch( (err) => {
+        return assert(false, err.toString())
       })
     })
 
@@ -47,40 +155,41 @@ contract('SmartToken-sale', function () {
       const amountToSpend = web3.toWei(10, 'ether')
       const expectedPurchaseAmount = amountToSpend / priceInWei
 
-      try {
-        const TokensPurchased = util.promisify(smartTokenInstance.TokensPurchased)()
-        await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
-        const tokenBalanceBefore = await smartTokenInstance.balanceOf(owner)
+      const TokensPurchased = util.promisify(smartNativeTokenInstance.TokensPurchased)()
+      
+      await smartNativeTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale,  beneficiary, { from: owner })
+      
+      const tokenBalanceBefore = await smartNativeTokenInstance.balanceOf(nonOwner)
 
-        web3.eth.sendTransaction({
-          from: owner,
-          to: smartTokenInstance.address,
+      try {
+        await Bluebird.promisify(web3.eth.sendTransaction)({
+          from: nonOwner,
+          to: smartNativeTokenInstance.address,
           value: amountToSpend,
           gas: 100000
-        }, () => {
-          smartTokenInstance.balanceOf(owner).then((tokenBalanceAfter) => {
-            return TokensPurchased.then(() => {
-              return assert(tokenBalanceAfter.equals(tokenBalanceBefore.plus(expectedPurchaseAmount)))
-            })
+        })
+        
+        return smartNativeTokenInstance.balanceOf(nonOwner).then((tokenBalanceAfter) => {
+          return TokensPurchased.then(() => {
+            return assert(tokenBalanceAfter.equals(tokenBalanceBefore.plus(expectedPurchaseAmount)))
           })
         })
-
-      } catch (error) {
-        console.log('error:', error)
-        assert(false, error)
+      }
+      catch(err) {
+        return assert(false, err.toString())
       }
     })
     
     it("It should fail if trying to initialize a token sale more than once", async () => {
 
-      const startTime = Date.now() / 1000
-      const endTime = startTime + (60 * 60 * 24)
-      const priceInWei = web3.toWei(1, 'ether')
+      const startTime = Math.floor(Date.now() / 1000)
+      const endTime = Math.floor(startTime + (60 * 60 * 24))
+      const price = web3.toWei(1, 'ether')
       const amountForSale = 1000000
 
       try {
-        await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale, { from: owner })
-        await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale, { from: owner })
+        await smartNativeTokenInstance.initializeTokenSale(startTime, endTime, price, amountForSale, beneficiary, { from: owner })
+        await smartNativeTokenInstance.initializeTokenSale(startTime, endTime, price, amountForSale, beneficiary, { from: owner })
       } catch(err) {
         return assert(true)
       }
@@ -89,13 +198,13 @@ contract('SmartToken-sale', function () {
 
     it("It should fail if trying to initialize a token sale from a non-owner account", async () => {
 
-      const startTime = Date.now() / 1000
-      const endTime = startTime + (60 * 60 * 24)
-      const priceInWei = web3.toWei(1, 'ether')
+      const startTime = Math.floor(Date.now() / 1000)
+      const endTime = Math.floor(startTime + (60 * 60 * 24))
+      const price = web3.toWei(1, 'ether')
       const amountForSale = 1000000
 
       try {
-        await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale, { from: nonOwner })
+        await smartNativeTokenInstance.initializeTokenSale(startTime, endTime, price, amountForSale, beneficiary, { from: nonOwner })
       } catch(err) {
         return assert(true)
       }
@@ -106,143 +215,123 @@ contract('SmartToken-sale', function () {
 
       const amountToSpend = web3.toWei(10, 'ether')
       try {
-        web3.eth.sendTransaction({
-          from: owner,
-          to: smartTokenInstance.address,
+        await Bluebird.promisify(web3.eth.sendTransaction)({
+          from: nonOwner,
+          to: smartNativeTokenInstance.address,
           value: amountToSpend,
           gas: 100000
-        }, (err) => {
-          if (err) {
-            return assert(true)
-          } else {
-            return assert(false)
-          }
         })
       } catch(err) {
         return assert(true)
       }
+      return assert(false)
     })
 
     it("It should fail if attempting to purchase tokens before the sale start date", async () => {
 
       const startTime = Math.floor(Date.now() / 1000) + (60 * 60 * 24)
       const endTime = Math.floor(startTime + (60 * 60 * 24))
-      const priceInWei = web3.toWei(1, 'ether')
+      const price = web3.toWei(1, 'ether')
       const amountForSale = 1000000
       const amountToSpend = web3.toWei(10, 'ether')
       
-      await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
-      
+      await smartNativeTokenInstance.initializeTokenSale(startTime, endTime, price, amountForSale, beneficiary, { from: owner })
+
       try {
-        web3.eth.sendTransaction({
-          from: owner,
-          to: smartTokenInstance.address,
+        await Bluebird.promisify(web3.eth.sendTransaction)({
+          from: nonOwner,
+          to: smartNativeTokenInstance.address,
           value: amountToSpend,
           gas: 100000
-        }, (err) => {
-          if (err) {
-            return assert(true)
-          } else {
-            return assert(false)
-          }
         })
       } catch(err) {
         return assert(true)
       }
+      return assert(false)
     })
 
     it("It should fail if attempting to purchase tokens after the sale end date", async () => {
 
       const startTime = Math.floor(Date.now() / 1000) - (60 * 60 * 48)
       const endTime = Math.floor(startTime + (60 * 60 * 24))
-      const priceInWei = web3.toWei(1, 'ether')
+      const price = web3.toWei(1, 'ether')
       const amountForSale = 1000000
       const amountToSpend = web3.toWei(10, 'ether')
 
-      await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+      await smartNativeTokenInstance.initializeTokenSale(startTime, endTime, price, amountForSale, beneficiary, { from: owner })
 
       try {
-        web3.eth.sendTransaction({
-          from: owner,
-          to: smartTokenInstance.address,
+        await Bluebird.promisify(web3.eth.sendTransaction)({
+          from: nonOwner,
+          to: smartNativeTokenInstance.address,
           value: amountToSpend,
           gas: 100000
-        }, (err, result) => {
-          if (err) {
-            return assert(true)
-          } else {
-            return assert(false)
-          }
         })
       } catch(err) {
         return assert(true)
       }
+      return assert(false)
     })
 
     it("It fail if attempting to purchase more tokens than are available for sale", async () => {
 
       const startTime = Math.floor(Date.now() / 1000)
       const endTime = Math.floor(startTime + (60 * 60 * 24))
-      const priceInWei = web3.toWei(1, 'ether')
+      const price = web3.toWei(1, 'ether')
       const amountForSale = 1000000
       const amountToSpend = web3.toWei(10, 'ether') * amountForSale
 
-      await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+      await smartNativeTokenInstance.initializeTokenSale(startTime, endTime, price, amountForSale, beneficiary, { from: owner })
 
       try {
-        web3.eth.sendTransaction({
-          from: owner,
-          to: smartTokenInstance.address,
+        await Bluebird.promisify(web3.eth.sendTransaction)({
+          from: nonOwner,
+          to: smartNativeTokenInstance.address,
           value: amountToSpend,
           gas: 100000
-        }, (err) => {
-          if (err) {
-            return assert(true)
-          } else {
-            return assert(false)
-          }
         })
       } catch(err) {
         return assert(true)
       }
+      return assert(false)
     })
 
     describe("Token Sale Update Functions", async () => {
      
       it("It should allow the owner to update the token sale startTime", async () => {
 
-        const startTime = Date.now() / 1000
-        const newStartTime = (Date.now() / 1000) + (60*60) // updated value
-        const endTime = startTime + (60 * 60 * 24)
-        const priceInWei = web3.toWei(1, 'ether')
+        const startTime = Math.floor(Date.now() / 1000)
+        const newStartTime = Math.floor(Date.now() / 1000) + (60*60) // updated value
+        const endTime = Math.floor(startTime + (60 * 60 * 24))
+        const price = web3.toWei(1, 'ether')
         const amountForSale = 1000000
 
-        const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-        await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+        const tokenSaleInitializedEvent = util.promisify(smartNativeTokenInstance.TokenSaleInitialized)()
+        await smartNativeTokenInstance.initializeTokenSale(startTime, endTime, price, amountForSale, beneficiary, { from: owner })
 
-        return tokenSaleInitializedEvent.then(() => {
-          smartTokenInstance.updateStartTime(newStartTime, {from: owner})
-          smartTokenInstance.saleStartTime().then((currentStartTime) => {
-            assert(Math.floor(newStartTime) === Math.floor(currentStartTime))
+        return tokenSaleInitializedEvent.then(async () => {
+          await smartNativeTokenInstance.updateStartTime(newStartTime, {from: owner})
+          return smartNativeTokenInstance.saleStartTime().then((currentStartTime) => {
+            return assert(Math.floor(newStartTime) === Math.floor(currentStartTime))
           })
         })
       })
 
       it("It should not allow a non-owner to update the token sale startTime", async () => {
 
-        const startTime = Date.now() / 1000
-        const newStartTime = (Date.now() / 1000) + (60*60) // updated value
-        const endTime = startTime + (60 * 60 * 24)
-        const priceInWei = web3.toWei(1, 'ether')
+        const startTime = Math.floor(Date.now() / 1000)
+        const newStartTime = Math.floor(Date.now() / 1000) + (60*60) // updated value
+        const endTime = Math.floor(startTime + (60 * 60 * 24))
+        const price = web3.toWei(1, 'ether')
         const amountForSale = 1000000
 
-        const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-        await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+        const tokenSaleInitializedEvent = util.promisify(smartNativeTokenInstance.TokenSaleInitialized)()
+        await smartNativeTokenInstance.initializeTokenSale(startTime, endTime, price, amountForSale, beneficiary, { from: owner })
         return tokenSaleInitializedEvent.then(() => {
-          smartTokenInstance.updateStartTime(newStartTime, {from: nonOwner}).then(() => {
+          return smartNativeTokenInstance.updateStartTime(newStartTime, {from: nonOwner}).then(() => {
             return assert(false) // we should never be hitting this when a nonOwner calls this
           }).catch(() => {
-            smartTokenInstance.saleStartTime().then((currentStartTime) => {
+            return smartNativeTokenInstance.saleStartTime().then((currentStartTime) => {
               if (Math.floor(startTime) === Math.floor( currentStartTime )) {
                 return assert(true)
               } else {
@@ -255,43 +344,41 @@ contract('SmartToken-sale', function () {
 
       it("It should allow an owner to update the token sale endTime", async () => {
 
-        const startTime = Date.now() / 1000
-        const endTime = startTime + (60 * 60 * 24)
-        const newEndTime = startTime + (60 * 60 * 24) + (60*60)
-        const priceInWei = web3.toWei(1, 'ether')
+        const startTime = Math.floor(Date.now() / 1000)
+        const endTime = Math.floor(startTime + (60 * 60 * 24))
+        const newEndTime = Math.floor(startTime + (60 * 60 * 24)) + (60*60)
+        const price = web3.toWei(1, 'ether')
         const amountForSale = 1000000
 
-        const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-        await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+        const tokenSaleInitializedEvent = util.promisify(smartNativeTokenInstance.TokenSaleInitialized)()
+        await smartNativeTokenInstance.initializeTokenSale(startTime, endTime, price, amountForSale, beneficiary, { from: owner })
 
-        return tokenSaleInitializedEvent.then(() => {
+        return tokenSaleInitializedEvent.then(async () => {
           try {
-            smartTokenInstance.updateEndTime(newEndTime, {from: owner})
+            await smartNativeTokenInstance.updateEndTime(newEndTime, {from: owner})
+            const currentEndTime = await smartNativeTokenInstance.saleEndTime()
+            return assert(Math.floor(newEndTime) === Math.floor(currentEndTime))
           } catch (error) {
-            assert(true)
-            smartTokenInstance.saleEndTime().then((currentEndTime) => {
-              return assert(Math.floor(newEndTime) === Math.floor(currentEndTime))
-            })
+            assert(false)
           }
         })
       })
 
       it("It should not allow a non-owner to update the token sale endTime", async () => {
 
-        const startTime = Date.now() / 1000
-        const endTime = startTime + (60 * 60 * 24)
-        const newEndTime = startTime + (60 * 60 * 24) + (60*60)
-        const priceInWei = web3.toWei(1, 'ether')
+        const startTime = Math.floor(Date.now() / 1000)
+        const endTime = Math.floor(startTime + (60 * 60 * 24))
+        const newEndTime = Math.floor(startTime + (60 * 60 * 24)) + (60*60)
+        const price = web3.toWei(1, 'ether')
         const amountForSale = 1000000
 
-        const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-        await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+        const tokenSaleInitializedEvent = util.promisify(smartNativeTokenInstance.TokenSaleInitialized)()
+        await smartNativeTokenInstance.initializeTokenSale(startTime, endTime, price, amountForSale, beneficiary, { from: owner })
         return tokenSaleInitializedEvent.then(() => {
-          smartTokenInstance.updateEndTime(newEndTime, {from: nonOwner}).then(() => {
-            assert(false) // should not succeed with a nonOwner
+          return smartNativeTokenInstance.updateEndTime(newEndTime, {from: nonOwner}).then(() => {
+            return assert(false) // should not succeed with a nonOwner
           }).catch(() => {
-            assert(true)
-            smartTokenInstance.saleEndTime().then((currentEndTime) => {
+            return smartNativeTokenInstance.saleEndTime().then((currentEndTime) => {
               return assert(Math.floor(endTime) === Math.floor(currentEndTime))
             })
           })
@@ -300,138 +387,79 @@ contract('SmartToken-sale', function () {
       
       it("It should allow an owner to update the token sale price", async () => {
 
-        const startTime = Date.now() / 1000
-        const endTime = startTime + (60 * 60 * 24)
-        const priceInWei = web3.toWei(1, 'ether')
-        const newPriceInWei = web3.toWei(100, 'ether')
+        const startTime = Math.floor(Date.now() / 1000)
+        const endTime = Math.floor(startTime + (60 * 60 * 24))
+        const price = web3.toWei(1, 'ether')
+        const newPrice = web3.toWei(100, 'ether')
         const amountForSale = 1000000
 
-        const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-        await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+        const tokenSaleInitializedEvent = util.promisify(smartNativeTokenInstance.TokenSaleInitialized)()
+        await smartNativeTokenInstance.initializeTokenSale(startTime, endTime, price, amountForSale, beneficiary, { from: owner })
 
         return tokenSaleInitializedEvent.then(() => {
-          smartTokenInstance.updatePriceInWei(newPriceInWei, {from: owner}).then(() => {
-            return assert(false)
-          }).catch(() => {
+          return smartNativeTokenInstance.updatePrice(newPrice, {from: owner}).then(() => {
             return assert(true)
+          }).catch((err) => {
+            return assert(false, err.toString())
           })
         })
       })
 
       it("It should allow an owner to update the token sale amount remaining", async () => {
 
-        const startTime = Date.now() / 1000
-        const endTime = startTime + (60 * 60 * 24)
-        const priceInWei = web3.toWei(1, 'ether')
+        const startTime = Math.floor(Date.now() / 1000)
+        const endTime = Math.floor(startTime + (60 * 60 * 24))
+        const price = web3.toWei(1, 'ether')
         const amountForSale = 1000000
         const newAmountRemainingForSale = 100
 
-        const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-        await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+        const tokenSaleInitializedEvent = util.promisify(smartNativeTokenInstance.TokenSaleInitialized)()
+        await smartNativeTokenInstance.initializeTokenSale(startTime, endTime, price, amountForSale, beneficiary, { from: owner })
 
-        return tokenSaleInitializedEvent.then(() => {
-          smartTokenInstance.updateAmountRemainingForSale(newAmountRemainingForSale, {from: owner})
-          smartTokenInstance.amountRemainingForSale().then((currentAmountRemainingForSale) => {
-            assert(newAmountRemainingForSale.toString() === currentAmountRemainingForSale.toString())
+        return tokenSaleInitializedEvent.then(async () => {
+          await smartNativeTokenInstance.updateAmountRemainingForSale(newAmountRemainingForSale, {from: owner})
+          return smartNativeTokenInstance.amountRemainingForSale().then((currentAmountRemainingForSale) => {
+            return assert(newAmountRemainingForSale.toString() === currentAmountRemainingForSale.toString())
           })
+        }).catch( (err) => {
+          return assert(false, err.toString())
         })
       })
 
-      it("It should not allow the owner to update the token sale amuount remaining to negative", async () => {
+      it("It should not allow the owner to update the token sale amount remaining to negative", async () => {
 
-        const startTime = Date.now() / 1000
-        const endTime = startTime + (60 * 60 * 24)
-        const priceInWei = web3.toWei(1, 'ether')
+        const startTime = Math.floor(Date.now() / 1000)
+        const endTime = Math.floor(startTime + (60 * 60 * 24))
+        const price = web3.toWei(1, 'ether')
         const amountForSale = 1000000
         const newAmountRemainingForSale = -100
 
-        const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-        await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+        const tokenSaleInitializedEvent = util.promisify(smartNativeTokenInstance.TokenSaleInitialized)()
+        await smartNativeTokenInstance.initializeTokenSale(startTime, endTime, price, amountForSale, beneficiary, { from: owner })
 
-        return tokenSaleInitializedEvent.then(() => {
-          smartTokenInstance.updateAmountRemainingForSale(newAmountRemainingForSale, {from: owner})
-          smartTokenInstance.amountRemainingForSale().then(() => {
+        return tokenSaleInitializedEvent.then(async () => {
+          await smartNativeTokenInstance.updateAmountRemainingForSale(newAmountRemainingForSale, {from: owner})
+          return smartNativeTokenInstance.amountRemainingForSale().then(() => {
             return assert(false)
           }).catch(() => {
             return assert(true)
           })
         })
       })
-
-      it("It should not allow the owner to update the token sale amuount remaining to a string", async () => {
-
-        const startTime = Date.now() / 1000
-        const endTime = startTime + (60 * 60 * 24)
-        const priceInWei = web3.toWei(1, 'ether')
-        const amountForSale = 1000000
-        const newAmountRemainingForSale = 'a lot more'
-
-        const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-        await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
-
-        return tokenSaleInitializedEvent.then(() => {
-          smartTokenInstance.updateAmountRemainingForSale(newAmountRemainingForSale, {from: owner})
-          smartTokenInstance.amountRemainingForSale().then(() => {
-            return assert(false)
-          }).catch(() => {
-            return assert(true)
-          })
-        })
-      })
-
-      it("It should not allow an owner to update the token sale price to negative", async () => {
-
-        const startTime = Date.now() / 1000
-        const endTime = startTime + (60 * 60 * 24)
-        const priceInWei = web3.toWei(1, 'ether')
-        const newPriceInWei = web3.toWei(-1, 'ether')
-        const amountForSale = 1000000
-
-        const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-        await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
-
-        return tokenSaleInitializedEvent.then(() => {
-          smartTokenInstance.updatePriceInWei(newPriceInWei, {from: owner})
-          smartTokenInstance.amountRemainingForSale().then(() => {
-            return assert(true)
-          }).catch(() => {
-            return assert(false)
-          })
-        })
-      })
-
-      it("It should not allow an owner to update the token sale startTime to negative", async () => {
-
-        const startTime = Date.now() / 1000
-        const endTime = startTime + (60 * 60 * 24)
-        const newStartTime = -100
-        const priceInWei = web3.toWei(1, 'ether')
-        const amountForSale = 1000000
-
-        const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-        await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
-        return tokenSaleInitializedEvent.then(() => {
-          smartTokenInstance.updateStartTime(newStartTime, {from: owner}).then(() => {
-            assert(false)
-          }).catch(() => {
-            return assert(true)
-          })
-        })
-      })
-
+      
       it("It should not allow an owner to update the token sale startTime to a string", async () => {
 
-        const startTime = Date.now() / 1000
-        const endTime = startTime + (60 * 60 * 24)
+        const startTime = Math.floor(Date.now() / 1000)
+        const endTime = Math.floor(startTime + (60 * 60 * 24))
         const newStartTime = "Next Week"
-        const priceInWei = web3.toWei(1, 'ether')
+        const price = web3.toWei(1, 'ether')
         const amountForSale = 1000000
 
-        const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-        await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+        const tokenSaleInitializedEvent = util.promisify(smartNativeTokenInstance.TokenSaleInitialized)()
+        await smartNativeTokenInstance.initializeTokenSale(startTime, endTime, price, amountForSale, beneficiary, { from: owner })
         return tokenSaleInitializedEvent.then(() => {
-          smartTokenInstance.updateStartTime(newStartTime, {from: owner}).then(() => {
-            assert(false)
+          return smartNativeTokenInstance.updateStartTime(newStartTime, {from: owner}).then(() => {
+            return assert(false)
           }).catch(() => {
             return assert(true)
           })
@@ -440,20 +468,19 @@ contract('SmartToken-sale', function () {
 
       it("It should not allow an owner to update the token sale endTime to negative", async () => {
 
-        const startTime = Date.now() / 1000
-        const endTime = startTime + (60 * 60 * 24)
+        const startTime = Math.floor(Date.now() / 1000)
+        const endTime = Math.floor(startTime + (60 * 60 * 24))
         const newEndTime = -100
-        const priceInWei = web3.toWei(1, 'ether')
+        const price = web3.toWei(1, 'ether')
         const amountForSale = 1000000
 
-        const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-        await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+        const tokenSaleInitializedEvent = util.promisify(smartNativeTokenInstance.TokenSaleInitialized)()
+        await smartNativeTokenInstance.initializeTokenSale(startTime, endTime, price, amountForSale, beneficiary, { from: owner })
         return tokenSaleInitializedEvent.then(() => {
-          smartTokenInstance.updateEndTime(newEndTime, {from:  owner}).then(() => {
-            assert(false)
+          return smartNativeTokenInstance.updateEndTime(newEndTime, {from:  owner}).then(() => {
+            return assert(false)
           }).catch(() => {
-            assert(true)
-            smartTokenInstance.saleEndTime().then((currentEndTime) => {
+            return smartNativeTokenInstance.saleEndTime().then((currentEndTime) => {
               return assert(Math.floor(endTime) != Math.floor(currentEndTime))
             })
           })
@@ -462,16 +489,16 @@ contract('SmartToken-sale', function () {
 
       it("It should not allow an owner to update the token sale endTime to a string", async () => {
 
-        const startTime = Date.now() / 1000
-        const endTime = startTime + (60 * 60 * 24)
+        const startTime = Math.floor(Date.now() / 1000)
+        const endTime = Math.floor(startTime + (60 * 60 * 24))
         const newEndTime = "Next Week"
-        const priceInWei = web3.toWei(1, 'ether')
+        const price = web3.toWei(1, 'ether')
         const amountForSale = 1000000
 
-        const tokenSaleInitializedEvent = util.promisify(smartTokenInstance.TokenSaleInitialized)()
-        await smartTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale)
+        const tokenSaleInitializedEvent = util.promisify(smartNativeTokenInstance.TokenSaleInitialized)()
+        await smartNativeTokenInstance.initializeTokenSale(startTime, endTime, price, amountForSale, beneficiary, { from: owner })
         return tokenSaleInitializedEvent.then(() => {
-          smartTokenInstance.updateEndTime(newEndTime, {from: owner}).then(() => {
+          return smartNativeTokenInstance.updateEndTime(newEndTime, {from: owner}).then(() => {
             assert(false)
           }).catch(() => {
             return assert(true)

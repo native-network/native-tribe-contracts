@@ -24,36 +24,36 @@ This helper contract is used to easily launch and connect all of the pieces requ
 contract TribeLauncher is Owned, ITribeLauncher {
     mapping (uint => address) public launchedTribeRegistrars;
     uint public launchedTribeCount;
-    
+
     address public TribeAccountContractAddress;
-    
+
     event Launched(
         address msgSender,
         uint launchUuid,
         address launchedTribeAddress,
         address launchedTokenAddress,
         address launchedRegistrarddress);
-    
+
     mapping (uint => address) public launchedTokens;
     uint public launchedTokenCount;
-    
+
     function launchTribe(
-        // Put into arrays too fix stack too deep error.
-        // 0 = launchUuid
-        // 1 = minimumStakingRequirement
-        // 2 = lockupPeriodSeconds
-        // 3 = tokenTotalSupply
-        // 4 = tokenDecimals
+    // Put into arrays too fix stack too deep error.
+    // 0 = launchUuid
+    // 1 = minimumStakingRequirement
+    // 2 = lockupPeriodSeconds
+    // 3 = tokenTotalSupply
+    // 4 = tokenDecimals
         uint[] ai,
-        // Put into arrays too fix stack too deep error.
-        // 0 - curatorAddress
-        // 1 - nativeTokenContractAddress
-        // 2 - voteController
-        // 3 - loggerContractAddress
-        // 4 - smartTokenFactoryContractAddress
-        // 5 - tribeAccountFactoryContractAddress
-        // 6 - registrarFactoryContractAddress
-        // 7 - tribeFactoryContractAddress
+    // Put into arrays too fix stack too deep error.
+    // 0 - curatorAddress
+    // 1 - nativeTokenContractAddress
+    // 2 - voteController
+    // 3 - loggerContractAddress
+    // 4 - smartTokenFactoryContractAddress
+    // 5 - tribeAccountFactoryContractAddress
+    // 6 - registrarFactoryContractAddress
+    // 7 - tribeFactoryContractAddress
         address[] addresses,
         string tokenName,
         string tokenSymbol,
@@ -64,10 +64,10 @@ contract TribeLauncher is Owned, ITribeLauncher {
         tribeToken.transferOwnershipNow(addresses[0]);
         launchedTokens[launchedTokenCount] = tribeToken;
         launchedTokenCount = SafeMath.add(launchedTokenCount,1);
-        
+
         TribeAccountFactory tribeAccountFactory = TribeAccountFactory(addresses[5]);
         TribeAccount tribeAccount = TribeAccount(tribeAccountFactory.create());
-        
+
         ITribe tribe = launchTribeWithFactory(ai, addresses, address(tribeToken), address(tribeAccount));
         tribeAccount.transferOwnershipNow(address(tribe));
 
@@ -81,7 +81,7 @@ contract TribeLauncher is Owned, ITribeLauncher {
 
         // THIS MUST BE CALLED to give logger ownership back to the sender
         logger.transferOwnershipNow(msg.sender);
-    
+
         emit Launched(msg.sender, ai[0], tribe, tribeToken, registrar);
     }
 
@@ -100,7 +100,7 @@ contract TribeLauncher is Owned, ITribeLauncher {
         address[] addresses,
         address _tribeTokenAddress,
         address _tribeAccountAddress
-        ) public returns(ITribe) {
+    ) public returns(ITribe) {
         TribeFactory tribeFactory = TribeFactory(addresses[7]);
         Tribe tribe = Tribe(
             Tribe(tribeFactory.create(

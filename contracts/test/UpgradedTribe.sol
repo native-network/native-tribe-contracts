@@ -169,9 +169,7 @@ contract UpgradedTribe {
     // Staking code below (in tribe tokens)
     //  make it steak as much additional funds required to become a member (i.e. if the staking minimum goes up).  Do not use amount variable  
     function stakeTribeTokens(uint amount) public {
-        if(!tribeTokenInstance.transferFrom(msg.sender, address(tribeAccount), amount)) {
-            revert();
-        }
+        require(tribeTokenInstance.transferFrom(msg.sender, address(tribeAccount), amount));
 
         tribeAccount.setStakedBalances(SafeMath.add(tribeAccount.stakedBalances(msg.sender), amount), msg.sender);
         tribeAccount.setTotalStaked(SafeMath.add(tribeAccount.totalStaked(), amount));
@@ -182,12 +180,8 @@ contract UpgradedTribe {
     // unstakes a tribe and sends funds back to the user
     function unstakeTribeTokens(uint amount) public {
 
-        if(tribeAccount.stakedBalances(msg.sender) < amount) {
-            revert();
-        }
-        if(now - tribeAccount.timeStaked(msg.sender) < lockupPeriodSeconds) {
-            revert();
-        }
+        require(tribeAccount.stakedBalances(msg.sender) >= amount);
+        require(now - tribeAccount.timeStaked(msg.sender) >= lockupPeriodSeconds);
 
         tribeAccount.setStakedBalances(SafeMath.sub(tribeAccount.stakedBalances(msg.sender), amount), msg.sender);
         tribeAccount.setTotalStaked(SafeMath.sub(tribeAccount.totalStaked(), amount));

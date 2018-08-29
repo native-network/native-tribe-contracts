@@ -16,22 +16,7 @@ contract('Registrar', function () {
   })
 
   describe("It should test the Registrar", function() {
-
-    it("It should only allow the curator to get addresses", async function () {
-
-      let addresses = await registrarInstance.getAddresses({from: curator})
-      assert(addresses && addresses.length)
-    })
-
-    it("It should fail if a non-curator tries to add get addresses", async function () {
-
-      try {
-        await registrarInstance.getAddresses({from: nonCurator})  
-        assert(false)
-      } catch (error) {
-        assert(true)
-      }
-    })
+    
 
     it("It should only allow the curator to add new address", async function () {
 

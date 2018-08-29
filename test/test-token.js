@@ -6,15 +6,6 @@ contract('SmartToken', function () {
   const owner = web3.eth.accounts[0] 
   const nonOwner = web3.eth.accounts[1]
   const user = web3.eth.accounts[2]
-  let loggerInstance
-
-  before(async () => {
-
-  })
-
-  beforeEach(async () => {
-    loggerInstance = await Logger.deployed()
-  })
 
   describe("Should test the smart token", function() {
         
@@ -73,8 +64,9 @@ contract('SmartToken', function () {
       } catch (error) {
         let finalTotalSupply = await token.totalSupply.call()
         assert( totalSupply.add(newlyIssued).toString() != finalTotalSupply.toString())
-        assert( totalSupply.toString() === finalTotalSupply.toString())
+        return assert( totalSupply.toString() === finalTotalSupply.toString())
       }
+      assert(false)
     })
 
     it("It should destroy tokens as the owner.", async function () {
@@ -109,8 +101,9 @@ contract('SmartToken', function () {
       } catch (error) {
         let finalTotalSupply = await token.totalSupply.call()
         assert( totalSupply.sub(newlyDestroyed).toString() != finalTotalSupply.toString())
-        assert( totalSupply.toString() === finalTotalSupply.toString())
+        return assert( totalSupply.toString() === finalTotalSupply.toString())
       }
+      assert(false)
     })
 
     it("It should transfer tokens as the owner.", async function () {
@@ -123,7 +116,6 @@ contract('SmartToken', function () {
 
       let token = await SmartToken.new(initialTokenName, initialTotalSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner)
       let balance = await token.balanceOf(owner)
-      let nonOwnerBalance = await token.balanceOf(nonOwner)
 
       let transferAmount = balance
 
@@ -145,20 +137,14 @@ contract('SmartToken', function () {
       const initialTokenDecimals = 18
 
       let token = await SmartToken.new(initialTokenName, initialTotalSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner)
-      let balance = await token.balanceOf(owner)
-      let nonOwnerBalance = await token.balanceOf(nonOwner)
+      let transferAmount = await token.balanceOf(owner)
 
-      let transferAmount = balance
+      await token.transfer(nonOwner, transferAmount+100, {from: nonOwner})
+      let newOwnerBalance = await token.balanceOf(owner)
+      newNonOwnerBalance = await token.balanceOf(nonOwner)
 
-      try {
-        await token.transfer(nonOwner, transferAmount, {from: nonOwner})
-      } catch (error) {
-        let newOwnerBalance = await token.balanceOf(owner)
-        let newNonOwnerBalance = await token.balanceOf(nonOwner)
-  
-        assert( newOwnerBalance.toString() === transferAmount.toString() )
-        assert( newNonOwnerBalance.toString() === "0" )        
-      }
+      assert( newOwnerBalance.toString() === transferAmount.toString() )
+      return assert( newNonOwnerBalance.toString() === "0" )        
     })
 
     it("It should transferFrom tokens as the owner.", async function () {
@@ -192,20 +178,15 @@ contract('SmartToken', function () {
 
       let token = await SmartToken.new(initialTokenName, initialTotalSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner)
       let balance = await token.balanceOf(owner)
-      let nonOwnerBalance = await token.balanceOf(nonOwner)
 
       let transferAmount = balance
 
-      try {
-        await token.approve(owner, transferAmount, {from: owner})
-        await token.transferFrom(owner, nonOwner, transferAmount, {from: nonOwner})
-      } catch (error) {
-        let newOwnerBalance = await token.balanceOf(owner)
-        let newNonOwnerBalance = await token.balanceOf(nonOwner)
-  
-        assert( newOwnerBalance.toString() === transferAmount.toString() )
-        assert( newNonOwnerBalance.toString() === "0" )        
-      }
+      await token.approve(nonOwner, transferAmount, {from: nonOwner})
+      await token.transferFrom(owner, nonOwner, transferAmount, {from: nonOwner})
+      let newOwnerBalance = await token.balanceOf(owner)
+      let newNonOwnerBalance = await token.balanceOf(nonOwner)
+      assert( newOwnerBalance.toString() === transferAmount.toString() )
+      assert( newNonOwnerBalance.toString() === "0" )
     })
     
     it("It should allow the owner to enable/disable the transfer method", async function () {
@@ -306,7 +287,7 @@ contract('SmartToken', function () {
       } catch(err) {
         return assert(true)
       }
-      return assert(false)
+      assert(false)
     })
 
   })

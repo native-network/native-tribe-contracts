@@ -1,12 +1,4 @@
-const TribeLauncher = artifacts.require("TribeLauncher")
-const Tribe = artifacts.require("Tribe")
 const Logger = artifacts.require("Logger")
-const SmartToken = artifacts.require("SmartToken")
-const SmartTokenFactory = artifacts.require("SmartTokenFactory")
-const TribeAccountFactory = artifacts.require("TribeAccountFactory")
-const Registrar = artifacts.require("Registrar")
-const RegistrarFactory = artifacts.require("RegistrarFactory")
-const TribeFactory = artifacts.require("TribeFactory")
 const Bluebird = require('Bluebird')
 
 

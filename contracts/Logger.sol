@@ -25,10 +25,10 @@ contract Logger is Owned, ILogger  {
     // erc20
     event Transfer(address msgSender, address indexed _from, address indexed _to, uint256 _value);
     event Approval(address msgSender, address indexed _owner, address indexed _spender, uint256 _value);
-    
+
     // Logger
     event NewTribeAddress(address msgSender, address _newAddress);
-    
+
     event GenericLog(string messageType, string message);
     mapping (address => bool) public permissionedAddresses;
 
@@ -48,7 +48,7 @@ contract Logger is Owned, ILogger  {
     function emitProjectCreated(uint uuid, uint amount, address rewardAddress) public hasLoggerPermissions(msg.sender) {
         emit ProjectCreated(msg.sender, uuid, amount, rewardAddress);
     }
-    
+
     function emitNewSmartToken(address token) public hasLoggerPermissions(msg.sender) {
         emit NewSmartToken(msg.sender, token);
     }

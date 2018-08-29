@@ -21,7 +21,7 @@ This is the main contract containing tribe logic.  It has the following function
 
 */
 contract Tribe is ITribe {
-    
+
     address public curator;
     address public voteController;
     uint public minimumStakingRequirement;
@@ -47,21 +47,21 @@ contract Tribe is ITribe {
     }
 
     constructor(uint _minimumStakingRequirement,
-                uint _lockupPeriodSeconds,
-                address _curator,
-                address _tribeTokenContractAddress,
-                address _nativeTokenContractAddress,
-                address _voteController,
-                address _loggerContractAddress,
-                address _tribeAccountContractAddress) public {
-                    tribeAccount = TribeAccount(_tribeAccountContractAddress);
-                    curator = _curator;
-                    minimumStakingRequirement = _minimumStakingRequirement;
-                    lockupPeriodSeconds = _lockupPeriodSeconds;
-                    logger = Logger(_loggerContractAddress);
-                    voteController = _voteController;
-                    nativeTokenInstance = ISmartToken(_nativeTokenContractAddress);
-                    tribeTokenInstance = ISmartToken(_tribeTokenContractAddress);
+        uint _lockupPeriodSeconds,
+        address _curator,
+        address _tribeTokenContractAddress,
+        address _nativeTokenContractAddress,
+        address _voteController,
+        address _loggerContractAddress,
+        address _tribeAccountContractAddress) public {
+        tribeAccount = TribeAccount(_tribeAccountContractAddress);
+        curator = _curator;
+        minimumStakingRequirement = _minimumStakingRequirement;
+        lockupPeriodSeconds = _lockupPeriodSeconds;
+        logger = Logger(_loggerContractAddress);
+        voteController = _voteController;
+        nativeTokenInstance = ISmartToken(_nativeTokenContractAddress);
+        tribeTokenInstance = ISmartToken(_tribeTokenContractAddress);
     }
 
     // TODO add events to each of these
@@ -109,7 +109,7 @@ contract Tribe is ITribe {
     }
 
     /* Task escrow code below (in native tokens) */
-    
+
     // updates the escrow values for a new task
     function createNewTask(uint uuid, uint amount) public onlyCurator sufficientDevFundBalance (amount) {
         tribeAccount.setEscrowedTaskBalances(uuid, amount);
@@ -122,7 +122,7 @@ contract Tribe is ITribe {
         tribeAccount.setTotalTaskEscrow(SafeMath.sub(tribeAccount.totalTaskEscrow(), tribeAccount.escrowedTaskBalances(uuid)));
         tribeAccount.setEscrowedTaskBalances(uuid, 0);
     }
-    
+
     // pays put to the task completer and updates the escrow balances
     function rewardTaskCompletion(uint uuid, address user) public onlyVoteController {
         tribeAccount.transferTokensOut(address(nativeTokenInstance), user, tribeAccount.escrowedTaskBalances(uuid));
@@ -145,7 +145,7 @@ contract Tribe is ITribe {
         tribeAccount.setTotalProjectEscrow(SafeMath.sub(tribeAccount.totalProjectEscrow(), tribeAccount.escrowedProjectBalances(uuid)));
         tribeAccount.setEscrowedProjectBalances(uuid, 0);
     }
-    
+
     // pays out the project completion and then updates the escrow balances
     function rewardProjectCompletion(uint uuid) public onlyVoteController {
         tribeAccount.transferTokensOut(
@@ -159,27 +159,20 @@ contract Tribe is ITribe {
     // Staking code below (in tribe tokens)
     function stakeTribeTokens() public {
         uint amount = minimumStakingRequirement - tribeAccount.stakedBalances(msg.sender);
-        if(amount <= 0) {
-            revert();
-        }
-
-        if(!tribeTokenInstance.transferFrom(msg.sender, address(tribeAccount), amount)) {
-            revert();
-        }
+        require(amount > 0);
+        require(tribeTokenInstance.transferFrom(msg.sender, address(tribeAccount), amount));
 
         tribeAccount.setStakedBalances(SafeMath.add(tribeAccount.stakedBalances(msg.sender), amount), msg.sender);
         tribeAccount.setTotalStaked(SafeMath.add(tribeAccount.totalStaked(), amount));
         tribeAccount.setTimeStaked(now, msg.sender);
     }
 
-    // checks that a user is able to unstake by looking at the lokcup period and the balance
+    // checks that a user is able to unstake by looking at the lockup period and the balance
     // unstakes a tribe and sends funds back to the user=
     function unstakeTribeTokens() public {
         uint amount = tribeAccount.stakedBalances(msg.sender);
 
-        if(now - tribeAccount.timeStaked(msg.sender) < lockupPeriodSeconds) {
-            revert();
-        }
+        require(now - tribeAccount.timeStaked(msg.sender) >= lockupPeriodSeconds);
 
         tribeAccount.setStakedBalances(0, msg.sender);
         tribeAccount.setTotalStaked(SafeMath.sub(tribeAccount.totalStaked(), amount));

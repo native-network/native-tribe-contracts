@@ -22,13 +22,13 @@ contract Owned is IOwned {
     constructor() public {
         owner = msg.sender;
     }
-    
+
     // allows execution by the owner only
     modifier ownerOnly {
         require(msg.sender == owner);
         _;
     }
-    
+
     /**
         @dev allows transferring the contract ownership
         the new owner still needs to accept the transfer
@@ -39,7 +39,7 @@ contract Owned is IOwned {
         require(_newOwner != owner);
         newOwner = _newOwner;
     }
-    
+
     /**
         @dev used by a new owner to accept an ownership transfer
     */
