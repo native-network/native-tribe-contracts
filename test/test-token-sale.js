@@ -9,7 +9,7 @@ contract('SmartToken-sale', function () {
   const nonOwner = web3.eth.accounts[1]
   const beneficiary = web3.eth.accounts[2]
   let smartNativeTokenInstance  
-  let smartTribeTokenInstance
+  let smartCommunityTokenInstance
 
   beforeEach(async () => {
 
@@ -20,20 +20,20 @@ contract('SmartToken-sale', function () {
     const initialSupply = 10000000000
     smartNativeTokenInstance = await SmartToken.new(initialTokenName, initialSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner)
 
-    const initialTribeTokenName = 'test_tribe'
-    const initialTribeTokenSymbol = 'test_tribe'
-    const initialTribeTokenVersion = 'version'
-    const initialTribeTokenDecimals = 18
-    const initialTribeSupply = 10000000000
+    const initialCommunityTokenName = 'test_community'
+    const initialCommunityTokenSymbol = 'test_community'
+    const initialCommunityTokenVersion = 'version'
+    const initialCommunityTokenDecimals = 18
+    const initialCommunitySupply = 10000000000
               
-    smartTribeTokenInstance = await SmartToken.new(initialTribeTokenName, initialTribeSupply, initialTribeTokenDecimals, initialTribeTokenSymbol, initialTribeTokenVersion, owner)
+    smartCommunityTokenInstance = await SmartToken.new(initialCommunityTokenName, initialCommunitySupply, initialCommunityTokenDecimals, initialCommunityTokenSymbol, initialCommunityTokenVersion, owner)
   })
 
   describe("It should test the token sale", function () {
     describe("It should test the tokenSale with native token", function () {
       it("It should allow a user to purchase tokens after the sale has been initialized with Native", async () => {
         
-        // give some native tokens to buy tribe tokens with
+        // give some native tokens to buy community tokens with
         await smartNativeTokenInstance.issue(nonOwner, 10000000000, {from: owner})
 
         const startTime = Math.floor(Date.now() / 1000)
@@ -44,19 +44,19 @@ contract('SmartToken-sale', function () {
         const expectedPurchaseAmount = amountToSpend
         
         const tokenBalanceBefore = await smartNativeTokenInstance.balanceOf(nonOwner)
-        const tribeTokenBalanceBefore = await smartTribeTokenInstance.balanceOf(nonOwner)
+        const communityTokenBalanceBefore = await smartCommunityTokenInstance.balanceOf(nonOwner)
         const beneficiaryBalanceBefore = await smartNativeTokenInstance.balanceOf(beneficiary)
         
         try {
-          await smartTribeTokenInstance.initializeTokenSaleWithToken(startTime, endTime, priceTokensPerNative, amountForSale, beneficiary, smartNativeTokenInstance.address, {from: owner})
-          await smartNativeTokenInstance.approve(smartTribeTokenInstance.address, amountToSpend, {from: nonOwner})
-          await smartTribeTokenInstance.buyWithToken(smartNativeTokenInstance.address, amountToSpend, {from: nonOwner})
-          const tribeTokensPurchased = util.promisify(smartTribeTokenInstance.TokensPurchased)()
+          await smartCommunityTokenInstance.initializeTokenSaleWithToken(startTime, endTime, priceTokensPerNative, amountForSale, beneficiary, smartNativeTokenInstance.address, {from: owner})
+          await smartNativeTokenInstance.approve(smartCommunityTokenInstance.address, amountToSpend, {from: nonOwner})
+          await smartCommunityTokenInstance.buyWithToken(smartNativeTokenInstance.address, amountToSpend, {from: nonOwner})
+          const communityTokensPurchased = util.promisify(smartCommunityTokenInstance.TokensPurchased)()
           const tokenBalanceAfter = await smartNativeTokenInstance.balanceOf(nonOwner)
-          const tribeTokenBalanceAfter = await smartTribeTokenInstance.balanceOf(nonOwner)
+          const communityTokenBalanceAfter = await smartCommunityTokenInstance.balanceOf(nonOwner)
           const beneficiaryBalanceAfter = await smartNativeTokenInstance.balanceOf(beneficiary)
-          return tribeTokensPurchased.then(() => {
-            assert(tribeTokenBalanceAfter.equals(tribeTokenBalanceBefore.plus(expectedPurchaseAmount)))
+          return communityTokensPurchased.then(() => {
+            assert(communityTokenBalanceAfter.equals(communityTokenBalanceBefore.plus(expectedPurchaseAmount)))
             assert(tokenBalanceAfter.equals(tokenBalanceBefore.minus(expectedPurchaseAmount)))
             return assert(beneficiaryBalanceAfter.equals(beneficiaryBalanceBefore.plus(expectedPurchaseAmount)))
           })
@@ -66,14 +66,14 @@ contract('SmartToken-sale', function () {
       })
 
       it("It should not allow a user to purchase with a token other than Native", async () => {
-        const initialTribeTokenName = 'Untrusted Token With Approve'
-        const initialTribeTokenSymbol = 'UTWA'
-        const initialTribeTokenVersion = '1.0'
-        const initialTribeTokenDecimals = 18
-        const initialTribeSupply = 10000000000
+        const initialCommunityTokenName = 'Untrusted Token With Approve'
+        const initialCommunityTokenSymbol = 'UTWA'
+        const initialCommunityTokenVersion = '1.0'
+        const initialCommunityTokenDecimals = 18
+        const initialCommunitySupply = 10000000000
 
-        const untrustedTokenInstance = await SmartToken.new(initialTribeTokenName, initialTribeSupply, initialTribeTokenDecimals, initialTribeTokenSymbol, initialTribeTokenVersion, owner)
-        // give some native tokens to buy tribe tokens with
+        const untrustedTokenInstance = await SmartToken.new(initialCommunityTokenName, initialCommunitySupply, initialCommunityTokenDecimals, initialCommunityTokenSymbol, initialCommunityTokenVersion, owner)
+        // give some native tokens to buy community tokens with
         await smartNativeTokenInstance.issue(nonOwner, 10000000000, {from: owner})
 
         const startTime = Math.floor(Date.now() / 1000)
@@ -83,11 +83,11 @@ contract('SmartToken-sale', function () {
         const amountToSpend = 10
 
         try {
-          await smartTribeTokenInstance.initializeTokenSaleWithToken(startTime, endTime, priceTokensPerNative, amountForSale, beneficiary, smartNativeTokenInstance.address, {from: owner})
-          await untrustedTokenInstance.approve(smartTribeTokenInstance.address, amountToSpend, {from: nonOwner})
+          await smartCommunityTokenInstance.initializeTokenSaleWithToken(startTime, endTime, priceTokensPerNative, amountForSale, beneficiary, smartNativeTokenInstance.address, {from: owner})
+          await untrustedTokenInstance.approve(smartCommunityTokenInstance.address, amountToSpend, {from: nonOwner})
 
           try {
-            await smartTribeTokenInstance.buyWithToken(untrustedTokenInstance.address, amountToSpend, {from: nonOwner})
+            await smartCommunityTokenInstance.buyWithToken(untrustedTokenInstance.address, amountToSpend, {from: nonOwner})
           } catch (error) {
             return assert(error.message.includes('revert'));
           }
@@ -97,7 +97,7 @@ contract('SmartToken-sale', function () {
       })
 
       it("It should allow the owner to initialize a token sale with Native where the price per Native is greater than 1 and allow nonOwner to purchase tokens with Native", async () => {
-        // give some native tokens to buy tribe tokens with
+        // give some native tokens to buy community tokens with
         await smartNativeTokenInstance.issue(nonOwner, 100000, {from: owner})
 
         const startTime = Math.floor(Date.now() / 1000)
@@ -107,19 +107,19 @@ contract('SmartToken-sale', function () {
         const amountToSpend = 10
         const expectedPurchaseAmount = amountToSpend * priceTokensPerNative
         const tokenBalanceBefore = await smartNativeTokenInstance.balanceOf(nonOwner)
-        const tribeTokenBalanceBefore = await smartTribeTokenInstance.balanceOf(nonOwner)
+        const communityTokenBalanceBefore = await smartCommunityTokenInstance.balanceOf(nonOwner)
         try{
 
-          await smartTribeTokenInstance.initializeTokenSaleWithToken(startTime, endTime, priceTokensPerNative, amountForSale, beneficiary, smartNativeTokenInstance.address, {from: owner})
-          await smartNativeTokenInstance.approve(smartTribeTokenInstance.address, amountToSpend, {from: nonOwner})
-          await smartTribeTokenInstance.buyWithToken(smartNativeTokenInstance.address, amountToSpend, {from: nonOwner})
+          await smartCommunityTokenInstance.initializeTokenSaleWithToken(startTime, endTime, priceTokensPerNative, amountForSale, beneficiary, smartNativeTokenInstance.address, {from: owner})
+          await smartNativeTokenInstance.approve(smartCommunityTokenInstance.address, amountToSpend, {from: nonOwner})
+          await smartCommunityTokenInstance.buyWithToken(smartNativeTokenInstance.address, amountToSpend, {from: nonOwner})
 
-          const tribeTokensPurchased = util.promisify(smartTribeTokenInstance.TokensPurchased)()
+          const communityTokensPurchased = util.promisify(smartCommunityTokenInstance.TokensPurchased)()
           const tokenBalanceAfter = await smartNativeTokenInstance.balanceOf(nonOwner)
-          const tribeTokenBalanceAfter = await smartTribeTokenInstance.balanceOf(nonOwner)
+          const communityTokenBalanceAfter = await smartCommunityTokenInstance.balanceOf(nonOwner)
 
-          return tribeTokensPurchased.then(() => {
-            assert(tribeTokenBalanceAfter.equals(tribeTokenBalanceBefore.plus(expectedPurchaseAmount)))
+          return communityTokensPurchased.then(() => {
+            assert(communityTokenBalanceAfter.equals(communityTokenBalanceBefore.plus(expectedPurchaseAmount)))
             assert(tokenBalanceAfter.equals(tokenBalanceBefore.minus(amountToSpend)))
           })
 

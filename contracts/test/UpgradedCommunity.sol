@@ -1,24 +1,24 @@
 pragma solidity ^0.4.24;
 
 import "../Logger.sol";
-import "../TribeAccount.sol";
+import "../CommunityAccount.sol";
 import "../interfaces/ISmartToken.sol";
 import "../utility/SafeMath.sol";
 
 /*
 
-Used in integration-test-upgrades.js to demonstrate how we can update a tribe
+Used in integration-test-upgrades.js to demonstrate how we can update a community
 
 */
-contract UpgradedTribe {
+contract UpgradedCommunity {
     address public curator;
     address public voteController;
     uint public minimumStakingRequirement;
     uint public lockupPeriodSeconds;
     Logger public logger;
     ISmartToken public nativeTokenInstance;
-    ISmartToken public tribeTokenInstance;
-    TribeAccount public tribeAccount;
+    ISmartToken public communityTokenInstance;
+    CommunityAccount public communityAccount;
     bool emergencyWithdrawEnabled;
 
     modifier onlyCurator {
@@ -40,21 +40,21 @@ contract UpgradedTribe {
     constructor(uint _minimumStakingRequirement,
                 uint _lockupPeriodSeconds,
                 address _curator,
-                address _tribeTokenContractAddress,
+                address _communityTokenContractAddress,
                 address _nativeTokenContractAddress,
                 address _voteController,
                 address _loggerContractAddress,
-                address _tribeAccountContractAddress,
+                address _communityAccountContractAddress,
                 bool _emergencyWithdrawEnabled
                 ) public {
-                    tribeAccount = TribeAccount(_tribeAccountContractAddress);
+                    communityAccount = CommunityAccount(_communityAccountContractAddress);
                     curator = _curator;
                     minimumStakingRequirement = _minimumStakingRequirement;
                     lockupPeriodSeconds = _lockupPeriodSeconds;
                     logger = Logger(_loggerContractAddress);
                     voteController = _voteController;
                     nativeTokenInstance = ISmartToken(_nativeTokenContractAddress);
-                    tribeTokenInstance = ISmartToken(_tribeTokenContractAddress);
+                    communityTokenInstance = ISmartToken(_communityTokenContractAddress);
                     emergencyWithdrawEnabled = _emergencyWithdrawEnabled;
     }
 
@@ -63,11 +63,11 @@ contract UpgradedTribe {
     function emergencyFundRetrieval() public onlyCurator {
         require(emergencyWithdrawEnabled);
 
-        uint totaBalanceNativeToken = nativeTokenInstance.balanceOf(address(tribeAccount));
-        uint totaBalanceTribeToken = tribeTokenInstance.balanceOf(address(tribeAccount));
+        uint totaBalanceNativeToken = nativeTokenInstance.balanceOf(address(communityAccount));
+        uint totaBalanceCommunityToken = communityTokenInstance.balanceOf(address(communityAccount));
 
-        tribeAccount.transferTokensOut(address(nativeTokenInstance), curator, totaBalanceNativeToken);
-        tribeAccount.transferTokensOut(address(tribeTokenInstance), curator, totaBalanceTribeToken);
+        communityAccount.transferTokensOut(address(nativeTokenInstance), curator, totaBalanceNativeToken);
+        communityAccount.transferTokensOut(address(communityTokenInstance), curator, totaBalanceCommunityToken);
     }
 
     // TODO add events to each of these
@@ -91,105 +91,105 @@ contract UpgradedTribe {
         logger = Logger(newLoggerAddress);
     }
 
-    function setTokenAddresses(address newNativeTokenAddress, address newTribeTokenAddress) public onlyCurator {
+    function setTokenAddresses(address newNativeTokenAddress, address newCommunityTokenAddress) public onlyCurator {
         nativeTokenInstance = ISmartToken(newNativeTokenAddress);
-        tribeTokenInstance = ISmartToken(newTribeTokenAddress);
+        communityTokenInstance = ISmartToken(newCommunityTokenAddress);
     }
 
-    function setTribeAccount(address newTribeAccountAddress) public onlyCurator {
-        tribeAccount = TribeAccount(newTribeAccountAddress);
+    function setCommunityAccount(address newCommunityAccountAddress) public onlyCurator {
+        communityAccount = CommunityAccount(newCommunityAccountAddress);
     }
 
-    function setTribeAccountOwner(address newOwner) public onlyCurator {
-        tribeAccount.transferOwnershipNow(newOwner);
+    function setCommunityAccountOwner(address newOwner) public onlyCurator {
+        communityAccount.transferOwnershipNow(newOwner);
     }
 
     // gets the amount in the dev fund that isn't locked up by a project or task stake
     function getAvailableDevFund() public view returns (uint) {
-        uint devFundBalance = nativeTokenInstance.balanceOf(address(tribeAccount));
+        uint devFundBalance = nativeTokenInstance.balanceOf(address(communityAccount));
         return SafeMath.sub(devFundBalance, getLockedDevFundAmount());
     }
 
     function getLockedDevFundAmount() public view returns (uint) {
-        return SafeMath.add(tribeAccount.totalTaskEscrow(), tribeAccount.totalProjectEscrow());
+        return SafeMath.add(communityAccount.totalTaskEscrow(), communityAccount.totalProjectEscrow());
     }
 
     // Task escrow code below (in native tokens)
     
     // updates the escrow values for a new task
     function createNewTask(uint uuid, uint amount) public onlyCurator sufficientDevFundBalance (amount) {
-        tribeAccount.setEscrowedTaskBalances(uuid, amount);
-        tribeAccount.setTotalTaskEscrow(SafeMath.add(tribeAccount.totalTaskEscrow(), amount));
+        communityAccount.setEscrowedTaskBalances(uuid, amount);
+        communityAccount.setTotalTaskEscrow(SafeMath.add(communityAccount.totalTaskEscrow(), amount));
         logger.emitTaskCreated(uuid, amount);
     }
 
     // subtracts the tasks escrow and sets the tasks escrow balance to 0
     function cancelTask(uint uuid) public onlyCurator {
-        tribeAccount.setTotalTaskEscrow(SafeMath.sub(tribeAccount.totalTaskEscrow(), tribeAccount.escrowedTaskBalances(uuid)));
-        tribeAccount.setEscrowedTaskBalances(uuid , 0);
+        communityAccount.setTotalTaskEscrow(SafeMath.sub(communityAccount.totalTaskEscrow(), communityAccount.escrowedTaskBalances(uuid)));
+        communityAccount.setEscrowedTaskBalances(uuid , 0);
     }
     
     // pays put to the task completer and updates the escrow balances
     function rewardTaskCompletion(uint uuid, address user) public onlyVoteController {
-        tribeAccount.transferTokensOut(address(nativeTokenInstance), user, tribeAccount.escrowedTaskBalances(uuid));
-        tribeAccount.setTotalTaskEscrow(SafeMath.sub(tribeAccount.totalTaskEscrow(), tribeAccount.escrowedTaskBalances(uuid)));
-        tribeAccount.setEscrowedTaskBalances(uuid, 0);
+        communityAccount.transferTokensOut(address(nativeTokenInstance), user, communityAccount.escrowedTaskBalances(uuid));
+        communityAccount.setTotalTaskEscrow(SafeMath.sub(communityAccount.totalTaskEscrow(), communityAccount.escrowedTaskBalances(uuid)));
+        communityAccount.setEscrowedTaskBalances(uuid, 0);
     }
 
     // Project escrow code below (in native tokens)
 
     // updates the escrow values along with the project payee for a new project
     function createNewProject(uint uuid, uint amount, address projectPayee) public onlyCurator sufficientDevFundBalance (amount) {
-        tribeAccount.setEscrowedProjectBalances(uuid, amount);
-        tribeAccount.setEscrowedProjectPayees(uuid, projectPayee);
-        tribeAccount.setTotalProjectEscrow(SafeMath.add(tribeAccount.totalProjectEscrow(), amount));
+        communityAccount.setEscrowedProjectBalances(uuid, amount);
+        communityAccount.setEscrowedProjectPayees(uuid, projectPayee);
+        communityAccount.setTotalProjectEscrow(SafeMath.add(communityAccount.totalProjectEscrow(), amount));
         logger.emitProjectCreated(uuid, amount, projectPayee);
     }
 
     // subtracts the tasks escrow and sets the tasks escrow balance to 0
     function cancelProject(uint uuid) public onlyCurator {
-        tribeAccount.setTotalProjectEscrow(SafeMath.sub(
-            tribeAccount.totalProjectEscrow(),
-            tribeAccount.escrowedProjectBalances(uuid)));
-        tribeAccount.setEscrowedProjectBalances(uuid, 0);
+        communityAccount.setTotalProjectEscrow(SafeMath.sub(
+            communityAccount.totalProjectEscrow(),
+            communityAccount.escrowedProjectBalances(uuid)));
+        communityAccount.setEscrowedProjectBalances(uuid, 0);
     }
     
     // pays out the project completion and then updates the escrow balances
     function rewardProjectCompletion(uint uuid) public onlyVoteController {
-        tribeAccount.transferTokensOut(
+        communityAccount.transferTokensOut(
             address(nativeTokenInstance),
-            tribeAccount.escrowedProjectPayees(uuid),
-            tribeAccount.escrowedProjectBalances(uuid));
-        tribeAccount.setTotalProjectEscrow(SafeMath.sub(
-            tribeAccount.totalProjectEscrow(),
-            tribeAccount.escrowedProjectBalances(uuid)));
-        tribeAccount.setEscrowedProjectBalances(uuid, 0);
+            communityAccount.escrowedProjectPayees(uuid),
+            communityAccount.escrowedProjectBalances(uuid));
+        communityAccount.setTotalProjectEscrow(SafeMath.sub(
+            communityAccount.totalProjectEscrow(),
+            communityAccount.escrowedProjectBalances(uuid)));
+        communityAccount.setEscrowedProjectBalances(uuid, 0);
     }
 
-    // Staking code below (in tribe tokens)
+    // Staking code below (in community tokens)
     //  make it steak as much additional funds required to become a member (i.e. if the staking minimum goes up).  Do not use amount variable  
-    function stakeTribeTokens(uint amount) public {
-        require(tribeTokenInstance.transferFrom(msg.sender, address(tribeAccount), amount));
+    function stakeCommunityTokens(uint amount) public {
+        require(communityTokenInstance.transferFrom(msg.sender, address(communityAccount), amount));
 
-        tribeAccount.setStakedBalances(SafeMath.add(tribeAccount.stakedBalances(msg.sender), amount), msg.sender);
-        tribeAccount.setTotalStaked(SafeMath.add(tribeAccount.totalStaked(), amount));
-        tribeAccount.setTimeStaked(now, msg.sender);
+        communityAccount.setStakedBalances(SafeMath.add(communityAccount.stakedBalances(msg.sender), amount), msg.sender);
+        communityAccount.setTotalStaked(SafeMath.add(communityAccount.totalStaked(), amount));
+        communityAccount.setTimeStaked(now, msg.sender);
     }
 
     // checks that a user is able to unstake by looking at the lokcup period and the balance
-    // unstakes a tribe and sends funds back to the user
-    function unstakeTribeTokens(uint amount) public {
+    // unstakes a community and sends funds back to the user
+    function unstakeCommunityTokens(uint amount) public {
 
-        require(tribeAccount.stakedBalances(msg.sender) >= amount);
-        require(now - tribeAccount.timeStaked(msg.sender) >= lockupPeriodSeconds);
+        require(communityAccount.stakedBalances(msg.sender) >= amount);
+        require(now - communityAccount.timeStaked(msg.sender) >= lockupPeriodSeconds);
 
-        tribeAccount.setStakedBalances(SafeMath.sub(tribeAccount.stakedBalances(msg.sender), amount), msg.sender);
-        tribeAccount.setTotalStaked(SafeMath.sub(tribeAccount.totalStaked(), amount));
-        tribeTokenInstance.transfer(msg.sender, amount);
+        communityAccount.setStakedBalances(SafeMath.sub(communityAccount.stakedBalances(msg.sender), amount), msg.sender);
+        communityAccount.setTotalStaked(SafeMath.sub(communityAccount.totalStaked(), amount));
+        communityTokenInstance.transfer(msg.sender, amount);
     }
 
     // checks that the user is fully staked
     function isMember(address memberAddress) public view returns (bool) {
-        return ( tribeAccount.stakedBalances(memberAddress) >= minimumStakingRequirement );
+        return ( communityAccount.stakedBalances(memberAddress) >= minimumStakingRequirement );
     }
 }

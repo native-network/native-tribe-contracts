@@ -3,9 +3,9 @@ pragma solidity ^0.4.24;
 import "../interfaces/IOwned.sol";
 
 /*
-    Tribe Account Interface
+    Community Account Interface
 */
-contract ITribeAccount is IOwned {
+contract ICommunityAccount is IOwned {
     function setStakedBalances(uint _amount, address msgSender) public;
     function setTotalStaked(uint _totalStaked) public;
     function setTimeStaked(uint _timeStaked, address msgSender) public;

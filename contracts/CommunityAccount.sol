@@ -2,20 +2,20 @@ pragma solidity ^0.4.24;
 
 import "./utility/Owned.sol";
 import "./interfaces/IERC20.sol";
-import "./interfaces/ITribeAccount.sol";
+import "./interfaces/ICommunityAccount.sol";
 
 
 /*
 
-This contract is used as a tribes data store. This has two distinct advantages
+This contract is used as a communities data store. This has two distinct advantages
 1. We decouple the logic from the data
 2. We can safely upgrade the logic contract without accidentally blowing away the stored data
 
 */
 
-contract TribeAccount is Owned, ITribeAccount {
+contract CommunityAccount is Owned, ICommunityAccount {
 
-    // Staking Variables.  In tribe token
+    // Staking Variables.  In community token
     mapping (address => uint256) public stakedBalances;
     mapping (address => uint256) public timeStaked;
     uint public totalStaked;
@@ -27,7 +27,7 @@ contract TribeAccount is Owned, ITribeAccount {
     mapping (uint256 => uint256) public escrowedProjectBalances;
     mapping (uint256 => address) public escrowedProjectPayees;
 
-    // This function allows the tribe to transfer tokens out of the contract.
+    // This function allows the community to transfer tokens out of the contract.
     function transferTokensOut(address tokenContractAddress, address destination, uint amount) public ownerOnly {
         IERC20 token = IERC20(tokenContractAddress);
         token.transfer(destination, amount);

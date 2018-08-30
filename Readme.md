@@ -26,10 +26,10 @@
 
 ##Overview
 
-There are 3 main functionalities of a native tribe:
+There are 3 main functionalities of a native community:
 
 
-- Allow users to stake tribe tokens to become a tribe member.
+- Allow users to stake community tokens to become a community member.
 - Allow the escrow lockup & rewarding  of native tokens to pay for a project.
 - Allow the escrow lockup & rewarding of native tokens to pay for a task.
 
@@ -49,34 +49,34 @@ Creating projects and tasks are both created by the curator and require funds to
 
 ## Contracts
 
-### Core Tribe contracts
+### Core Community contracts
 
-Each tribe consists of 4 contracts
+Each community consists of 4 contracts
 
 1. Registrar.sol
 	
-	Registrar stores the address of the latest version of the launched Tribe.sol contract
+	Registrar stores the address of the latest version of the launched Community.sol contract
 
-2. Tribe.sol
+2. Community.sol
 
-	This is the main contract containing tribe logic.  It has the following functionality:
+	This is the main contract containing community logic.  It has the following functionality:
 
-	- Staking & unstaking tribe tokens for users to join tribes.
+	- Staking & unstaking community tokens for users to join communities.
 	- Allows creating projects and tasks by the curator and voteController.
 	- Allows reward project and task completion with native tokens.
-	- Uses tribeAccount contract to store and track all staking and escrow funds.
+	- Uses communityAccount contract to store and track all staking and escrow funds.
 
-3. TribeAccount.sol
+3. CommunityAccount.sol
 
-	Owned by the Tribe contract. Stores and tracks all staked tribe tokens and escrowed native tokens,
-
-
-4. SmartToken.sol (used as tribe token)
-
-	Bancor compatible smart token with built in token sale functionality.  Used as the tribe token.
+	Owned by the Community contract. Stores and tracks all staked community tokens and escrowed native tokens,
 
 
-### Non-tribe native contracts
+4. SmartToken.sol (used as community token)
+
+	Bancor compatible smart token with built in token sale functionality.  Used as the community token.
+
+
+### Non-community native contracts
 
 1. SmartToken.sol (used as native token)
 
@@ -84,28 +84,28 @@ Each tribe consists of 4 contracts
 
 2. Logger.sol
 
-	Centralized logging contract to help backend watch for tribe events.  All tribes log all events to this contract.
+	Centralized logging contract to help backend watch for community events.  All communities log all events to this contract.
 
 
-3. Tribe Launcher
+3. Community Launcher
 
-	Helper contract is used to easily launch and connect all of the pieces required for a new tribe.  These are:
+	Helper contract is used to easily launch and connect all of the pieces required for a new community.  These are:
 
-	- Tribe token (SmartToken.sol)
-	- Tribe Account (TribeAccount.sol)
-	- Tribe (Tribe.sol)
+	- Community token (SmartToken.sol)
+	- Community Account (CommunityAccount.sol)
+	- Community (Community.sol)
 	- Registrar (Registrar.sol)
 
 ### Other contracts
 
 1. Factory Contracts
 
-	These factory contracts are used to keep the gas usage below the block gas limit when deploying Tribe Launcher.
+	These factory contracts are used to keep the gas usage below the block gas limit when deploying Community Launcher.
 
 	- RegistrarFactory.sol
 	- SmartTokenFactory.sol
-	- TribeAccount	Factory.sol
-	- TribeStorageFactory.sol
+	- CommunityAccount	Factory.sol
+	- CommunityStorageFactory.sol
 
 
 2. Abstract Contracts & Interfaces
@@ -119,22 +119,22 @@ Each tribe consists of 4 contracts
 
 4. Test
 
-	Contracts used in integration-test-upgrades.js to demonstrate upgrading an existing tribe to  new contract logic.
+	Contracts used in integration-test-upgrades.js to demonstrate upgrading an existing community to  new contract logic.
 
 ## Contract Upgrade Flow
 
-The following example shows the overall flow of upgrading a tribe contract.  This same upgrade process can be seen inside of the integration-test-upgrades.js test.
+The following example shows the overall flow of upgrading a community contract.  This same upgrade process can be seen inside of the integration-test-upgrades.js test.
 
-1. Curator launches a new tribe using a new version of TribeLauncher.sol. 
+1. Curator launches a new community using a new version of CommunityLauncher.sol. 
 
-	**Note** The example from integration-test-upgrades.js utilizes the launchTribe() function to launch all 4 tribe contracts (tribe, account, registrar, token).  Only the newly upgraded tribe contract is used in this test and the remaining new contracts are ignored.
+	**Note** The example from integration-test-upgrades.js utilizes the launchCommunity() function to launch all 4 community contracts (community, account, registrar, token).  Only the newly upgraded community contract is used in this test and the remaining new contracts are ignored.
 	
 
-2. Curator Updates the old tribe Registrar.sol contract to point to the newly created tribe contract.
+2. Curator Updates the old community Registrar.sol contract to point to the newly created community contract.
 
-3. Curator Updates the new tribe to use the old tribe token.
+3. Curator Updates the new community to use the old community token.
 
-4. Curator updates the owner of the old tribe account to the new tribe.
+4. Curator updates the owner of the old community account to the new community.
 
-5. Curator updates the new tribe to use the old tribe account.
+5. Curator updates the new community to use the old community account.
 

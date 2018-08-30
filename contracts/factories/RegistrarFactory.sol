@@ -4,7 +4,7 @@ import "../Registrar.sol";
 
 /*
 
-Helps keep TribeLauncher.sol from needing more than the block gas limit
+Helps keep CommunityLauncher.sol from needing more than the block gas limit
 
 */
 contract RegistrarFactory {

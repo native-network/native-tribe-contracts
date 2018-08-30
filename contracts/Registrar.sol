@@ -5,7 +5,7 @@ import "./interfaces/IRegistrar.sol";
 
 /*
 
-Contains a record of all previous and current address of a tribe.  For upgradeability.
+Contains a record of all previous and current address of a community.  For upgradeability.
 
 */
 contract Registrar is Owned, IRegistrar {

@@ -5,12 +5,12 @@ import "./interfaces/ILogger.sol";
 
 /*
 
-Centralized logger allows backend to easily watch all events on all tribes without needing to watch each tribe individually
+Centralized logger allows backend to easily watch all events on all communities without needing to watch each community individually
 
 */
 contract Logger is Owned, ILogger  {
 
-    // Tribe
+    // Community
     event TaskCreated(address msgSender, uint _uuid, uint _amount);
     event ProjectCreated(address msgSender, uint _uuid, uint _amount, address _address);
 
@@ -27,7 +27,7 @@ contract Logger is Owned, ILogger  {
     event Approval(address msgSender, address indexed _owner, address indexed _spender, uint256 _value);
 
     // Logger
-    event NewTribeAddress(address msgSender, address _newAddress);
+    event NewCommunityAddress(address msgSender, address _newAddress);
 
     event GenericLog(string messageType, string message);
     mapping (address => bool) public permissionedAddresses;
