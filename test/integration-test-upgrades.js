@@ -1,33 +1,33 @@
-const TribeLauncher = artifacts.require("TribeLauncher")
-const UpgradedTribeLauncher = artifacts.require("UpgradedTribeLauncher")
-const Tribe = artifacts.require("Tribe")
-const UpgradedTribe = artifacts.require("UpgradedTribe")
+const CommunityLauncher = artifacts.require("CommunityLauncher")
+const UpgradedCommunityLauncher = artifacts.require("UpgradedCommunityLauncher")
+const Community = artifacts.require("Community")
+const UpgradedCommunity = artifacts.require("UpgradedCommunity")
 const Logger = artifacts.require("Logger")
 const SmartToken = artifacts.require("SmartToken")
 const SmartTokenFactory = artifacts.require("SmartTokenFactory")
-const TribeAccountFactory = artifacts.require("TribeAccountFactory")
-const TribeAccount = artifacts.require("TribeAccount")
+const CommunityAccountFactory = artifacts.require("CommunityAccountFactory")
+const CommunityAccount = artifacts.require("CommunityAccount")
 const Registrar = artifacts.require("Registrar")
 const RegistrarFactory = artifacts.require("RegistrarFactory")
-const TribeFactory = artifacts.require("TribeFactory")
-const UpgradedTribeFactory = artifacts.require("UpgradedTribeFactory")
+const CommunityFactory = artifacts.require("CommunityFactory")
+const UpgradedCommunityFactory = artifacts.require("UpgradedCommunityFactory")
 
 /* 
-Upgrade Tribe Example:
+Upgrade Community Example:
 
-1) Launch a tribe
+1) Launch a community
 2) Create multiple tasks and projects across multiple users
 3) Create multiple escrows
 
-4) launch a new tribe contract with different functions
-5) attach the tribe to the previous tribe account
+4) launch a new community contract with different functions
+5) attach the community to the previous community account
 6) test that everything works
 
 Upgrade Logger Example:
 
-1) Launch new tribe
+1) Launch new community
 2) Launch new Logger
-3) Attach logger to tribe
+3) Attach logger to community
 4) test that it still works
 
  */
@@ -41,76 +41,76 @@ contract('Upgrades Testing', function () {
   const user1 = web3.eth.accounts[1]
   const user2 = web3.eth.accounts[2]
   
-  let tribeLauncherInstance
-  let upgradedTribeLauncherInstance
+  let communityLauncherInstance
+  let upgradedCommunityLauncherInstance
   let nativeTokenInstance
   let loggerInstance
   let smartTokenFactoryInstance
-  let tribeAccountFactoryInstance
+  let communityAccountFactoryInstance
   let registrarFactoryInstance
-  let tribeFactoryInstance
-  let upgradedTribeFactoryInstance
+  let communityFactoryInstance
+  let upgradedCommunityFactoryInstance
   
   beforeEach(async () => {
 
     loggerInstance = await Logger.deployed()
     nativeTokenInstance = await SmartToken.deployed()
-    tribeLauncherInstance = await TribeLauncher.deployed()
-    upgradedTribeLauncherInstance = await UpgradedTribeLauncher.deployed()
+    communityLauncherInstance = await CommunityLauncher.deployed()
+    upgradedCommunityLauncherInstance = await UpgradedCommunityLauncher.deployed()
     
     smartTokenFactoryInstance = await SmartTokenFactory.deployed()
-    tribeAccountFactoryInstance = await TribeAccountFactory.deployed()
-    tribeAccountFactoryInstance = await TribeAccountFactory.deployed()
+    communityAccountFactoryInstance = await CommunityAccountFactory.deployed()
+    communityAccountFactoryInstance = await CommunityAccountFactory.deployed()
     registrarFactoryInstance = await RegistrarFactory.deployed()
-    tribeFactoryInstance = await TribeFactory.deployed()
-    upgradedTribeFactoryInstance = await UpgradedTribeFactory.deployed()
+    communityFactoryInstance = await CommunityFactory.deployed()
+    upgradedCommunityFactoryInstance = await UpgradedCommunityFactory.deployed()
   })
   
-  describe("It should test upgrading a tribe contract", function() {
+  describe("It should test upgrading a community contract", function() {
 
     /*
-    This integration test demonstrates the process of upgrading a tribe by launching a new tribe and attaching it to the existing 
-    TribeAccount, token and registrar.  The test verifies Staking and Escrow balances after the upgrade.
+    This integration test demonstrates the process of upgrading a community by launching a new community and attaching it to the existing
+    CommunityAccount, token and registrar.  The test verifies Staking and Escrow balances after the upgrade.
    */
-    it("It should demonstrate the steps required for upgrading a tribe contract", async function () {
+    it("It should demonstrate the steps required for upgrading a community contract", async function () {
       
       const minimumStakingRequirement = 10
       const lockupPeriod = 0
       const launchUuid = 123
       const totalSupply = 1000000
       const tokenDecimals = 18
-      const initialTribe = await launchInitialTestTribe(minimumStakingRequirement, lockupPeriod, launchUuid, totalSupply, tokenDecimals, {from: curator})
-      const initialTribeInstance = initialTribe.launchedTribeInstance
+      const initialCommunity = await launchInitialTestCommunity(minimumStakingRequirement, lockupPeriod, launchUuid, totalSupply, tokenDecimals, {from: curator})
+      const initialCommunityInstance = initialCommunity.launchedCommunityInstance
       
-      const initialTribeAccountAddress = await initialTribeInstance.tribeAccount()
-      const initialTribeAccountInstance = TribeAccount.at(initialTribeAccountAddress)
+      const initialCommunityAccountAddress = await initialCommunityInstance.communityAccount()
+      const initialCommunityAccountInstance = CommunityAccount.at(initialCommunityAccountAddress)
       
-      const initialTribeTokenAddress = await initialTribeInstance.tribeTokenInstance()
-      const initialNativeTokenAddress = await initialTribeInstance.nativeTokenInstance()
+      const initialCommunityTokenAddress = await initialCommunityInstance.communityTokenInstance()
+      const initialNativeTokenAddress = await initialCommunityInstance.nativeTokenInstance()
       
-      const tribeTokenInstance = SmartToken.at(initialTribeTokenAddress)
+      const communityTokenInstance = SmartToken.at(initialCommunityTokenAddress)
       const nativeTokenInstance = SmartToken.at(initialNativeTokenAddress)
       
-      // give our users some tribe tokens so they can join the tribes
-      await tribeTokenInstance.transfer(user1, minimumStakingRequirement, {from: curator})
-      await tribeTokenInstance.transfer(user2, minimumStakingRequirement, {from: curator})
+      // give our users some community tokens so they can join the communities
+      await communityTokenInstance.transfer(user1, minimumStakingRequirement, {from: curator})
+      await communityTokenInstance.transfer(user2, minimumStakingRequirement, {from: curator})
 
       // users approve their tokens so they can stake
-      await tribeTokenInstance.approve(initialTribeInstance.address, minimumStakingRequirement, {from: user1})
-      await tribeTokenInstance.approve(initialTribeInstance.address, minimumStakingRequirement, {from: user2})
+      await communityTokenInstance.approve(initialCommunityInstance.address, minimumStakingRequirement, {from: user1})
+      await communityTokenInstance.approve(initialCommunityInstance.address, minimumStakingRequirement, {from: user2})
       
-      // users stake into initial tribe
-      await initialTribeInstance.stakeTribeTokens({from: user1})
-      await initialTribeInstance.stakeTribeTokens({from: user2})
+      // users stake into initial community
+      await initialCommunityInstance.stakeCommunityTokens({from: user1})
+      await initialCommunityInstance.stakeCommunityTokens({from: user2})
     
-      // Read the staked amounts we set in the initial tribe
-      const user1StakeAmount = await initialTribeAccountInstance.stakedBalances(user1)
-      const user2StakeAmount = await initialTribeAccountInstance.stakedBalances(user2)
-      const user1StakeTime = await initialTribeAccountInstance.timeStaked(user1)
-      const user2StakeTime = await initialTribeAccountInstance.timeStaked(user2)
+      // Read the staked amounts we set in the initial community
+      const user1StakeAmount = await initialCommunityAccountInstance.stakedBalances(user1)
+      const user2StakeAmount = await initialCommunityAccountInstance.stakedBalances(user2)
+      const user1StakeTime = await initialCommunityAccountInstance.timeStaked(user1)
+      const user2StakeTime = await initialCommunityAccountInstance.timeStaked(user2)
       
       // Fund the dev fund so we can make some tasks and projects
-      await nativeTokenInstance.transfer(initialTribeAccountAddress, 1000000, {from: curator})
+      await nativeTokenInstance.transfer(initialCommunityAccountAddress, 1000000, {from: curator})
 
       // make some tasks and projects
       const task1Id = 1
@@ -118,56 +118,56 @@ contract('Upgrades Testing', function () {
       const project1Id = 3
       const project2Id = 4
       
-      await initialTribeInstance.createNewTask(task1Id, 100, {from: curator})
-      await initialTribeInstance.createNewTask(task2Id, 140, {from: curator})
-      await initialTribeInstance.createNewProject(project1Id, 310, user1, {from: curator})
-      await initialTribeInstance.createNewProject(project2Id, 805, user2, {from: curator})
+      await initialCommunityInstance.createNewTask(task1Id, 100, {from: curator})
+      await initialCommunityInstance.createNewTask(task2Id, 140, {from: curator})
+      await initialCommunityInstance.createNewProject(project1Id, 310, user1, {from: curator})
+      await initialCommunityInstance.createNewProject(project2Id, 805, user2, {from: curator})
       
       
-      // Read the project and task escrow amounts we set in the initial tribe
-      const task1Amount = await initialTribeAccountInstance.escrowedTaskBalances(task1Id)
-      const task2Amount = await initialTribeAccountInstance.escrowedTaskBalances(task2Id)
-      const project1Amount = await initialTribeAccountInstance.escrowedProjectBalances(project1Id)
-      const project2Amount = await initialTribeAccountInstance.escrowedProjectBalances(project2Id)
+      // Read the project and task escrow amounts we set in the initial community
+      const task1Amount = await initialCommunityAccountInstance.escrowedTaskBalances(task1Id)
+      const task2Amount = await initialCommunityAccountInstance.escrowedTaskBalances(task2Id)
+      const project1Amount = await initialCommunityAccountInstance.escrowedProjectBalances(project1Id)
+      const project2Amount = await initialCommunityAccountInstance.escrowedProjectBalances(project2Id)
 
-      const project1Payee = await initialTribeAccountInstance.escrowedProjectPayees(project1Id)
-      const project2Payee = await initialTribeAccountInstance.escrowedProjectPayees(project2Id)
+      const project1Payee = await initialCommunityAccountInstance.escrowedProjectPayees(project1Id)
+      const project2Payee = await initialCommunityAccountInstance.escrowedProjectPayees(project2Id)
       
-      // Launch an upgraded tribe that has a new function and an additional argument in its constructor
-      const upgradedTribe = await launchUpgradedTestTribe(minimumStakingRequirement, lockupPeriod, launchUuid, totalSupply, tokenDecimals, true)
+      // Launch an upgraded community that has a new function and an additional argument in its constructor
+      const upgradedCommunity = await launchUpgradedTestCommunity(minimumStakingRequirement, lockupPeriod, launchUuid, totalSupply, tokenDecimals, true)
       
-      const upgradedTribeInstance = upgradedTribe.launchedTribeInstance
+      const upgradedCommunityInstance = upgradedCommunity.launchedCommunityInstance
     
-      // Give the new tribe ownership of the old account
-      await initialTribeInstance.setTribeAccountOwner(upgradedTribeInstance.address, {from: curator})
-      // Attach the old account to the new tribe
-      await upgradedTribeInstance.setTribeAccount(initialTribeAccountAddress, {from: curator})
-      // Attach the old tokens to the new tribe
-      await upgradedTribeInstance.setTokenAddresses(initialNativeTokenAddress, initialTribeTokenAddress, {from: curator})
+      // Give the new community ownership of the old account
+      await initialCommunityInstance.setCommunityAccountOwner(upgradedCommunityInstance.address, {from: curator})
+      // Attach the old account to the new community
+      await upgradedCommunityInstance.setCommunityAccount(initialCommunityAccountAddress, {from: curator})
+      // Attach the old tokens to the new community
+      await upgradedCommunityInstance.setTokenAddresses(initialNativeTokenAddress, initialCommunityTokenAddress, {from: curator})
       
-      // Confirm escrowed balances and stakes on the upgraded tribe match the old tribe
-      const upgradedTribeAccountAddress = await upgradedTribeInstance.tribeAccount()
-      const upgradedTribeAccountInstance = TribeAccount.at(upgradedTribeAccountAddress)
+      // Confirm escrowed balances and stakes on the upgraded community match the old community
+      const upgradedCommunityAccountAddress = await upgradedCommunityInstance.communityAccount()
+      const upgradedCommunityAccountInstance = CommunityAccount.at(upgradedCommunityAccountAddress)
       
-      const task1AmountUpgraded = await upgradedTribeAccountInstance.escrowedTaskBalances(task1Id)
-      const task2AmountUpgraded = await upgradedTribeAccountInstance.escrowedTaskBalances(task2Id)
-      const project1AmountUpgraded = await upgradedTribeAccountInstance.escrowedProjectBalances(project1Id)
-      const project2AmountUpgraded = await upgradedTribeAccountInstance.escrowedProjectBalances(project2Id)
-      const project1PayeeUpgraded = await upgradedTribeAccountInstance.escrowedProjectPayees(project1Id)
-      const project2PayeeUpgraded = await upgradedTribeAccountInstance.escrowedProjectPayees(project2Id)
+      const task1AmountUpgraded = await upgradedCommunityAccountInstance.escrowedTaskBalances(task1Id)
+      const task2AmountUpgraded = await upgradedCommunityAccountInstance.escrowedTaskBalances(task2Id)
+      const project1AmountUpgraded = await upgradedCommunityAccountInstance.escrowedProjectBalances(project1Id)
+      const project2AmountUpgraded = await upgradedCommunityAccountInstance.escrowedProjectBalances(project2Id)
+      const project1PayeeUpgraded = await upgradedCommunityAccountInstance.escrowedProjectPayees(project1Id)
+      const project2PayeeUpgraded = await upgradedCommunityAccountInstance.escrowedProjectPayees(project2Id)
 
-      const user1StakeAmountUpgraded = await upgradedTribeAccountInstance.stakedBalances(user1)
-      const user2StakeAmountUpgraded = await upgradedTribeAccountInstance.stakedBalances(user2)
-      const user1StakeTimeUpgraded = await upgradedTribeAccountInstance.timeStaked(user1)
-      const user2StakeTimeUpgraded = await upgradedTribeAccountInstance.timeStaked(user2)
+      const user1StakeAmountUpgraded = await upgradedCommunityAccountInstance.stakedBalances(user1)
+      const user2StakeAmountUpgraded = await upgradedCommunityAccountInstance.stakedBalances(user2)
+      const user1StakeTimeUpgraded = await upgradedCommunityAccountInstance.timeStaked(user1)
+      const user2StakeTimeUpgraded = await upgradedCommunityAccountInstance.timeStaked(user2)
       
       assert(user1StakeAmount.equals(user1StakeAmountUpgraded))
       assert(user2StakeAmount.equals(user2StakeAmountUpgraded))
       assert(user1StakeTime.equals(user1StakeTimeUpgraded))
       assert(user2StakeTime.equals(user2StakeTimeUpgraded))
 
-      assert(await upgradedTribeInstance.isMember(user1))
-      assert(await upgradedTribeInstance.isMember(user2))
+      assert(await upgradedCommunityInstance.isMember(user1))
+      assert(await upgradedCommunityInstance.isMember(user2))
 
       assert(task1Amount.equals(task1AmountUpgraded))
       assert(task2Amount.equals(task2AmountUpgraded))
@@ -177,15 +177,15 @@ contract('Upgrades Testing', function () {
       assert(project1Payee === project1PayeeUpgraded)
       assert(project2Payee === project2PayeeUpgraded)
       
-      // reward task and project completion on the upgraded tribe
+      // reward task and project completion on the upgraded community
 
       const user1NativeBalanceBefore = await nativeTokenInstance.balanceOf(user1, {from: curator})
       const user2NativeBalanceBefore = await nativeTokenInstance.balanceOf(user2, {from: curator})
 
-      await upgradedTribeInstance.rewardTaskCompletion(task1Id, user1, {from: curator})
-      await upgradedTribeInstance.rewardTaskCompletion(task2Id, user2, {from: curator})
-      await upgradedTribeInstance.rewardProjectCompletion(project1Id, {from: curator})
-      await upgradedTribeInstance.rewardProjectCompletion(project2Id, {from: curator})
+      await upgradedCommunityInstance.rewardTaskCompletion(task1Id, user1, {from: curator})
+      await upgradedCommunityInstance.rewardTaskCompletion(task2Id, user2, {from: curator})
+      await upgradedCommunityInstance.rewardProjectCompletion(project1Id, {from: curator})
+      await upgradedCommunityInstance.rewardProjectCompletion(project2Id, {from: curator})
       
       // check user balances are expected after rewarding
       
@@ -198,68 +198,68 @@ contract('Upgrades Testing', function () {
       assert(expectedUser1BalanceAfter.equals(user1NativeBalanceAfter))
       assert(expectedUser2BalanceAfter.equals(user2NativeBalanceAfter))
       
-      // test the new emergencyFundRetrieval() function on the upgraded tribe
+      // test the new emergencyFundRetrieval() function on the upgraded community
 
-      const curatorTribeTokenBalance = await tribeTokenInstance.balanceOf(curator)
+      const curatorCommunityTokenBalance = await communityTokenInstance.balanceOf(curator)
       const curatorNativeTokenBalance = await nativeTokenInstance.balanceOf(curator)
-      const tribeAccountTribeTokenBalance = await tribeTokenInstance.balanceOf(upgradedTribeAccountAddress)
-      const tribeAccountNativeTokenBalance = await nativeTokenInstance.balanceOf(upgradedTribeAccountAddress)
+      const communityAccountCommunityTokenBalance = await communityTokenInstance.balanceOf(upgradedCommunityAccountAddress)
+      const communityAccountNativeTokenBalance = await nativeTokenInstance.balanceOf(upgradedCommunityAccountAddress)
       
-      await upgradedTribeInstance.emergencyFundRetrieval({from: curator})
+      await upgradedCommunityInstance.emergencyFundRetrieval({from: curator})
 
-      const curatorTribeTokenBalanceAfter = await tribeTokenInstance.balanceOf(curator)
+      const curatorCommunityTokenBalanceAfter = await communityTokenInstance.balanceOf(curator)
       const curatorNativeTokenBalanceAfter = await nativeTokenInstance.balanceOf(curator)
-      const tribeAccountTribeTokenBalanceAfter = await tribeTokenInstance.balanceOf(upgradedTribeAccountAddress)
-      const tribeAccountNativeTokenBalanceAfter = await nativeTokenInstance.balanceOf(upgradedTribeAccountAddress)
+      const communityAccountCommunityTokenBalanceAfter = await communityTokenInstance.balanceOf(upgradedCommunityAccountAddress)
+      const communityAccountNativeTokenBalanceAfter = await nativeTokenInstance.balanceOf(upgradedCommunityAccountAddress)
 
-      assert(tribeAccountTribeTokenBalanceAfter.equals(0))
-      assert(tribeAccountNativeTokenBalanceAfter.equals(0))
-      assert(curatorTribeTokenBalanceAfter.equals(curatorTribeTokenBalance.plus(tribeAccountTribeTokenBalance)))
-      assert(curatorNativeTokenBalanceAfter.equals(curatorNativeTokenBalance.plus(tribeAccountNativeTokenBalance)))
+      assert(communityAccountCommunityTokenBalanceAfter.equals(0))
+      assert(communityAccountNativeTokenBalanceAfter.equals(0))
+      assert(curatorCommunityTokenBalanceAfter.equals(curatorCommunityTokenBalance.plus(communityAccountCommunityTokenBalance)))
+      assert(curatorNativeTokenBalanceAfter.equals(curatorNativeTokenBalance.plus(communityAccountNativeTokenBalance)))
     })
 
-    async function launchInitialTestTribe(minimumStakingRequirement, lockupPeriod, launchUuid, totalSupply, tokenDecimals) {
+    async function launchInitialTestCommunity(minimumStakingRequirement, lockupPeriod, launchUuid, totalSupply, tokenDecimals) {
       
-      // The tribe launcher needs momentary access to the logger so it can permission the tribe to use it
-      await loggerInstance.transferOwnershipNow(tribeLauncherInstance.address)
+      // The community launcher needs momentary access to the logger so it can permission the community to use it
+      await loggerInstance.transferOwnershipNow(communityLauncherInstance.address)
 
-      await tribeLauncherInstance.launchTribe(
+      await communityLauncherInstance.launchCommunity(
         [launchUuid, minimumStakingRequirement, lockupPeriod, totalSupply, tokenDecimals],
-        [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, tribeAccountFactoryInstance.address, registrarFactoryInstance.address, tribeFactoryInstance.address],
-        'Initial Test Tribe',
+        [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, communityAccountFactoryInstance.address, registrarFactoryInstance.address, communityFactoryInstance.address],
+        'Initial Test Community',
         'TT1',
         '1.0', {from: sender})
 
-      const launchedTribeCount = await tribeLauncherInstance.launchedTribeCount()
-      const launchedTribeRegistrarAddress = await tribeLauncherInstance.launchedTribeRegistrars(launchedTribeCount - 1)
-      const launchedTribeRegistrar = await Registrar.at(launchedTribeRegistrarAddress)
-      const launchedTribeAddresses = await launchedTribeRegistrar.getAddresses.call()
-      const launchedTribeInstance = await Tribe.at(launchedTribeAddresses.slice(-1)[0])
+      const launchedCommunityCount = await communityLauncherInstance.launchedCommunityCount()
+      const launchedCommunityRegistrarAddress = await communityLauncherInstance.launchedCommunityRegistrars(launchedCommunityCount - 1)
+      const launchedCommunityRegistrar = await Registrar.at(launchedCommunityRegistrarAddress)
+      const launchedCommunityAddresses = await launchedCommunityRegistrar.getAddresses.call()
+      const launchedCommunityInstance = await Community.at(launchedCommunityAddresses.slice(-1)[0])
       
-      return { launchedTribeRegistrar, launchedTribeInstance }
+      return { launchedCommunityRegistrar, launchedCommunityInstance }
     }
 
-    async function launchUpgradedTestTribe(minimumStakingRequirement, lockupPeriod, launchUuid, totalSupply, tokenDecimals) {
+    async function launchUpgradedTestCommunity(minimumStakingRequirement, lockupPeriod, launchUuid, totalSupply, tokenDecimals) {
       
-      // The tribe launcher needs momentary access to the logger so it can permission the tribe to use it
-      await loggerInstance.transferOwnershipNow(upgradedTribeLauncherInstance.address)
+      // The community launcher needs momentary access to the logger so it can permission the community to use it
+      await loggerInstance.transferOwnershipNow(upgradedCommunityLauncherInstance.address)
       
-      await upgradedTribeLauncherInstance.launchTribe(
+      await upgradedCommunityLauncherInstance.launchCommunity(
         [launchUuid, minimumStakingRequirement, lockupPeriod, totalSupply, tokenDecimals],
-        [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, tribeAccountFactoryInstance.address, registrarFactoryInstance.address, upgradedTribeFactoryInstance.address],
-        'Upgraded Test Tribe',
+        [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, communityAccountFactoryInstance.address, registrarFactoryInstance.address, upgradedCommunityFactoryInstance.address],
+        'Upgraded Test Community',
         'TT2',
         '2.0',
         true,
         {from: curator})
       
-      const launchedTribeCount = await upgradedTribeLauncherInstance.launchedTribeCount()
-      const launchedTribeRegistrarAddress = await upgradedTribeLauncherInstance.launchedTribeRegistrars(launchedTribeCount - 1)
-      const launchedTribeRegistrar = await Registrar.at(launchedTribeRegistrarAddress)
-      const launchedTribeAddresses = await launchedTribeRegistrar.getAddresses.call()
-      const launchedTribeInstance = await UpgradedTribe.at(launchedTribeAddresses.slice(-1)[0])
+      const launchedCommunityCount = await upgradedCommunityLauncherInstance.launchedCommunityCount()
+      const launchedCommunityRegistrarAddress = await upgradedCommunityLauncherInstance.launchedCommunityRegistrars(launchedCommunityCount - 1)
+      const launchedCommunityRegistrar = await Registrar.at(launchedCommunityRegistrarAddress)
+      const launchedCommunityAddresses = await launchedCommunityRegistrar.getAddresses.call()
+      const launchedCommunityInstance = await UpgradedCommunity.at(launchedCommunityAddresses.slice(-1)[0])
 
-      return { launchedTribeRegistrar, launchedTribeInstance }
+      return { launchedCommunityRegistrar, launchedCommunityInstance }
     }
   })
 })

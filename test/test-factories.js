@@ -1,11 +1,11 @@
 const RegistrarFactory = artifacts.require("RegistrarFactory")
 const SmartTokenFactory = artifacts.require("SmartTokenFactory")
-const TribeFactory = artifacts.require("TribeFactory")
-const TribeAccountFactory = artifacts.require("TribeAccountFactory")
+const CommunityFactory = artifacts.require("CommunityFactory")
+const CommunityAccountFactory = artifacts.require("CommunityAccountFactory")
 const Registrar = artifacts.require("Registrar")
 const SmartToken = artifacts.require("SmartToken")
-const Tribe = artifacts.require("Tribe")
-const TribeAccount = artifacts.require("TribeAccount")
+const Community = artifacts.require("Community")
+const CommunityAccount = artifacts.require("CommunityAccount")
 
 contract('Factory Testing', function (accounts) {
 
@@ -29,12 +29,12 @@ contract('Factory Testing', function (accounts) {
       assert(owner === accounts[0])
     })
 
-    it("It should demonstrate TribeAccountFactory launching a new storage", async function () {
+    it("It should demonstrate CommunityAccountFactory launching a new storage", async function () {
 
-      const tribeAccountFactoryInstance = await TribeAccountFactory.deployed({from: accounts[0]})
-      let tx = await tribeAccountFactoryInstance.create({from: accounts[0]})
-      const tribeAccountInstance = TribeAccount.at(tx.receipt.logs[0].address)
-      const owner = await tribeAccountInstance.owner()
+      const communityAccountFactoryInstance = await CommunityAccountFactory.deployed({from: accounts[0]})
+      let tx = await communityAccountFactoryInstance.create({from: accounts[0]})
+      const communityAccountInstance = CommunityAccount.at(tx.receipt.logs[0].address)
+      const owner = await communityAccountInstance.owner()
       assert(owner === accounts[0])
     })
   })

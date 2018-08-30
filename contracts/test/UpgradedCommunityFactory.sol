@@ -1,35 +1,35 @@
 pragma solidity ^0.4.11;
 
-import "./UpgradedTribe.sol";
+import "./UpgradedCommunity.sol";
 
 /*
 
-Used in integration-test-upgrades.js to demonstrate how we can update a tribe
+Used in integration-test-upgrades.js to demonstrate how we can update a community
 
 */
-contract UpgradedTribeFactory {
+contract UpgradedCommunityFactory {
     
     function create(
         uint minimumStakingRequirement, 
         uint lockupPeriodSeconds, 
         address curator, 
-        address tribeTokenContractAddress, 
+        address communityTokenContractAddress,
         address nativeTokenContractAddress, 
         address voteController, 
         address loggerContractAddress, 
-        address tribeAccountContractAddress,
+        address communityAccountContractAddress,
         bool emergencyWithdrawEnabled
         ) public returns(address) {
-        UpgradedTribe upgradedTribe = new UpgradedTribe(
+        UpgradedCommunity upgradedCommunity = new UpgradedCommunity(
         minimumStakingRequirement, 
         lockupPeriodSeconds, 
         curator, 
-        tribeTokenContractAddress, 
+        communityTokenContractAddress,
         nativeTokenContractAddress, 
         voteController,
         loggerContractAddress,
-        tribeAccountContractAddress,
+        communityAccountContractAddress,
         emergencyWithdrawEnabled);
-        return address(upgradedTribe);
+        return address(upgradedCommunity);
     }
 }

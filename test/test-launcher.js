@@ -1,33 +1,33 @@
-const TribeLauncher = artifacts.require("TribeLauncher")
-const Tribe = artifacts.require("Tribe")
+const CommunityLauncher = artifacts.require("CommunityLauncher")
+const Community = artifacts.require("Community")
 const Logger = artifacts.require("Logger")
 const SmartToken = artifacts.require("SmartToken")
 const SmartTokenFactory = artifacts.require("SmartTokenFactory")
-const TribeAccountFactory = artifacts.require("TribeAccountFactory")
+const CommunityAccountFactory = artifacts.require("CommunityAccountFactory")
 const Registrar = artifacts.require("Registrar")
 const RegistrarFactory = artifacts.require("RegistrarFactory")
-const TribeFactory = artifacts.require("TribeFactory")
+const CommunityFactory = artifacts.require("CommunityFactory")
 const Bluebird = require('Bluebird')
  
 
-contract('TribeLauncher', function () {
-  let tribeLauncherInstance
+contract('CommunityLauncher', function () {
+  let communityLauncherInstance
   let nativeTokenInstance
   let loggerInstance
   let smartTokenFactoryInstance
-  let tribeAccountFactoryInstance
+  let communityAccountFactoryInstance
   let registrarFactoryInstance
-  let tribeFactoryInstance
+  let communityFactoryInstance
 
   beforeEach(async () => {
     loggerInstance = await Logger.deployed()
     nativeTokenInstance = await SmartToken.deployed()
-    tribeLauncherInstance = await TribeLauncher.deployed()
+    communityLauncherInstance = await CommunityLauncher.deployed()
     smartTokenFactoryInstance = await SmartTokenFactory.deployed()
-    tribeAccountFactoryInstance = await TribeAccountFactory.deployed()
-    tribeAccountFactoryInstance = await TribeAccountFactory.deployed()
+    communityAccountFactoryInstance = await CommunityAccountFactory.deployed()
+    communityAccountFactoryInstance = await CommunityAccountFactory.deployed()
     registrarFactoryInstance = await RegistrarFactory.deployed()
-    tribeFactoryInstance = await TribeFactory.deployed()
+    communityFactoryInstance = await CommunityFactory.deployed()
   })
   describe("It should test the launcher", function() {
     const sender = web3.eth.accounts[0]
@@ -35,67 +35,67 @@ contract('TribeLauncher', function () {
     const nonCurator = web3.eth.accounts[5]
     const voteController = curator
    
-    it("It should launch a new tribe contract when calling launchTribe()", async function () {
+    it("It should launch a new community contract when calling launchCommunity()", async function () {
       const minimumStakingRequirement = 10
       const lockupPeriod = 0
       const launchUuid = 123
       const totalSupply = 1000000
       const tokenDecimals = 18
 
-      // The tribe launcher needs momentary access to the logger so it can permission the tribe to use it
-      await loggerInstance.transferOwnershipNow(tribeLauncherInstance.address)
+      // The community launcher needs momentary access to the logger so it can permission the community to use it
+      await loggerInstance.transferOwnershipNow(communityLauncherInstance.address)
       
-      await tribeLauncherInstance.launchTribe(
+      await communityLauncherInstance.launchCommunity(
         [launchUuid, minimumStakingRequirement, lockupPeriod, totalSupply, tokenDecimals],
-        [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, tribeAccountFactoryInstance.address, registrarFactoryInstance.address, tribeFactoryInstance.address],
-        'Test Tribe 1',
+        [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, communityAccountFactoryInstance.address, registrarFactoryInstance.address, communityFactoryInstance.address],
+        'Test Community 1',
         'TT1',
         '1.0', {from: sender})
       
-      const launchedTribeCount = await tribeLauncherInstance.launchedTribeCount()
-      const launchedTribeRegistrarAddress = await tribeLauncherInstance.launchedTribeRegistrars(launchedTribeCount - 1)
+      const launchedCommunityCount = await communityLauncherInstance.launchedCommunityCount()
+      const launchedCommunityRegistrarAddress = await communityLauncherInstance.launchedCommunityRegistrars(launchedCommunityCount - 1)
 
-      const launchedTribeRegistrar = await Registrar.at(launchedTribeRegistrarAddress)
-      const launchedTribeAddresses = await launchedTribeRegistrar.getAddresses.call()
-      const launchedTribeInstance = await Tribe.at(launchedTribeAddresses.slice(-1)[0])
+      const launchedCommunityRegistrar = await Registrar.at(launchedCommunityRegistrarAddress)
+      const launchedCommunityAddresses = await launchedCommunityRegistrar.getAddresses.call()
+      const launchedCommunityInstance = await Community.at(launchedCommunityAddresses.slice(-1)[0])
       
       // all the variables that are set on the contract
-      const tribe_minimumStakingRequirement = await launchedTribeInstance.minimumStakingRequirement()
-      const tribe_nativeTokenContractAddress = await launchedTribeInstance.nativeTokenInstance()
-      const tribe_voteController = await launchedTribeInstance.voteController()
-      const launchedEvent = Bluebird.promisify(tribeLauncherInstance.Launched)()
+      const community_minimumStakingRequirement = await launchedCommunityInstance.minimumStakingRequirement()
+      const community_nativeTokenContractAddress = await launchedCommunityInstance.nativeTokenInstance()
+      const community_voteController = await launchedCommunityInstance.voteController()
+      const launchedEvent = Bluebird.promisify(communityLauncherInstance.Launched)()
       return launchedEvent.then( (result) => {
-        assert(launchedTribeInstance.tribeTokenInstance)
-        assert(launchedTribeAddresses.length > 0)
-        assert(launchedTribeRegistrarAddress.length > 0)
+        assert(launchedCommunityInstance.communityTokenInstance)
+        assert(launchedCommunityAddresses.length > 0)
+        assert(launchedCommunityRegistrarAddress.length > 0)
         assert(result.args.launchUuid.toString() === launchUuid.toString())
-        assert(tribe_minimumStakingRequirement.toString() === minimumStakingRequirement.toString())
-        assert(tribe_nativeTokenContractAddress === nativeTokenInstance.address)
-        assert(tribe_voteController === voteController)
+        assert(community_minimumStakingRequirement.toString() === minimumStakingRequirement.toString())
+        assert(community_nativeTokenContractAddress === nativeTokenInstance.address)
+        assert(community_voteController === voteController)
       }).catch((rejected) => {
         assert(false, rejected)
       })
     })
 
-    it("It should fail when a non-owner attempts to launch a new tribe when calling launchTribe()", async function () {
+    it("It should fail when a non-owner attempts to launch a new community when calling launchCommunity()", async function () {
       const minimumStakingRequirement = 10
       const lockupPeriod = 0
       const launchUuid = 123
       const totalSupply = 1000000
       const tokenDecimals = 18
 
-      // The tribe launcher needs momentary access to the logger so it can permission the tribe to use it
-      await loggerInstance.transferOwnershipNow(tribeLauncherInstance.address)
+      // The community launcher needs momentary access to the logger so it can permission the community to use it
+      await loggerInstance.transferOwnershipNow(communityLauncherInstance.address)
       try {
-        await tribeLauncherInstance.launchTribe(
+        await communityLauncherInstance.launchCommunity(
           [launchUuid, minimumStakingRequirement, lockupPeriod, totalSupply, tokenDecimals],
-          [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, tribeAccountFactoryInstance.address, registrarFactoryInstance.address, tribeFactoryInstance.address],
-          'Test Tribe 1',
+          [curator, nativeTokenInstance.address, voteController, loggerInstance.address, smartTokenFactoryInstance.address, communityAccountFactoryInstance.address, registrarFactoryInstance.address, communityFactoryInstance.address],
+          'Test Community 1',
           'TT1',
           '1.0', {from: nonCurator})
        
         // all the variables that are set on the contract
-        const launchedEvent = Bluebird.promisify(tribeLauncherInstance.Launched)()
+        const launchedEvent = Bluebird.promisify(communityLauncherInstance.Launched)()
 
         return launchedEvent.then(() => {
           assert(false)

@@ -1,32 +1,32 @@
 pragma solidity ^0.4.11;
 
-import "../Tribe.sol";
+import "../Community.sol";
 
 /*
 
-Helps keep TribeLauncher.sol from needing more than the block gas limit
+Helps keep CommunityLauncher.sol from needing more than the block gas limit
 
 */
-contract TribeFactory {
+contract CommunityFactory {
     
     function create(
         uint minimumStakingRequirement, 
         uint lockupPeriodSeconds, 
         address curator, 
-        address tribeTokenContractAddress, 
+        address communityTokenContractAddress,
         address nativeTokenContractAddress, 
         address voteController, 
         address loggerContractAddress, 
-        address tribeAccountContractAddress) public returns(address) {
-        Tribe tribe = new Tribe(
+        address communityAccountContractAddress) public returns(address) {
+        Community community = new Community(
         minimumStakingRequirement, 
         lockupPeriodSeconds, 
         curator, 
-        tribeTokenContractAddress, 
+        communityTokenContractAddress,
         nativeTokenContractAddress, 
         voteController,
         loggerContractAddress,
-        tribeAccountContractAddress);
-        return address(tribe);
+        communityAccountContractAddress);
+        return address(community);
     }
 }
