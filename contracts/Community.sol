@@ -5,21 +5,16 @@ import "./interfaces/ISmartToken.sol";
 import "./interfaces/ICommunity.sol";
 import "./utility/SafeMath.sol";
 
-/*
-
-This is the main contract containing community logic.  It has the following functionality:
-
-- Staking & Unstaking community tokens.  THis is how a user "join" or "leaves" the community.
-
-- Creating Projects and tasks by locking up Native tokens in escrow until the curator or voteController determines the task has been completed.
-
-- All events are logged to the centralized logger contract.
-
-- The communityAccount contract is owned by the community and holds all staking and escrow related funds and variables.
-  This abstraction of funds allows for a much simpler upgrade process by launching a new community and transferring ownership of the existing communityAccount.
-  The tests in test/integration-test-upgrades.js demonstrate the upgrade process.
-
-*/
+/**
+@notice Main community logic contract.
+@notice functionality:
+@notice 1) Stake / Unstake community tokens.  This is how user joins or leaves community.
+@notice 2) Create Projects and Tasks by escrowing NTV token until curator or voteController determines task complete
+@notice 3) Log all events to singleton Logger contract
+@notice 4) Own communityAccount contract which holds all staking- and escrow-related funds and variables
+@notice --- This abstraction of funds allows for easy upgrade process; launch new community -> transfer ownership of the existing communityAccount
+@notice --- View test/integration-test-upgrades.js to demonstrate this process
+ */
 contract Community is ICommunity {
 
     address public curator;
@@ -77,6 +72,7 @@ contract Community is ICommunity {
         minimumStakingRequirement = _minimumStakingRequirement;
     }
 
+    /// @notice Sets lockup period for community staking
     function setLockupPeriodSeconds(uint _lockupPeriodSeconds) public onlyCurator {
         lockupPeriodSeconds = _lockupPeriodSeconds;
     }
@@ -98,41 +94,42 @@ contract Community is ICommunity {
         communityAccount.transferOwnershipNow(newOwner);
     }
 
-    // gets the amount in the dev fund that isn't locked up by a project or task stake
+    /// @return Amount in the dev fund not locked up by project or task stake
     function getAvailableDevFund() public view returns (uint) {
         uint devFundBalance = nativeTokenInstance.balanceOf(address(communityAccount));
         return SafeMath.sub(devFundBalance, getLockedDevFundAmount());
     }
 
+    /// @return Amount locked up in escrow
     function getLockedDevFundAmount() public view returns (uint) {
         return SafeMath.add(communityAccount.totalTaskEscrow(), communityAccount.totalProjectEscrow());
     }
 
-    /* Task escrow code below (in native tokens) */
+    /* Task escrow code below (in community tokens) */
 
-    // updates the escrow values for a new task
+    /// @notice Updates the escrow values for a new task
     function createNewTask(uint uuid, uint amount) public onlyCurator sufficientDevFundBalance (amount) {
         communityAccount.setEscrowedTaskBalances(uuid, amount);
         communityAccount.setTotalTaskEscrow(SafeMath.add(communityAccount.totalTaskEscrow(), amount));
         logger.emitTaskCreated(uuid, amount);
     }
 
-    // subtracts the tasks escrow and sets the tasks escrow balance to 0
+    /// @notice Subtracts the tasks escrow and sets tasks escrow balance to 0
     function cancelTask(uint uuid) public onlyCurator {
         communityAccount.setTotalTaskEscrow(SafeMath.sub(communityAccount.totalTaskEscrow(), communityAccount.escrowedTaskBalances(uuid)));
         communityAccount.setEscrowedTaskBalances(uuid, 0);
     }
 
-    // pays put to the task completer and updates the escrow balances
+    /// @notice Pays task completer and updates escrow balances
     function rewardTaskCompletion(uint uuid, address user) public onlyVoteController {
         communityAccount.transferTokensOut(address(nativeTokenInstance), user, communityAccount.escrowedTaskBalances(uuid));
         communityAccount.setTotalTaskEscrow(SafeMath.sub(communityAccount.totalTaskEscrow(), communityAccount.escrowedTaskBalances(uuid)));
         communityAccount.setEscrowedTaskBalances(uuid, 0);
     }
 
-    /* Project escrow code below (in native tokens) */
+    /* Project escrow code below (in community tokens) */
 
-    // updates the escrow values along with the project payee for a new project
+    /// @notice updates the escrow values along with the project payee for a new project
     function createNewProject(uint uuid, uint amount, address projectPayee) public onlyCurator sufficientDevFundBalance (amount) {
         communityAccount.setEscrowedProjectBalances(uuid, amount);
         communityAccount.setEscrowedProjectPayees(uuid, projectPayee);
@@ -140,13 +137,14 @@ contract Community is ICommunity {
         logger.emitProjectCreated(uuid, amount, projectPayee);
     }
 
-    // subtracts the tasks escrow and sets the tasks escrow balance to 0
+    /// @notice Subtracts tasks escrow and sets tasks escrow balance to 0
     function cancelProject(uint uuid) public onlyCurator {
         communityAccount.setTotalProjectEscrow(SafeMath.sub(communityAccount.totalProjectEscrow(), communityAccount.escrowedProjectBalances(uuid)));
         communityAccount.setEscrowedProjectBalances(uuid, 0);
     }
 
-    // pays out the project completion and then updates the escrow balances
+    /// @notice Pays out upon project completion
+    /// @notice Updates escrow balances
     function rewardProjectCompletion(uint uuid) public onlyVoteController {
         communityAccount.transferTokensOut(
             address(nativeTokenInstance),
@@ -156,7 +154,7 @@ contract Community is ICommunity {
         communityAccount.setEscrowedProjectBalances(uuid, 0);
     }
 
-    // Staking code below (in community tokens)
+    /// @notice Stake code (in community tokens)
     function stakeCommunityTokens() public {
         uint amount = minimumStakingRequirement - communityAccount.stakedBalances(msg.sender);
         require(amount > 0);
@@ -167,8 +165,8 @@ contract Community is ICommunity {
         communityAccount.setTimeStaked(now, msg.sender);
     }
 
-    // checks that a user is able to unstake by looking at the lockup period and the balance
-    // unstakes a community and sends funds back to the user=
+    /// @notice Unstakes user from community and sends funds back to user
+    /// @notice Checks lockup period and balance before unstaking
     function unstakeCommunityTokens() public {
         uint amount = communityAccount.stakedBalances(msg.sender);
 
@@ -179,7 +177,7 @@ contract Community is ICommunity {
         communityTokenInstance.transfer(msg.sender, amount);
     }
 
-    // checks that the user is fully staked
+    /// @notice Checks that the user is fully staked
     function isMember(address memberAddress) public view returns (bool) {
         return (communityAccount.stakedBalances(memberAddress) >= minimumStakingRequirement);
     }

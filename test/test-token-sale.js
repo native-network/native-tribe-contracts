@@ -153,7 +153,7 @@ contract('SmartToken-sale', function () {
       const priceInWei = web3.toWei(1, 'ether')
       const amountForSale = 1000000
       const amountToSpend = web3.toWei(10, 'ether')
-      const expectedPurchaseAmount = amountToSpend / priceInWei
+      const expectedPurchaseAmount = amountToSpend / priceInWei // Handle floating point roundoff errors?
 
       const TokensPurchased = util.promisify(smartNativeTokenInstance.TokensPurchased)()
       
@@ -273,7 +273,7 @@ contract('SmartToken-sale', function () {
       return assert(false)
     })
 
-    it("It fail if attempting to purchase more tokens than are available for sale", async () => {
+    it("It should fail if attempting to purchase more tokens than are available for sale", async () => {
 
       const startTime = Math.floor(Date.now() / 1000)
       const endTime = Math.floor(startTime + (60 * 60 * 24))

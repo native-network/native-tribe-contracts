@@ -4,15 +4,13 @@ import "./utility/Owned.sol";
 import "./interfaces/IERC20.sol";
 import "./interfaces/ICommunityAccount.sol";
 
-
-/*
-
-This contract is used as a communities data store. This has two distinct advantages
-1. We decouple the logic from the data
-2. We can safely upgrade the logic contract without accidentally blowing away the stored data
-
+/**
+@title Tribe Account
+@notice This contract is used as a community's data store.
+@notice Advantages:
+@notice 1) Decouple logic contract from data contract
+@notice 2) Safely upgrade logic contract without compromising stored data
 */
-
 contract CommunityAccount is Owned, ICommunityAccount {
 
     // Staking Variables.  In community token
@@ -26,13 +24,19 @@ contract CommunityAccount is Owned, ICommunityAccount {
     mapping (uint256 => uint256) public escrowedTaskBalances;
     mapping (uint256 => uint256) public escrowedProjectBalances;
     mapping (uint256 => address) public escrowedProjectPayees;
-
-    // This function allows the community to transfer tokens out of the contract.
+    
+    /// @notice This function allows the community to transfer tokens out of the contract.
+    /// @param tokenContractAddress Address of community contract
+    /// @param destination Destination address of user looking to remove tokens from contract
+    /// @param amount Amount to transfer out of community
     function transferTokensOut(address tokenContractAddress, address destination, uint amount) public ownerOnly {
         IERC20 token = IERC20(tokenContractAddress);
         token.transfer(destination, amount);
     }
 
+    /// @notice This is the community staking method
+    /// @param _amount Amount to be staked
+    /// @param msgSender Address of the staker
     function setStakedBalances(uint _amount, address msgSender) public ownerOnly {
         stakedBalances[msgSender] = _amount;
     }

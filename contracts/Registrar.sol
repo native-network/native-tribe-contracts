@@ -3,10 +3,8 @@ pragma solidity ^0.4.24;
 import "./utility/Owned.sol";
 import "./interfaces/IRegistrar.sol";
 
-/*
-
-Contains a record of all previous and current address of a community.  For upgradeability.
-
+/**
+@notice Contains a record of all previous and current address of a community.  For upgradeability.
 */
 contract Registrar is Owned, IRegistrar {
 
