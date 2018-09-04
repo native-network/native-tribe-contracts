@@ -67,35 +67,43 @@ contract Community is ICommunity {
     // TODO add events to each of these
     function transferCurator(address _curator) public onlyCurator {
         curator = _curator;
+        logger.emitGenericLog("transferCurator", "");
     }
 
     function transferVoteController(address _voteController) public onlyCurator {
         voteController = _voteController;
+        logger.emitGenericLog("transferVoteController", "");
     }
 
     function setMinimumStakingRequirement(uint _minimumStakingRequirement) public onlyCurator {
         minimumStakingRequirement = _minimumStakingRequirement;
+        logger.emitGenericLog("setMinimumStakingRequirement", "");
     }
 
     function setLockupPeriodSeconds(uint _lockupPeriodSeconds) public onlyCurator {
         lockupPeriodSeconds = _lockupPeriodSeconds;
+        logger.emitGenericLog("setLockupPeriodSeconds", "");
     }
 
     function setLogger(address newLoggerAddress) public onlyCurator {
         logger = Logger(newLoggerAddress);
+        logger.emitGenericLog("setLogger", "");
     }
 
     function setTokenAddresses(address newNativeTokenAddress, address newCommunityTokenAddress) public onlyCurator {
         nativeTokenInstance = ISmartToken(newNativeTokenAddress);
         communityTokenInstance = ISmartToken(newCommunityTokenAddress);
+        logger.emitGenericLog("setTokenAddresses", "");
     }
 
     function setCommunityAccount(address newCommunityAccountAddress) public onlyCurator {
         communityAccount = CommunityAccount(newCommunityAccountAddress);
+        logger.emitGenericLog("setCommunityAccount", "");
     }
 
     function setCommunityAccountOwner(address newOwner) public onlyCurator {
         communityAccount.transferOwnershipNow(newOwner);
+        logger.emitGenericLog("setCommunityAccountOwner", "");
     }
 
     // gets the amount in the dev fund that isn't locked up by a project or task stake
@@ -115,12 +123,14 @@ contract Community is ICommunity {
         communityAccount.setEscrowedTaskBalances(uuid, amount);
         communityAccount.setTotalTaskEscrow(SafeMath.add(communityAccount.totalTaskEscrow(), amount));
         logger.emitTaskCreated(uuid, amount);
+        logger.emitGenericLog("createNewTask", "");
     }
 
     // subtracts the tasks escrow and sets the tasks escrow balance to 0
     function cancelTask(uint uuid) public onlyCurator {
         communityAccount.setTotalTaskEscrow(SafeMath.sub(communityAccount.totalTaskEscrow(), communityAccount.escrowedTaskBalances(uuid)));
         communityAccount.setEscrowedTaskBalances(uuid, 0);
+        logger.emitGenericLog("cancelTask", "");
     }
 
     // pays put to the task completer and updates the escrow balances
@@ -128,6 +138,7 @@ contract Community is ICommunity {
         communityAccount.transferTokensOut(address(nativeTokenInstance), user, communityAccount.escrowedTaskBalances(uuid));
         communityAccount.setTotalTaskEscrow(SafeMath.sub(communityAccount.totalTaskEscrow(), communityAccount.escrowedTaskBalances(uuid)));
         communityAccount.setEscrowedTaskBalances(uuid, 0);
+        logger.emitGenericLog("rewardTaskCompletion", "");
     }
 
     /* Project escrow code below (in native tokens) */
@@ -138,12 +149,14 @@ contract Community is ICommunity {
         communityAccount.setEscrowedProjectPayees(uuid, projectPayee);
         communityAccount.setTotalProjectEscrow(SafeMath.add(communityAccount.totalProjectEscrow(), amount));
         logger.emitProjectCreated(uuid, amount, projectPayee);
+        logger.emitGenericLog("createNewProject", "");
     }
 
     // subtracts the tasks escrow and sets the tasks escrow balance to 0
     function cancelProject(uint uuid) public onlyCurator {
         communityAccount.setTotalProjectEscrow(SafeMath.sub(communityAccount.totalProjectEscrow(), communityAccount.escrowedProjectBalances(uuid)));
         communityAccount.setEscrowedProjectBalances(uuid, 0);
+        logger.emitGenericLog("cancelProject", "");
     }
 
     // pays out the project completion and then updates the escrow balances
@@ -154,6 +167,7 @@ contract Community is ICommunity {
             communityAccount.escrowedProjectBalances(uuid));
         communityAccount.setTotalProjectEscrow(SafeMath.sub(communityAccount.totalProjectEscrow(), communityAccount.escrowedProjectBalances(uuid)));
         communityAccount.setEscrowedProjectBalances(uuid, 0);
+        logger.emitGenericLog("rewardProjectCompletion", "");
     }
 
     // Staking code below (in community tokens)
@@ -165,6 +179,7 @@ contract Community is ICommunity {
         communityAccount.setStakedBalances(SafeMath.add(communityAccount.stakedBalances(msg.sender), amount), msg.sender);
         communityAccount.setTotalStaked(SafeMath.add(communityAccount.totalStaked(), amount));
         communityAccount.setTimeStaked(now, msg.sender);
+        logger.emitGenericLog("stakeCommunityTokens", "");
     }
 
     // checks that a user is able to unstake by looking at the lockup period and the balance
@@ -177,6 +192,7 @@ contract Community is ICommunity {
         communityAccount.setStakedBalances(0, msg.sender);
         communityAccount.setTotalStaked(SafeMath.sub(communityAccount.totalStaked(), amount));
         communityTokenInstance.transfer(msg.sender, amount);
+        logger.emitGenericLog("unstakeCommunityTokens", "");
     }
 
     // checks that the user is fully staked
