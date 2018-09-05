@@ -29,7 +29,7 @@ contract Logger is Owned, ILogger  {
     // Logger
     event NewCommunityAddress(address msgSender, address _newAddress);
 
-    event GenericLog(string messageType, string message);
+    event GenericLog(address msgSender, string messageType, string message);
     mapping (address => bool) public permissionedAddresses;
 
     modifier hasLoggerPermissions(address _address) {
@@ -70,6 +70,6 @@ contract Logger is Owned, ILogger  {
     }
 
     function emitGenericLog(string messageType, string message) public hasLoggerPermissions(msg.sender) {
-        emit GenericLog(messageType, message);
+        emit GenericLog(msg.sender, messageType, message);
     }
 }
