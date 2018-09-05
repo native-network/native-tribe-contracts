@@ -102,7 +102,7 @@ Inputs
 
 | **type** | **name** | **description** |
 |-|-|-|
-| *uint256* | balance | undefined |
+| *uint256* | balance | Balance which to set total project to |
 
 
 ## *function* escrowedProjectPayees
@@ -126,8 +126,8 @@ Inputs
 
 | **type** | **name** | **description** |
 |-|-|-|
-| *uint256* | uuid | undefined |
-| *uint256* | balance | undefined |
+| *uint256* | uuid | id of escrowed task |
+| *uint256* | balance | Balance to be set of escrowed task |
 
 
 ## *function* timeStaked
@@ -160,8 +160,8 @@ Inputs
 
 | **type** | **name** | **description** |
 |-|-|-|
-| *uint256* | uuid | undefined |
-| *address* | payeeAddress | undefined |
+| *uint256* | uuid | id of escrowed project |
+| *address* | payeeAddress | Address funds will go to once project completed |
 
 
 ## *function* totalStaked
@@ -225,8 +225,8 @@ Inputs
 
 | **type** | **name** | **description** |
 |-|-|-|
-| *uint256* | uuid | undefined |
-| *uint256* | balance | undefined |
+| *uint256* | uuid | id of escrowed project |
+| *uint256* | balance | Balance to be set of escrowed project |
 
 
 ## *function* setTotalTaskEscrow
@@ -238,7 +238,7 @@ Inputs
 
 | **type** | **name** | **description** |
 |-|-|-|
-| *uint256* | balance | undefined |
+| *uint256* | balance | Balance which to set total task escrow to |
 
 
 ## *function* newOwner
@@ -270,7 +270,7 @@ Inputs
 
 | **type** | **name** | **description** |
 |-|-|-|
-| *uint256* | _totalStaked | undefined |
+| *uint256* | _totalStaked | Set total amount staked in community |
 
 
 ## *function* escrowedTaskBalances
@@ -307,8 +307,8 @@ Inputs
 
 | **type** | **name** | **description** |
 |-|-|-|
-| *uint256* | _timeStaked | undefined |
-| *address* | msgSender | undefined |
+| *uint256* | _timeStaked | Time of user staking into community |
+| *address* | msgSender | Staker address |
 
 ## *event* OwnerUpdate
 

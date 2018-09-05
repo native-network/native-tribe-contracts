@@ -41,6 +41,16 @@ contract Community is ICommunity {
         _;
     }
 
+    /**
+    @param _minimumStakingRequirement Minimum stake amount to join community
+    @param _lockupPeriodSeconds Required minimum holding time, in seconds, after joining for staker to leave
+    @param _curator Address of community curator
+    @param _communityTokenContractAddress Address of community token contract
+    @param _nativeTokenContractAddress Address of ontract
+    @param _voteController Address of vote controller
+    @param _loggerContractAddress
+    @param _communityAccountContractAddress
+     */
     constructor(uint _minimumStakingRequirement,
         uint _lockupPeriodSeconds,
         address _curator,
@@ -60,43 +70,72 @@ contract Community is ICommunity {
     }
 
     // TODO add events to each of these
+    /**
+    @notice Sets curator to input curator address
+    @param _curator Address of new community curator
+     */
     function transferCurator(address _curator) public onlyCurator {
         curator = _curator;
         logger.emitGenericLog("transferCurator", "");
     }
 
+    /**
+    @notice Sets vote controller to input vote controller address
+    @param _voteController Address of new vote controller
+     */
     function transferVoteController(address _voteController) public onlyCurator {
         voteController = _voteController;
         logger.emitGenericLog("transferVoteController", "");
     }
 
+    /**
+    @notice Sets the minimum community staking requirement
+    @param _minimumStakingRequirement Minimum community staking requirement to be set
+     */
     function setMinimumStakingRequirement(uint _minimumStakingRequirement) public onlyCurator {
         minimumStakingRequirement = _minimumStakingRequirement;
         logger.emitGenericLog("setMinimumStakingRequirement", "");
     }
 
-    /// @notice Sets lockup period for community staking
+    /**
+    @notice Sets lockup period for community staking
+    @param _lockupPeriodSeconds Community staking lockup period, in seconds
+    */
     function setLockupPeriodSeconds(uint _lockupPeriodSeconds) public onlyCurator {
         lockupPeriodSeconds = _lockupPeriodSeconds;
         logger.emitGenericLog("setLockupPeriodSeconds", "");
     }
 
+    /**
+    @notice Updates Logger contract address to be used
+    @param newLoggerAddress Address of new Logger contract
+     */
     function setLogger(address newLoggerAddress) public onlyCurator {
         logger = Logger(newLoggerAddress);
         logger.emitGenericLog("setLogger", "");
     }
 
+    /**
+    @param newNativeTokenAddress New Native token address
+    @param newCommunityTokenAddress New community token address
+     */
     function setTokenAddresses(address newNativeTokenAddress, address newCommunityTokenAddress) public onlyCurator {
         nativeTokenInstance = ISmartToken(newNativeTokenAddress);
         communityTokenInstance = ISmartToken(newCommunityTokenAddress);
         logger.emitGenericLog("setTokenAddresses", "");
     }
 
+    /**
+    @param newCommunityAccountAddress Address of new community account
+     */
     function setCommunityAccount(address newCommunityAccountAddress) public onlyCurator {
         communityAccount = CommunityAccount(newCommunityAccountAddress);
         logger.emitGenericLog("setCommunityAccount", "");
     }
 
+    /**
+    @param newOwner New community account owner address
+     */
     function setCommunityAccountOwner(address newOwner) public onlyCurator {
         communityAccount.transferOwnershipNow(newOwner);
         logger.emitGenericLog("setCommunityAccountOwner", "");
