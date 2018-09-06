@@ -30,7 +30,7 @@ Upgrade Logger Example:
 3) Attach logger to community
 4) test that it still works
 
- */
+*/
 
 
 contract('Upgrades Testing', function () {
