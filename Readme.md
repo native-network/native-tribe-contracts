@@ -20,6 +20,10 @@
 
 1. truffle test
 
+#### A note about tests
+
+The tests were built to run on ganache or testrpc.  In order to run the tests on a live network node the tests will need to be refactored due to the way transaction receipts are received instantly on ganache / testrpc vs a live network.  Ganache / testrpc also return revert error messages in a different format, some of the tests are expecting a specific error string and will fail on a live network.
+
 -----
 
 # Native contract structures
