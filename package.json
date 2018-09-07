@@ -17,6 +17,7 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/devbynature/native-tribe-contracts#readme",
   "dependencies": {
-    "bluebird": "^3.5.1"
+    "bluebird": "^3.5.1",
+    "truffle-contract": "^3.0.6"
   }
 }

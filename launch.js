@@ -28,7 +28,7 @@ Community.setProvider(provider)
 
 const from = web3.eth.accounts[0]
 const gasPrice = web3.toWei('1', 'gwei')
-const gas = 6900000
+const gas = 8000000
 
 let name
 let symbol
@@ -49,8 +49,10 @@ async function launchCommunity(name, symbol, version, curator, voteController, m
   const communityStorageFactoryInstance = await CommunityAccountFactory.deployed()
   const registrarFactoryInstance = await RegistrarFactory.deployed()
   const communityFactorInstance = await CommunityFactory.deployed()
-  await loggerInstance.transferOwnershipNow(communityLauncherInstance.address, {from, gasPrice, gas})
+  const res1 = await loggerInstance.transferOwnershipNow(communityLauncherInstance.address, {from, gasPrice, gas})
 
+  console.log('res1', res1)
+  
   console.log('about to launch community')
   await communityLauncherInstance.launchCommunity(
     [
@@ -109,6 +111,7 @@ async function launchAllCommunities() {
   tokenDecimals = 18
   await launchCommunity(name, symbol, version, curator, voteController, minimumStakingRequirement, launchUuid, totalSupply, lockupPeriod, tokenDecimals)
 
+  /*
   name = 'Earth Guardians'
   symbol = 'EGCC'
   version = '1.0'
@@ -144,7 +147,7 @@ async function launchAllCommunities() {
   lockupPeriod = 0
   tokenDecimals = 18
   await launchCommunity(name, symbol, version, curator, voteController, minimumStakingRequirement, launchUuid, totalSupply, lockupPeriod, tokenDecimals)
-
+  */
 
 }
 launchAllCommunities()
