@@ -7,7 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "launch_native": "truffle migrate -f 1 --to 10",
+    "launch_community": "truffle migrate -f 11 --to 11"
   },
   "repository": {
     "type": "git",
