@@ -149,8 +149,6 @@ const params = {
 }
 */
 
-
-
 startTokenSale(params, saleType).then( (res) => {
   console.log('Token Sale done', res)
 })

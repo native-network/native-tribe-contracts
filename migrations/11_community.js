@@ -7,7 +7,7 @@ const Registrar = artifacts.require("./Registrar.sol");
 module.exports = async function(deployer, network, accounts) {
 
   // 50 gwei
-  const gasPrice = 10e5
+  const gasPrice = 5e10
   const fromAccount = accounts[0]
   // Rinkeby logger address.  This should never change
   const loggerAddress = '0x821c29c1fb3582e6447cb53cc6af62b5c8bb20f8'
