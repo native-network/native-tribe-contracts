@@ -142,3 +142,11 @@ The following example shows the overall flow of upgrading a community contract. 
 
 5. Curator updates the new community to use the old community account.
 
+## Launching individual tribes
+
+To launch a tribe modify the parameters at the top of migrations/11_community.js and
+run `npm run launch_community`
+
+To setup the token sales modify the parameters at the top of token-sale.js and
+ run `npm run token-sale`
+
