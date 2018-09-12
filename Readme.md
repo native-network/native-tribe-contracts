@@ -191,4 +191,4 @@ To setup the token sales modify the parameters at the top of token-sale.js and
     
 ##### 4) Initializer the token sale
 
-    - Run `npm run token-sale` from the project root with the same account used to launch the communiuty.
+    - Run `npm run token-sale` from the project root
