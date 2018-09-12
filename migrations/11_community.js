@@ -7,7 +7,8 @@ const Registrar = artifacts.require("./Registrar.sol");
 module.exports = async function(deployer, network, accounts) {
 
   // 50 gwei
-  const gasPrice = 10e5
+  const gasPrice = 5e10
+  const fromAccount = accounts[0]
   // Rinkeby logger address.  This should never change
   const loggerAddress = '0x821c29c1fb3582e6447cb53cc6af62b5c8bb20f8'
   // Rinkeby native token address.  This should never change
@@ -51,6 +52,42 @@ module.exports = async function(deployer, network, accounts) {
   const totalSupply = 0 // Set to 0 because we set this in the token sale initialization
   const tokenDecimals = 18
   */
+
+  // This was used to Future of Humanity on rinkeby
+  /*
+  const name = 'Future of Humanity'
+  const tokenSymbol='SDG'
+  const minimumStakingRequirement = 285
+  const lockupPeriodSeconds = 7776000
+
+  const tokenVersion = '1.0'
+  const totalSupply = 0 // Set to 0 because we set this in the token sale initialization
+  const tokenDecimals = 18
+  */
+
+  // This was used to Peace Accelerators on rinkeby
+  /*
+  const name = 'Peace Accelerators'
+  const tokenSymbol='PAT'
+  const minimumStakingRequirement = 95
+  const lockupPeriodSeconds = 7776000
+
+  const tokenVersion = '1.0'
+  const totalSupply = 0 // Set to 0 because we set this in the token sale initialization
+  const tokenDecimals = 18
+  */
+
+  // This was used to Odyssy on rinkeby
+  /*
+  const name = 'Odyssy'
+  const tokenSymbol='DOLO'
+  const minimumStakingRequirement = 500
+  const lockupPeriodSeconds = 7776000
+
+  const tokenVersion = '1.0'
+  const totalSupply = 0 // Set to 0 because we set this in the token sale initialization
+  const tokenDecimals = 18
+  */
   
   console.log('Launching community', name)  
 
@@ -60,11 +97,13 @@ module.exports = async function(deployer, network, accounts) {
 
   await deployer
     .then( async () => {
-      return deployer.deploy(SmartToken, name, totalSupply, tokenDecimals, tokenSymbol, tokenVersion, accounts[0], {gasPrice})
+      
+      console.log('using gasPrice: ', gasPrice)
+      return deployer.deploy(SmartToken, name, totalSupply, tokenDecimals, tokenSymbol, tokenVersion, accounts[0], {gasPrice, from: fromAccount})
     })
     .then( (res) => {
       communityTokenAddress = res.address
-      return deployer.deploy(CommunityAccount, {gasPrice})
+      return deployer.deploy(CommunityAccount, {gasPrice, from: fromAccount})
     })
     .then( async (res) => {
       communityAccountAddress = res.address
@@ -80,14 +119,14 @@ module.exports = async function(deployer, network, accounts) {
         voteController,
         loggerAddress,
         communityAccountAddress)
-    }, {gasPrice})
+    }, {gasPrice, from: fromAccount})
     .then( async (res) => {
       communityAddress = res.address
       const communityAccountInstance = await CommunityAccount.deployed()
       await communityAccountInstance.transferOwnershipNow(communityAddress)
     })
     .then( async () => {
-      return deployer.deploy(Registrar, {gasPrice})
+      return deployer.deploy(Registrar, {gasPrice, from: fromAccount})
     }).then(async () => {
       const registrarInstance = await Registrar.deployed()
       await registrarInstance.addNewAddress(communityAddress);

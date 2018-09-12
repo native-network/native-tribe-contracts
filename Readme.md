@@ -142,11 +142,92 @@ The following example shows the overall flow of upgrading a community contract. 
 
 5. Curator updates the new community to use the old community account.
 
-## Launching individual tribes
+## Launching communities
 
-To launch a tribe modify the parameters at the top of migrations/11_community.js and
-run `npm run launch_community`
+#### Launching the logger contract
 
-To setup the token sales modify the parameters at the top of token-sale.js and
- run `npm run token-sale`
+This must be done before any communities can be launched.  This only needs to be done once.
+    
+    - Run `npm run launch_logger`
 
+#### Launching the native community
+
+This must be done before any other communities can be launched.  This only needs to be done once.
+
+##### 1) Edit migrations/community.js
+    
+    - Verify that loggerAddress is correct
+    - set nativeTokenAddress to `0x0`
+    - Verifty that fromAccount is correct (this will be the curator address and vote controller address)
+    - Set relevent community variables:
+        - name
+        - tokenSymbol
+        - minimumStakingRequirement
+        - lockupPeriodSeconds
+        - tokenVersion
+        - totalSupply (Note: this typically usually set to 0 because the supply will be generated during the token sale event)
+        - tokenDecimals
+
+##### 2) Launch the community
+
+    - From the project root run `npm run launch_community`
+    - Make note of the resulting contract addresses (Registrar, Community, Community Account, Community Token)
+    
+##### 3) Edit token-sale.js
+
+    - Verify that nativeTokenAddress is correct
+    - Verify that fromAccount is correct
+    - Set relevent token sale variables
+        - saleType is either 'eth' for an ethereum based sale or 'token' for a token based sale.  Should be `eth` for native.
+        - params.tokenAddress (Address of the token launched in step 2)
+        - params.nativeTokenAddress
+        - params.startTime (Unix timestamps in seconds of when the token sale begins)
+        - params.endTime (Unix timestamps in seconds of when the token sale begins)
+        - params.price (For eth sales this is in wei.  For token sales this is the number of native tokens required to purchase a single token)
+        - params.amountForSale
+        - params.beneficiary (The account to receive proceeds from the token sale)
+
+    
+##### 4) Initialize the token sale
+
+    - Run `npm run token-sale` from the project root
+
+#### Launching a community
+
+##### 1) Edit migrations/community.js
+    
+    - Verify that loggerAddress is correct
+    - Verify that nativeTokenAddress is correct
+    - Verifty that fromAccount is correct (this will be the curator address and vote controller address)
+    - Set relevent community variables:
+        - name
+        - tokenSymbol
+        - minimumStakingRequirement
+        - lockupPeriodSeconds
+        - tokenVersion
+        - totalSupply (Note: this typically usually set to 0 because the supply will be generated during rhe token sale event)
+        - tokenDecimals
+
+##### 2) Launch the community
+
+    - From the project root run `npm run launch_community`
+    - Make note of the resulting contract addresses (Registrar, Community, Community Account, Community Token)
+    
+##### 3) Edit token-sale.js
+
+    - Verify that nativeTokenAddress is correct
+    - Verify that fromAccount is correct
+    - Set relevent token sale variables
+        - saleType is either 'eth' for an ethereum based sale or 'token' for a token based sale.  Should be `token` for most communities.
+        - params.tokenAddress (Address of the token launched in step 2)
+        - params.nativeTokenAddress
+        - params.startTime (Unix timestamps in seconds of when the token sale begins)
+        - params.endTime (Unix timestamps in seconds of when the token sale begins)
+        - params.price (For eth sales this is in wei.  For token sales this is the number of native tokens required to purchase a single token)
+        - params.amountForSale
+        - params.beneficiary (The account to receive proceeds from the token sale)
+        - nativeTokenAddress (Only required if saleType is set to 'token')
+    
+##### 4) Initialize the token sale
+
+    - Run `npm run token-sale` from the project root

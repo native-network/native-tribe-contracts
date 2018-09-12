@@ -26,11 +26,11 @@ CommunityFactory.setProvider(provider)
 Registrar.setProvider(provider)
 Community.setProvider(provider)
 
-const from = web3.eth.accounts[0]
+const fromAccount = web3.eth.accounts[0]
 const gasPrice = web3.toWei('1', 'gwei')
 const gas = 6000000
 
-// Rinkeby native token address.  This should mever change.
+// Rinkeby native token address.  This should never change.
 const nativeTokenAddress = '0xd658c07a0e6edcce8e9983e4c9206dc37a746258'
 
 async function startTokenSale(params, type) {
@@ -48,7 +48,7 @@ async function startTokenSale(params, type) {
       params.amountForSale,
       params.beneficiary,
       params.nativeTokenAddress,
-      {from, gas, gasPrice})
+      {from: fromAccount, gas, gasPrice})
   }
   else {
     console.log('initializeSale')
@@ -58,7 +58,7 @@ async function startTokenSale(params, type) {
     params.price,
     params.amountForSale,
     params.beneficiary,
-    {from, gas, gasPrice})
+    {from: fromAccount, gas, gasPrice})
   }
 
 }
@@ -104,6 +104,48 @@ const params = {
   price: 1,
   amountForSale: 857142,
   beneficiary: from,
+}
+*/
+
+// This was used to start the Future of humanity token sale on rinkeby
+/*
+const saleType = 'token'
+const params = {
+  tokenAddress: '0xea986fa22427ee01203c4ae7fbe90b73986d2913',
+  nativeTokenAddress,
+  startTime: Math.floor(Date.now() / 1000), // now
+  endTime: Math.floor(Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 30)), // 30 days from now
+  price: 1,
+  amountForSale: 857142,
+  beneficiary: from,
+}
+*/
+
+// This was used to start the peace allecerators token sale on rinkeby
+/*
+const saleType = 'token'
+const params = {
+  tokenAddress: '0x408da02c54bd6f08b14e52b119cc8b94c4e53924',
+  nativeTokenAddress,
+  startTime: Math.floor(Date.now() / 1000), // now
+  endTime: Math.floor(Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 30)), // 30 days from now
+  price: 1,
+  amountForSale: 857142,
+  beneficiary: from,
+}
+*/
+
+// This was used to start the Odyssy token sale on rinkeby
+/*
+const saleType = 'token'
+const params = {
+  tokenAddress: '0xf53b62ba5fe701c88b6e003c309a4b21afe263b9',
+  nativeTokenAddress,
+  startTime: Math.floor(Date.now() / 1000), // now
+  endTime: Math.floor(Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 30)), // 30 days from now
+  price: 1,
+  amountForSale: 857142,
+  beneficiary: fromAccount,
 }
 */
 
