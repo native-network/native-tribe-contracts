@@ -30,7 +30,7 @@ const fromAccount = web3.eth.accounts[0]
 const gasPrice = web3.toWei('1', 'gwei')
 const gas = 6000000
 
-// Rinkeby native token address.  This should mever change.
+// Rinkeby native token address.  This should never change.
 const nativeTokenAddress = '0xd658c07a0e6edcce8e9983e4c9206dc37a746258'
 
 async function startTokenSale(params, type) {

@@ -226,6 +226,7 @@ This must be done before any other communities can be launched.  This only needs
         - params.price (For eth sales this is in wei.  For token sales this is the number of native tokens required to purchase a single token)
         - params.amountForSale
         - params.beneficiary (The account to receive proceeds from the token sale)
+        - nativeTokenAddress (Only required if saleType is set to 'token')
     
 ##### 4) Initialize the token sale
 
