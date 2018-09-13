@@ -182,7 +182,7 @@ This must be done before any other communities can be launched.  This only needs
         - params.tokenAddress (Address of the token launched in step 2)
         - params.nativeTokenAddress
         - params.startTime (Unix timestamps in seconds of when the token sale begins)
-        - params.endTime (Unix timestamps in seconds of when the token sale begins)
+        - params.endTime (Unix timestamps in seconds of when the token sale ends)
         - params.price (For eth sales this is in wei.  For token sales this is the number of native tokens required to purchase a single token)
         - params.amountForSale
         - params.beneficiary (The account to receive proceeds from the token sale)
@@ -222,7 +222,7 @@ This must be done before any other communities can be launched.  This only needs
         - params.tokenAddress (Address of the token launched in step 2)
         - params.nativeTokenAddress
         - params.startTime (Unix timestamps in seconds of when the token sale begins)
-        - params.endTime (Unix timestamps in seconds of when the token sale begins)
+        - params.endTime (Unix timestamps in seconds of when the token sale ends)
         - params.price (For eth sales this is in wei.  For token sales this is the number of native tokens required to purchase a single token)
         - params.amountForSale
         - params.beneficiary (The account to receive proceeds from the token sale)
