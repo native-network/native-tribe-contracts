@@ -18,6 +18,8 @@
 
 ## Run tests
 
+Set the `gas` variable in truffle.js to `8000000`
+
 1. truffle test
 
 #### A note about tests
@@ -143,6 +145,8 @@ The following example shows the overall flow of upgrading a community contract. 
 5. Curator updates the new community to use the old community account.
 
 ## Launching communities
+
+Set the `gas` variable in truffle.js to `6000000`
 
 #### Launching the logger contract
 
