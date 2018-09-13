@@ -190,7 +190,7 @@ This must be done before any other communities can be launched.  This only needs
     
 ##### 4) Initialize the token sale
 
-    - Run `npm run token-sale` from the project root
+    - Run `npm run token_sale` from the project root
 
 #### Launching a community
 
@@ -230,4 +230,4 @@ This must be done before any other communities can be launched.  This only needs
     
 ##### 4) Initialize the token sale
 
-    - Run `npm run token-sale` from the project root
+    - Run `npm run token_sale` from the project root
