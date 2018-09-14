@@ -12,7 +12,7 @@ module.exports = async function(deployer, network, accounts) {
   // Rinkeby logger address.  This should never change
   const loggerAddress = '0x821c29c1fb3582e6447cb53cc6af62b5c8bb20f8'
   // Rinkeby native token address.  This should never change
-  const nativeTokenAddress = '0xd658c07a0e6edcce8e9983e4c9206dc37a746258'
+  const nativeTokenAddress = '0xebd510bc0b2997d4bfc1072d6854381c8c87c417'
 
 
   // Change below parameters for every different launched community

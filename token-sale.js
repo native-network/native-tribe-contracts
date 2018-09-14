@@ -31,7 +31,7 @@ const gasPrice = web3.toWei('1', 'gwei')
 const gas = 6000000
 
 // Rinkeby native token address.  This should never change.
-const nativeTokenAddress = '0xd658c07a0e6edcce8e9983e4c9206dc37a746258'
+const nativeTokenAddress = '0xebd510bc0b2997d4bfc1072d6854381c8c87c417'
 
 async function startTokenSale(params, type) {
   
@@ -40,24 +40,24 @@ async function startTokenSale(params, type) {
   const tokenInstance = await SmartToken.at(params.tokenAddress)
 
   if(type === 'eth') {
-    console.log('initializeTokenSaleWithToken')
-    return await tokenInstance.initializeTokenSaleWithToken(
+    console.log('initializeSale')
+    return await tokenInstance.initializeTokenSale(
       params.startTime,
       params.endTime,
       params.price,
       params.amountForSale,
       params.beneficiary,
-      params.nativeTokenAddress,
       {from: fromAccount, gas, gasPrice})
   }
   else {
-    console.log('initializeSale')
-    return await tokenInstance.initializeTokenSale(
+    console.log('initializeTokenSaleWithToken')
+    return await tokenInstance.initializeTokenSaleWithToken(
     params.startTime,
     params.endTime,
     params.price,
     params.amountForSale,
     params.beneficiary,
+    params.nativeTokenAddress,
     {from: fromAccount, gas, gasPrice})
   }
 
@@ -66,18 +66,18 @@ async function startTokenSale(params, type) {
 // Set these parameters before each tribe launch
 
 // This was used to start the native token sale on rinkeby
-/*
+
 const saleType = 'eth'
 const params = {
-  tokenAddress: '0xd658c07a0e6edcce8e9983e4c9206dc37a746258',
+  tokenAddress: nativeTokenAddress,
   nativeTokenAddress,
   startTime: Math.floor(Date.now() / 1000), // now
   endTime: Math.floor(Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 30)), // 30 days from now
   price: 2142857143000000,
   amountForSale: 2000000,
-  beneficiary: from,
+  beneficiary: fromAccount,
 }
-*/
+
 
 // This was used to start the earth guardians token sale on rinkeby
 /*
