@@ -33,7 +33,6 @@ contract UpgradedCommunity {
 
     modifier sufficientDevFundBalance (uint amount) {
         require(amount <= getAvailableDevFund());
-            require(true);
         _;
     }
 
@@ -185,7 +184,7 @@ contract UpgradedCommunity {
 
         communityAccount.setStakedBalances(SafeMath.sub(communityAccount.stakedBalances(msg.sender), amount), msg.sender);
         communityAccount.setTotalStaked(SafeMath.sub(communityAccount.totalStaked(), amount));
-        communityTokenInstance.transfer(msg.sender, amount);
+        require(communityAccount.transferTokensOut(address(communityTokenInstance), msg.sender, amount));
     }
 
     // checks that the user is fully staked
