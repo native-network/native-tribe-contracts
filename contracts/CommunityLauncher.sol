@@ -11,15 +11,12 @@ import "./factories/CommunityFactory.sol";
 import "./utility/Owned.sol";
 import "./interfaces/ICommunityLauncher.sol";
 
-/*
-
-This helper contract is used to easily launch and connect all of the pieces required for a new community.  These are:
-
-1) Community token - The smart token used by the community for staking
-2) Community storage - Stores and tracks all staked and escrowed funds
-3) Community  - Core logic of the community
-4) Registrar - Stores latest community address
-
+/**
+@notice Helper contract used to easily launch and connect all pieces required for new community.  These are:
+@notice 1) Community token - The smart token used by the community for staking
+@notice 2) Community storage - Stores and tracks all staked and escrowed funds
+@notice 3) Community  - Core logic of the community
+@notice 4) Registrar - Stores latest community address
 */
 contract CommunityLauncher is Owned, ICommunityLauncher {
     mapping (uint => address) public launchedCommunityRegistrars;
@@ -85,7 +82,7 @@ contract CommunityLauncher is Owned, ICommunityLauncher {
         emit Launched(msg.sender, ai[0], community, communityToken, registrar);
     }
 
-    // Abstracted to avoid stack-depth error in launchCommunity()
+    /// @notice Abstracted to avoid stack-depth error in launchCommunity()
     function launchRegistrar(address registrarFactoryContractAddress, ICommunity community, address curatorAddress) public returns(IRegistrar) {
         RegistrarFactory registrarFactory = RegistrarFactory(registrarFactoryContractAddress);
         IRegistrar registrar = Registrar(registrarFactory.create());
@@ -94,7 +91,7 @@ contract CommunityLauncher is Owned, ICommunityLauncher {
         return registrar;
     }
 
-    // Abstracted to avoid stack-depth error in launchCommunity()
+    /// @notice Abstracted to avoid stack-depth error in launchCommunity()
     function launchCommunityWithFactory(
         uint[] ai,
         address[] addresses,

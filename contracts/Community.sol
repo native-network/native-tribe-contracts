@@ -5,21 +5,16 @@ import "./interfaces/ISmartToken.sol";
 import "./interfaces/ICommunity.sol";
 import "./utility/SafeMath.sol";
 
-/*
-
-This is the main contract containing community logic.  It has the following functionality:
-
-- Staking & Unstaking community tokens.  THis is how a user "join" or "leaves" the community.
-
-- Creating Projects and tasks by locking up Native tokens in escrow until the curator or voteController determines the task has been completed.
-
-- All events are logged to the centralized logger contract.
-
-- The communityAccount contract is owned by the community and holds all staking and escrow related funds and variables.
-  This abstraction of funds allows for a much simpler upgrade process by launching a new community and transferring ownership of the existing communityAccount.
-  The tests in test/integration-test-upgrades.js demonstrate the upgrade process.
-
-*/
+/**
+@notice Main community logic contract.
+@notice functionality:
+@notice 1) Stake / Unstake community tokens.  This is how user joins or leaves community.
+@notice 2) Create Projects and Tasks by escrowing NTV token until curator or voteController determines task complete
+@notice 3) Log all events to singleton Logger contract
+@notice 4) Own communityAccount contract which holds all staking- and escrow-related funds and variables
+@notice --- This abstraction of funds allows for easy upgrade process; launch new community -> transfer ownership of the existing communityAccount
+@notice --- View test/integration-test-upgrades.js to demonstrate this process
+ */
 contract Community is ICommunity {
 
     address public curator;
@@ -46,6 +41,16 @@ contract Community is ICommunity {
         _;
     }
 
+    /**
+    @param _minimumStakingRequirement Minimum stake amount to join community
+    @param _lockupPeriodSeconds Required minimum holding time, in seconds, after joining for staker to leave
+    @param _curator Address of community curator
+    @param _communityTokenContractAddress Address of community token contract
+    @param _nativeTokenContractAddress Address of ontract
+    @param _voteController Address of vote controller
+    @param _loggerContractAddress
+    @param _communityAccountContractAddress
+     */
     constructor(uint _minimumStakingRequirement,
         uint _lockupPeriodSeconds,
         address _curator,
@@ -65,60 +70,91 @@ contract Community is ICommunity {
     }
 
     // TODO add events to each of these
+    /**
+    @notice Sets curator to input curator address
+    @param _curator Address of new community curator
+     */
     function transferCurator(address _curator) public onlyCurator {
         curator = _curator;
         logger.emitGenericLog("transferCurator", "");
     }
 
+    /**
+    @notice Sets vote controller to input vote controller address
+    @param _voteController Address of new vote controller
+     */
     function transferVoteController(address _voteController) public onlyCurator {
         voteController = _voteController;
         logger.emitGenericLog("transferVoteController", "");
     }
 
+    /**
+    @notice Sets the minimum community staking requirement
+    @param _minimumStakingRequirement Minimum community staking requirement to be set
+     */
     function setMinimumStakingRequirement(uint _minimumStakingRequirement) public onlyCurator {
         minimumStakingRequirement = _minimumStakingRequirement;
         logger.emitGenericLog("setMinimumStakingRequirement", "");
     }
 
+    /**
+    @notice Sets lockup period for community staking
+    @param _lockupPeriodSeconds Community staking lockup period, in seconds
+    */
     function setLockupPeriodSeconds(uint _lockupPeriodSeconds) public onlyCurator {
         lockupPeriodSeconds = _lockupPeriodSeconds;
         logger.emitGenericLog("setLockupPeriodSeconds", "");
     }
 
+    /**
+    @notice Updates Logger contract address to be used
+    @param newLoggerAddress Address of new Logger contract
+     */
     function setLogger(address newLoggerAddress) public onlyCurator {
         logger = Logger(newLoggerAddress);
         logger.emitGenericLog("setLogger", "");
     }
 
+    /**
+    @param newNativeTokenAddress New Native token address
+    @param newCommunityTokenAddress New community token address
+     */
     function setTokenAddresses(address newNativeTokenAddress, address newCommunityTokenAddress) public onlyCurator {
         nativeTokenInstance = ISmartToken(newNativeTokenAddress);
         communityTokenInstance = ISmartToken(newCommunityTokenAddress);
         logger.emitGenericLog("setTokenAddresses", "");
     }
 
+    /**
+    @param newCommunityAccountAddress Address of new community account
+     */
     function setCommunityAccount(address newCommunityAccountAddress) public onlyCurator {
         communityAccount = CommunityAccount(newCommunityAccountAddress);
         logger.emitGenericLog("setCommunityAccount", "");
     }
 
+    /**
+    @param newOwner New community account owner address
+     */
     function setCommunityAccountOwner(address newOwner) public onlyCurator {
         communityAccount.transferOwnershipNow(newOwner);
         logger.emitGenericLog("setCommunityAccountOwner", "");
     }
 
-    // gets the amount in the dev fund that isn't locked up by a project or task stake
+    /// @return Amount in the dev fund not locked up by project or task stake
     function getAvailableDevFund() public view returns (uint) {
         uint devFundBalance = nativeTokenInstance.balanceOf(address(communityAccount));
         return SafeMath.sub(devFundBalance, getLockedDevFundAmount());
     }
 
+    /// @return Amount locked up in escrow
     function getLockedDevFundAmount() public view returns (uint) {
         return SafeMath.add(communityAccount.totalTaskEscrow(), communityAccount.totalProjectEscrow());
     }
 
-    /* Task escrow code below (in native tokens) */
+    /* Task escrow code below (in community tokens) */
 
-    // updates the escrow values for a new task
+    /// @notice Updates the escrow values for a new task
     function createNewTask(uint uuid, uint amount) public onlyCurator sufficientDevFundBalance (amount) {
         communityAccount.setEscrowedTaskBalances(uuid, amount);
         communityAccount.setTotalTaskEscrow(SafeMath.add(communityAccount.totalTaskEscrow(), amount));
@@ -126,14 +162,14 @@ contract Community is ICommunity {
         logger.emitGenericLog("createNewTask", "");
     }
 
-    // subtracts the tasks escrow and sets the tasks escrow balance to 0
+    /// @notice Subtracts the tasks escrow and sets tasks escrow balance to 0
     function cancelTask(uint uuid) public onlyCurator {
         communityAccount.setTotalTaskEscrow(SafeMath.sub(communityAccount.totalTaskEscrow(), communityAccount.escrowedTaskBalances(uuid)));
         communityAccount.setEscrowedTaskBalances(uuid, 0);
         logger.emitGenericLog("cancelTask", "");
     }
 
-    // pays put to the task completer and updates the escrow balances
+    /// @notice Pays task completer and updates escrow balances
     function rewardTaskCompletion(uint uuid, address user) public onlyVoteController {
         communityAccount.transferTokensOut(address(nativeTokenInstance), user, communityAccount.escrowedTaskBalances(uuid));
         communityAccount.setTotalTaskEscrow(SafeMath.sub(communityAccount.totalTaskEscrow(), communityAccount.escrowedTaskBalances(uuid)));
@@ -141,9 +177,9 @@ contract Community is ICommunity {
         logger.emitGenericLog("rewardTaskCompletion", "");
     }
 
-    /* Project escrow code below (in native tokens) */
+    /* Project escrow code below (in community tokens) */
 
-    // updates the escrow values along with the project payee for a new project
+    /// @notice updates the escrow values along with the project payee for a new project
     function createNewProject(uint uuid, uint amount, address projectPayee) public onlyCurator sufficientDevFundBalance (amount) {
         communityAccount.setEscrowedProjectBalances(uuid, amount);
         communityAccount.setEscrowedProjectPayees(uuid, projectPayee);
@@ -152,14 +188,15 @@ contract Community is ICommunity {
         logger.emitGenericLog("createNewProject", "");
     }
 
-    // subtracts the tasks escrow and sets the tasks escrow balance to 0
+    /// @notice Subtracts tasks escrow and sets tasks escrow balance to 0
     function cancelProject(uint uuid) public onlyCurator {
         communityAccount.setTotalProjectEscrow(SafeMath.sub(communityAccount.totalProjectEscrow(), communityAccount.escrowedProjectBalances(uuid)));
         communityAccount.setEscrowedProjectBalances(uuid, 0);
         logger.emitGenericLog("cancelProject", "");
     }
 
-    // pays out the project completion and then updates the escrow balances
+    /// @notice Pays out upon project completion
+    /// @notice Updates escrow balances
     function rewardProjectCompletion(uint uuid) public onlyVoteController {
         communityAccount.transferTokensOut(
             address(nativeTokenInstance),
@@ -170,7 +207,7 @@ contract Community is ICommunity {
         logger.emitGenericLog("rewardProjectCompletion", "");
     }
 
-    // Staking code below (in community tokens)
+    /// @notice Stake code (in community tokens)
     function stakeCommunityTokens() public {
         uint amount = minimumStakingRequirement - communityAccount.stakedBalances(msg.sender);
         require(amount > 0);
@@ -182,8 +219,8 @@ contract Community is ICommunity {
         logger.emitGenericLog("stakeCommunityTokens", "");
     }
 
-    // checks that a user is able to unstake by looking at the lockup period and the balance
-    // unstakes a community and sends funds back to the user=
+    /// @notice Unstakes user from community and sends funds back to user
+    /// @notice Checks lockup period and balance before unstaking
     function unstakeCommunityTokens() public {
         uint amount = communityAccount.stakedBalances(msg.sender);
 
@@ -195,7 +232,7 @@ contract Community is ICommunity {
         logger.emitGenericLog("unstakeCommunityTokens", "");
     }
 
-    // checks that the user is fully staked
+    /// @notice Checks that the user is fully staked
     function isMember(address memberAddress) public view returns (bool) {
         return (communityAccount.stakedBalances(memberAddress) >= minimumStakingRequirement);
     }

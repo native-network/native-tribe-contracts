@@ -10,7 +10,7 @@
 
 3. npm install
 
-3. Ganache-cli -l 8000000
+3. ganache-cli -l 8000000
 
 ## Deploy contracts
 

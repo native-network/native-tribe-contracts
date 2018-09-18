@@ -3,8 +3,8 @@ pragma solidity ^0.4.24;
 import "../interfaces/IOwned.sol";
 import "./IERC20.sol";
 
-/*
-    Smart Token Interface
+/**
+    @notice Smart Token Interface
 */
 contract ISmartToken is IOwned, IERC20 {
     function disableTransfers(bool _disable) public;

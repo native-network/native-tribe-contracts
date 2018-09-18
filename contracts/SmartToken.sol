@@ -19,20 +19,20 @@ contract SmartToken is Owned, IERC20, ISmartToken {
     */
 
     bool public transfersEnabled = true;    // true if transfer/transferFrom are enabled, false if not
-    // triggered when a smart token is deployed - the _token address is defined for forward compatibility, in case we want to trigger the event from a factory
+    /// @notice Triggered when a smart token is deployed - the _token address is defined for forward compatibility, in case we want to trigger the event from a factory
     event NewSmartToken(address _token);
-    // triggered when the total supply is increased
+    /// @notice Triggered when the total supply is increased
     event Issuance(uint256 _amount);
-    // triggered when the total supply is decreased
+    // @notice Triggered when the total supply is decreased
     event Destruction(uint256 _amount);
 
-    // verifies that the address is different than this contract address
+    // @notice Verifies that the address is different than this contract address
     modifier notThis(address _address) {
         require(_address != address(this));
         _;
     }
 
-    // validates an address - currently only checks that it isn't null
+    /// @notice Validates an address - currently only checks that it isn't null
     modifier validAddress(address _address) {
         require(_address != address(0));
         _;
@@ -81,9 +81,8 @@ contract SmartToken is Owned, IERC20, ISmartToken {
     }
 
     /**
-        ERC20 Implementation
+        @notice ERC20 Implementation
     */
-
     uint256 public totalSupply;
 
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
@@ -144,9 +143,8 @@ contract SmartToken is Owned, IERC20, ISmartToken {
     }
 
     /**
-        Token Sale Implementation
+        @notice Token Sale Implementation
     */
-
     uint public saleStartTime;
     uint public saleEndTime;
     uint public price;
