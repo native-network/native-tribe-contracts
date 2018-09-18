@@ -14,7 +14,7 @@ import "./interfaces/ICommunityLauncher.sol";
 /**
 @notice Helper contract used to easily launch and connect all pieces required for new community.  These are:
 @notice 1) Community token - The smart token used by the community for staking
-@notice 2) Community storage - Stores and tracks all staked and escrowed funds
+@notice 2) Community Account - Stores and tracks all staked and escrowed funds
 @notice 3) Community  - Core logic of the community
 @notice 4) Registrar - Stores latest community address
 */
