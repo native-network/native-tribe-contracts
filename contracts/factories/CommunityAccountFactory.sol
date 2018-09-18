@@ -2,10 +2,8 @@ pragma solidity ^0.4.11;
 
 import "../CommunityAccount.sol";
 
-/*
-
-Helps keep CommunityLauncher.sol from needing more than the block gas limit
-
+/**
+@notice Helps keep CommunityLauncher.sol from needing more than the block gas limit
 */
 contract CommunityAccountFactory {
     
