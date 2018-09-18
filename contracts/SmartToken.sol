@@ -95,7 +95,7 @@ contract SmartToken is Owned, IERC20, ISmartToken {
 
 
     function transfer(address _to, uint256 _value) public transfersAllowed returns (bool success) {
-        if (balances[msg.sender] >= _value && _value > 0 && _to != address(0)) {
+        if (balances[msg.sender] >= _value && _to != address(0)) {
             balances[msg.sender] = SafeMath.sub(balances[msg.sender], _value);
             balances[_to] = SafeMath.add(balances[_to], _value);
             emit Transfer(msg.sender, _to, _value);
@@ -104,7 +104,7 @@ contract SmartToken is Owned, IERC20, ISmartToken {
     }
 
     function transferFrom(address _from, address _to, uint256 _value) public transfersAllowed returns (bool success) {
-        if (balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0 && _to != address(0)) {
+        if (balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _to != address(0)) {
 
             balances[_to] = SafeMath.add(balances[_to], _value);
             balances[_from] = SafeMath.sub(balances[_from], _value);
