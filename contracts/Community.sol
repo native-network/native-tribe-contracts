@@ -48,8 +48,8 @@ contract Community is ICommunity {
     @param _communityTokenContractAddress Address of community token contract
     @param _nativeTokenContractAddress Address of ontract
     @param _voteController Address of vote controller
-    @param _loggerContractAddress
-    @param _communityAccountContractAddress
+    @param _loggerContractAddress Address of logger contract
+    @param _communityAccountContractAddress Address of community account
      */
     constructor(uint _minimumStakingRequirement,
         uint _lockupPeriodSeconds,
@@ -209,6 +209,9 @@ contract Community is ICommunity {
 
     /// @notice Stake code (in community tokens)
     function stakeCommunityTokens() public {
+
+        require(minimumStakingRequirement >= communityAccount.stakedBalances(msg.sender));
+
         uint amount = minimumStakingRequirement - communityAccount.stakedBalances(msg.sender);
         require(amount > 0);
         require(communityTokenInstance.transferFrom(msg.sender, address(communityAccount), amount));
@@ -228,7 +231,7 @@ contract Community is ICommunity {
 
         communityAccount.setStakedBalances(0, msg.sender);
         communityAccount.setTotalStaked(SafeMath.sub(communityAccount.totalStaked(), amount));
-        communityTokenInstance.transfer(msg.sender, amount);
+        require(communityAccount.transferTokensOut(address(communityTokenInstance), msg.sender, amount));
         logger.emitGenericLog("unstakeCommunityTokens", "");
     }
 

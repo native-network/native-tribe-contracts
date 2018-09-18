@@ -290,5 +290,94 @@ contract('SmartToken', function () {
       assert(false)
     })
 
+
+
+        it("It should fail to transfer tokens to account 0x0", async function () {
+      
+              const initialTotalSupply = 12345
+              const initialTokenName = 'test'
+              const initialTokenSymbol = 'test'
+              const initialTokenVersion = 'version'
+              const initialTokenDecimals = 18
+        
+              let token = await SmartToken.new(initialTokenName, initialTotalSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner)
+              let balance = await token.balanceOf(owner)
+        
+              let transferAmount = balance
+              let thisNonOwner = "0x0"
+              await token.transfer(thisNonOwner, transferAmount, {from: owner})
+        
+              let newOwnerBalance = await token.balanceOf(owner)
+              let newNonOwnerBalance = await token.balanceOf(thisNonOwner)
+              assert( newNonOwnerBalance.toString() === "0" )
+              assert( newOwnerBalance.toString() === balance.toString() )
+            })
+    
+        it("It should fail to transfer tokens to account 0", async function () {
+      
+              const initialTotalSupply = 12345
+              const initialTokenName = 'test'
+              const initialTokenSymbol = 'test'
+              const initialTokenVersion = 'version'
+              const initialTokenDecimals = 18
+        
+              let token = await SmartToken.new(initialTokenName, initialTotalSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner)
+              let balance = await token.balanceOf(owner)
+        
+              let transferAmount = balance
+              let thisNonOwner = "0"
+              await token.transfer(thisNonOwner, transferAmount, {from: owner})
+        
+              let newOwnerBalance = await token.balanceOf(owner)
+              let newNonOwnerBalance = await token.balanceOf(thisNonOwner)
+              assert( newNonOwnerBalance.toString() === "0" )
+              assert( newOwnerBalance.toString() === balance.toString() )
+            })
+
+    it("It should fail to transferFrom tokens as the owner to a 0x0 address", async function () {
+      
+              const initialTotalSupply = 12345
+              const initialTokenName = 'test'
+              const initialTokenSymbol = 'test'
+              const initialTokenVersion = 'version'
+              const initialTokenDecimals = 18
+        
+              let token = await SmartToken.new(initialTokenName, initialTotalSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner)
+              let balance = await token.balanceOf(owner)
+              let transferAmount = balance
+              let thisNonOwner = "0x0"
+        
+              await token.approve(owner, transferAmount, {from: owner})
+              await token.transferFrom(owner, thisNonOwner, transferAmount, {from: owner})
+        
+              let newOwnerBalance = await token.balanceOf(owner)
+              let newNonOwnerBalance = await token.balanceOf(thisNonOwner)
+        
+              assert( newNonOwnerBalance.toString() === "0")
+              assert( newOwnerBalance.toString() === balance.toString() )
+            })
+    
+        it("It should fail to transferFrom tokens as the owner to a 0 address", async function () {
+      
+              const initialTotalSupply = 12345
+              const initialTokenName = 'test'
+              const initialTokenSymbol = 'test'
+              const initialTokenVersion = 'version'
+              const initialTokenDecimals = 18
+        
+              let token = await SmartToken.new(initialTokenName, initialTotalSupply, initialTokenDecimals, initialTokenSymbol, initialTokenVersion, owner)
+              let balance = await token.balanceOf(owner)
+              let transferAmount = balance
+              let thisNonOwner = "0x0"
+        
+              await token.approve(owner, transferAmount, {from: owner})
+              await token.transferFrom(owner, thisNonOwner, transferAmount, {from: owner})
+        
+              let newOwnerBalance = await token.balanceOf(owner)
+              let newNonOwnerBalance = await token.balanceOf(thisNonOwner)
+        
+              assert( newNonOwnerBalance.toString() === "0")
+              assert( newOwnerBalance.toString() === balance.toString() )
+            })
   })
 })

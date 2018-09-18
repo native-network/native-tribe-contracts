@@ -442,9 +442,15 @@ contract('Community', function () {
       stakedMembershipStatus = await launchedCommunityInstance.isMember(sender)
       assert(startingMembershipStatus === false && stakedMembershipStatus === true)
 
+      let balanceBeforeUnstaking = await communityTokenInstance.balanceOf(sender)
+      
       // unstake
       await launchedCommunityInstance.unstakeCommunityTokens({from: sender})
       const finalMembershipStatus = await launchedCommunityInstance.isMember(sender)
+
+      let balanceAfterUnstaking = await communityTokenInstance.balanceOf(sender)
+
+      assert(balanceAfterUnstaking.equals(balanceBeforeUnstaking.plus(amountRequiredForStaking)))
       assert(finalMembershipStatus === false)
     })
 

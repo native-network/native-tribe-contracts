@@ -31,9 +31,9 @@ contract CommunityAccount is Owned, ICommunityAccount {
     @param destination Destination address of user looking to remove tokens from contract
     @param amount Amount to transfer out of community
     */
-    function transferTokensOut(address tokenContractAddress, address destination, uint amount) public ownerOnly {
+    function transferTokensOut(address tokenContractAddress, address destination, uint amount) public ownerOnly returns(bool result) {
         IERC20 token = IERC20(tokenContractAddress);
-        token.transfer(destination, amount);
+        return token.transfer(destination, amount);
     }
 
     /**

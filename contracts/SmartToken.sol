@@ -32,6 +32,11 @@ contract SmartToken is Owned, IERC20, ISmartToken {
         _;
     }
 
+    modifier transfersAllowed {
+        assert(transfersEnabled);
+        _;
+    }
+
     /// @notice Validates an address - currently only checks that it isn't null
     modifier validAddress(address _address) {
         require(_address != address(0));
@@ -89,8 +94,8 @@ contract SmartToken is Owned, IERC20, ISmartToken {
     event Approval(address indexed _owner, address indexed _spender, uint256 _value);
 
 
-    function transfer(address _to, uint256 _value) public returns (bool success) {
-        if (balances[msg.sender] >= _value && _value > 0) {
+    function transfer(address _to, uint256 _value) public transfersAllowed returns (bool success) {
+        if (balances[msg.sender] >= _value && _value > 0 && _to != address(0)) {
             balances[msg.sender] = SafeMath.sub(balances[msg.sender], _value);
             balances[_to] = SafeMath.add(balances[_to], _value);
             emit Transfer(msg.sender, _to, _value);
@@ -98,8 +103,8 @@ contract SmartToken is Owned, IERC20, ISmartToken {
         } else {return false; }
     }
 
-    function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
-        if (balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
+    function transferFrom(address _from, address _to, uint256 _value) public transfersAllowed returns (bool success) {
+        if (balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0 && _to != address(0)) {
 
             balances[_to] = SafeMath.add(balances[_to], _value);
             balances[_from] = SafeMath.sub(balances[_from], _value);
@@ -208,22 +213,19 @@ contract SmartToken is Owned, IERC20, ISmartToken {
     }
 
     function updateStartTime(uint _newSaleStartTime) public ownerOnly {
-        require(_newSaleStartTime >= 0);
         saleStartTime = _newSaleStartTime;
     }
 
     function updateEndTime(uint _newSaleEndTime) public ownerOnly {
-        require(_newSaleEndTime >= saleStartTime && _newSaleEndTime >= 0);
+        require(_newSaleEndTime >= saleStartTime);
         saleEndTime = _newSaleEndTime;
     }
 
     function updateAmountRemainingForSale(uint _newAmountRemainingForSale) public ownerOnly {
-        require(_newAmountRemainingForSale >= 0);
         amountRemainingForSale = _newAmountRemainingForSale;
     }
 
-    function updatePrice(uint _newPrice) public ownerOnly {
-        require(_newPrice >= 0);
+    function updatePrice(uint _newPrice) public ownerOnly { 
         price = _newPrice;
     }
 
