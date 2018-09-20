@@ -151,14 +151,14 @@ contract('SmartToken-sale', function () {
       const startTime = Math.floor(Date.now() / 1000)
       const endTime = Math.floor(startTime + (60 * 60 * 24))
       const priceInWei = web3.toWei(1, 'ether')
-      const amountForSale = 1000000
-      const amountToSpend = web3.toWei(10, 'ether')
-      const expectedPurchaseAmount = amountToSpend / priceInWei // Handle floating point roundoff errors?
+      const amountForSale = 1000000 * 1e18
+      const amountToSpend = web3.toWei(1, 'ether')
+      const expectedPurchaseAmount = (amountToSpend * 1e18) / priceInWei // Handle floating point roundoff errors?
 
       const TokensPurchased = util.promisify(smartNativeTokenInstance.TokensPurchased)()
-      
+
       await smartNativeTokenInstance.initializeTokenSale(startTime, endTime, priceInWei, amountForSale,  beneficiary, { from: owner })
-      
+
       const tokenBalanceBefore = await smartNativeTokenInstance.balanceOf(nonOwner)
 
       try {
@@ -168,7 +168,6 @@ contract('SmartToken-sale', function () {
           value: amountToSpend,
           gas: 100000
         })
-        
         return smartNativeTokenInstance.balanceOf(nonOwner).then((tokenBalanceAfter) => {
           return TokensPurchased.then(() => {
             return assert(tokenBalanceAfter.equals(tokenBalanceBefore.plus(expectedPurchaseAmount)))
