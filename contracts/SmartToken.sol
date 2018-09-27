@@ -250,7 +250,7 @@ contract SmartToken is Owned, IERC20, ISmartToken {
 
     function() public payable {
         require(buyModeEth == true);
-        uint amountToBuy = SafeMath.div(msg.value, price);
+        uint amountToBuy = SafeMath.div( SafeMath.mul(msg.value, 1 ether), price);
         require(amountToBuy <= amountRemainingForSale);
         require(now <= saleEndTime && now >= saleStartTime);
         amountRemainingForSale = SafeMath.sub(amountRemainingForSale, amountToBuy);
